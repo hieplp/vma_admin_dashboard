@@ -1,0 +1,124 @@
+.vehicle-on-track {
+  padding: 0;
+  padding-right: 1%;
+  border-radius: 0.3125rem;
+}
+.distance-driven {
+  padding: 0;
+  padding-left: 1%;
+  border-radius: 0.3125rem;
+}
+.cus-card .card-body {
+  background-color: #fff;
+  width: 99%;
+  padding: 25px;
+}
+
+.cus-card {
+  /* margin-top: 10px; */
+  margin-bottom: 10px;
+}
+
+.cus-card .card-body .card-title {
+  margin-bottom: 20px !important;
+}
+
+.card-large-content {
+  font-size: 50px;
+}
+
+.card-small-content {
+  font-size: 50%;
+  margin-left: 10px;
+}
+
+.notice-list .notice {
+  border: 1px solid rgba(46, 91, 255, 0.1);
+  /* border-left: 4px solid #054bff; */
+  box-sizing: border-box;
+  border-radius: 5px;
+  padding: 10px 10px 5px 25px;
+  margin-top: 10px;
+}
+
+.notice-list .notice:hover > .notice-name {
+  color: rgb(0, 0, 0);
+}
+
+.notice-border-blue {
+  border-left: 4px solid #054bff !important;
+}
+
+.notice-border-red {
+  border-left: 4px solid #fd0f0f !important;
+}
+
+.notice-border-green {
+  border-left: 4px solid #24d02b !important;
+}
+
+.notice-list a {
+  text-decoration: none;
+}
+
+.notice-list .notice .notice-name {
+  font-weight: 600;
+  color: #465066;
+  margin-top: 10px;
+}
+
+.notice-list .notice .notice-content {
+  color: #8798ad;
+}
+
+.notice-list .notice .notice-content span {
+  float: right;
+}
+
+.notice-seemore a {
+  color: #8798ad;
+  margin-top: 30px;
+  float: right;
+  text-decoration: none;
+}
+
+.notice-seemore a:hover {
+  color: #2e384d;
+}
+
+.inside-text-doughnut-chart {
+  width: 100%;
+  height: 40px;
+  position: absolute;
+  top: 30%;
+  left: 0;
+  margin-top: -20px;
+  line-height: 19px;
+  text-align: center;
+  z-index: 10;
+}
+.active-driver .driver-image {
+  margin-right: 5%;
+}
+.active-driver .driver-image img {
+  width: 44px;
+  height: 44px;
+  border-radius: 100%;
+}
+
+.active-driver .black-color {
+  color: #2e384d;
+}
+
+.active-driver .grey-color {
+  color: #8798ad;
+}
+
+.active-driver {
+  padding-top: 2px;
+  margin-bottom: 20px;
+}
+
+.active-driver .driver-info {
+  margin-top: 4px;
+}
