@@ -39,17 +39,29 @@
           <span class="menu-title">Drivers</span>
         </router-link>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">
+      <li
+        class="nav-item"
+        id="Contributors"
+        v-bind:class="{
+          active: this.$route.name === 'Contributors' ? true : false,
+        }"
+      >
+        <router-link to="/contributors" class="nav-link">
           <i class="mdi mdi-account-multiple-outline menu-icon"></i>
           <span class="menu-title">Contributors</span>
-        </a>
+        </router-link>
       </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">
+      <li
+        class="nav-item"
+        id="Vehicles"
+        v-bind:class="{
+          active: this.$route.name === 'Vehicles' ? true : false,
+        }"
+      >
+        <router-link to="/vehicles" class="nav-link">
           <i class="mdi mdi-car menu-icon"></i>
           <span class="menu-title">Vehicles</span>
-        </a>
+        </router-link>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#">
