@@ -5524,7 +5524,7 @@ fieldset:disabled a.btn {
   border-color: #198ae3;
 }
 .btn-outline-info:hover {
-  color: #fff;
+  color: rgb(0, 0, 0);
   background-color: #198ae3;
   border-color: #198ae3;
 }
@@ -15282,7 +15282,7 @@ code {
     color-stop(99%, #047edf)
   );
   background: linear-gradient(to right, #90caf9, #047edf 99%);
-  color: #000;
+  color: rgb(255, 255, 255);
 }
 
 .btn-inverse-warning {
@@ -18638,6 +18638,59 @@ dl li {
   -webkit-box-flex: 1;
   -ms-flex-positive: 1;
   flex-grow: 1;
+}
+
+.row [class*="col-"] {
+  transition: all 0.3s ease-in-out;
+}
+
+.filter {
+  max-height: 450px !important;
+  padding-bottom: 30px;
+}
+
+/* Enter and leave animations can use different */
+/* durations and timing functions.              */
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+
+.pagination {
+  justify-content: center;
+}
+.page-item {
+  border: 1px solid rgb(211, 201, 201);
+  padding: 6px 0px 6px 0px;
+  margin: 0.5px;
+  color: #78797a;
+}
+.page-item a {
+  padding: 6px 13px 6px 13px;
+  color: #78797a;
+  border-radius: 10%;
+  font-weight: 600;
+  line-height: 20px;
+}
+.page-item:hover {
+  background: linear-gradient(to right, #90caf9, #047edf 99%);
+}
+.page-item:hover > a {
+  color: #ffffff !important;
+}
+
+.page-active {
+  background: linear-gradient(to right, #90caf9, #047edf 99%);
+}
+.page-active a {
+  color: #ffffff !important;
 }
 
 /*# sourceMappingURL=style.css.map */

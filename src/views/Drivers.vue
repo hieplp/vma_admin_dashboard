@@ -5,208 +5,44 @@
       <h3 class="page-title">Driver Dashboard</h3>
       <div class="dropdown">
         <button
-          class="btn btn-primary dropdown-toggle"
+          class="btn btn-gradient-info dropdown-toggle"
           type="button"
-          id="dropdownMenuButton"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-          data-target="filter"
+          v-on:click="clickToViewFilter()"
         >
-          + Filter List
+          Filter
         </button>
-        <div class="dropdown-menu" id="filter">
-          <form class="forms-sample">
-            <div class="form-group">
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1">Driver name</label>
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity1"
-                  placeholder="Driver name"
-                />
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1">Driver id</label>
-
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>#001</option>
-                  <option>#002</option>
-                  <option>#003</option>
-                  <option>#004</option>
-                  <option>#005</option>
-                </select>
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1">Vehicle id</label>
-
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>#001</option>
-                  <option>#002</option>
-                  <option>#003</option>
-                  <option>#004</option>
-                  <option>#005</option>
-                </select>
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword4">Status</label>
-
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>Available</option>
-                  <option>On route</option>
-                  <option>On leave</option>
-                </select>
-              </div>
-              <br />
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary form-control form-control-sm"
-            >
-              Filter
-            </button>
-          </form>
-        </div>
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-12 grid-margin stretch-card">
+      <!-- Drivers table -->
+      <div
+        class="grid-margin stretch-card"
+        v-bind:class="{
+          'col-lg-12': isTableVisible,
+          'col-lg-9': !isTableVisible,
+        }"
+        v-if="driversList.length > 0"
+      >
         <div class="card">
           <div class="card-body">
             <h4 class="card-title">Driver List</h4>
             <p class="card-description">103 total</p>
-            <table class="table table-striped">
+            <table class="table ">
               <thead>
                 <tr class="text-secondary">
                   <th>ID</th>
                   <th>NAME</th>
                   <th>VEHICLE ID</th>
                   <th>STATUS</th>
-                  <th></th>
+                  <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#015
-                  </td>
-                  <td>DungNH</td>
-                  <td>Truck#1</td>
+                <tr v-for="driver in this.driversList" :key="driver.driverID">
+                  <td>{{ driver.userId }}</td>
+                  <td>{{ driver.fullname }}</td>
+                  <td>{{ driver.vehicleID }}</td>
                   <td><label class="badge badge-warning">On Route</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#023
-                  </td>
-                  <td>HungND</td>
-                  <td>Container#3</td>
-                  <td><label class="badge badge-success">Available</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#008
-                  </td>
-                  <td>HiepLP</td>
-                  <td>SUV#4</td>
-                  <td><label class="badge badge-warning">On Route</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-4.png"
-                      alt="image"
-                    />#010
-                  </td>
-                  <td>NganLH</td>
-                  <td>Bus#2</td>
-                  <td><label class="badge badge-warning">On Route</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#033
-                  </td>
-                  <td>ThanhPT</td>
-                  <td>Minitruck#6</td>
-                  <td><label class="badge badge-warning">On Route</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#011
-                  </td>
-                  <td>ThanhNT</td>
-                  <td>Truck#2</td>
-                  <td><label class="badge badge-success">Available</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#003
-                  </td>
-                  <td>HaiDN</td>
-                  <td>Container#1</td>
-                  <td><label class="badge badge-info">On Leave</label></td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#001
-                  </td>
-                  <td>ThanhNC</td>
-                  <td>Bus#6</td>
-                  <td><label class="badge badge-info">On Leave</label></td>
                   <td>
                     <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
                   </td>
@@ -214,8 +50,108 @@
               </tbody>
             </table>
           </div>
+          <div>
+            <!-- The css class comes from semantic ui. -->
+            <paginate
+              :page-count="Math.round(driversTotalSize/15)"
+              :page-range="3"
+              :margin-pages="1"
+              :click-handler="clickCallback"
+              :first-last-button="true"
+              :prev-text="'Prev'"
+              :next-text="'Next'"
+              :container-class="'pagination'"
+              :page-class="'page-item'"
+              :next-class="'page-item'"
+              :prev-class="'page-item'"
+              :active-class="'page-active'"
+            >
+            </paginate>
+          </div>
         </div>
       </div>
+
+      <!-- Filter -->
+      <transition name="slide-fade">
+        <div class="col-3 card filter" v-if="isFilterVisible">
+          <div class="form-group">
+            <h4 class="card-title mt-4">Filter</h4>
+            <div class="col-sm-12">
+              <label for="exampleDropdownFormPassword1">Driver name</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                id="exampleInputCity1"
+                placeholder="Driver name"
+              />
+            </div>
+            <br />
+            <!-- Driver ID Dropdown-->
+            <div class="col-sm-12">
+              <label>Driver ID</label>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                name="driverID"
+                list="driverIDsList"
+                placeholder="Driver ID"
+              />
+              <datalist id="driverIDsList">
+                <option
+                  v-for="driverID in this.driverIDs"
+                  :key="driverID"
+                  :value="driverID"
+                >
+                </option>
+              </datalist>
+            </div>
+            <br />
+            <!-- Vehicle id dropdown -->
+            <div class="col-sm-12">
+              <label>Vehicle ID</label>
+              <input
+                class="form-control form-control-sm"
+                type="text"
+                name="vehicleID"
+                list="vehicleIDsList"
+                placeholder="Vehicle ID"
+              />
+              <datalist id="vehicleIDsList">
+                <option
+                  v-for="vehicleID in this.vehicleIDs"
+                  :key="vehicleID"
+                  :value="vehicleID"
+                >
+                </option>
+              </datalist>
+            </div>
+            <br />
+            <!-- Driver status dropdown -->
+            <div class="col-12">
+              <label>Status</label>
+              <select class="form-control form-control-sm" name="status">
+                <option
+                  v-for="status in this.statusList"
+                  :key="status.statusID"
+                  :value="status.statusID"
+                  >{{ status.statusName }}</option
+                >
+              </select>
+            </div>
+
+            <br />
+            <div class="col-12 ">
+              <button
+                class="btn btn-outline-info w-100"
+                type="button"
+                v-on:click="clickToViewFilter()"
+              >
+                Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -225,153 +161,87 @@ import "../assets/vendors/js/vendor.bundle.base.js";
 import "../assets/js/off-canvas.js";
 import "../assets/js/hoverable-collapse.js";
 import "../assets/js/misc.js";
-import Chart from "chart.js";
-import $ from "jquery";
+import axios from "axios";
 
 export default {
-  name: "OverView",
-  props: {
+  name: "Drivers",
+  props: {},
+  data() {
+    return {
+      isFilterVisible: false,
+      isTableVisible: true,
+      driverIDs: [],
+      vehicleIDs: [],
+      statusList: [],
+      driversList: [],
+      driversTotalSize: 99,
+    };
   },
   mounted() {
-    this.initRevenueChart();
-    this.initTripByTypeChart();
+    this.initDriverIDs();
+    this.initVehicleIDs();
+    this.initStatusList();
+    this.initDriversList();
   },
   methods: {
-    // init revenue chart
-    initRevenueChart() {
-      let revenueChart = document
-        .getElementById("revenueChart")
-        .getContext("2d");
-      // Global Options
-      Chart.defaults.global.defaultFontFamily = "Lato";
-      Chart.defaults.global.defaultFontSize = 18;
-      Chart.defaults.global.defaultFontColor = "#777";
-
-      // gradient color
-      let gradient = revenueChart.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
-      gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
-
-      new Chart(revenueChart, {
-        type: "line", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        data: {
-          labels: [
-            "May 1",
-            "May 2",
-            "May 3",
-            "May 4",
-            "May 5",
-            "May 6",
-            "May 7",
-          ],
-          datasets: [
-            {
-              label: "Revenue",
-              lineTension: 0,
-              data: [617594, 181045, 153060, 555555, 105162, 95072, 617594],
-              backgroundColor: gradient,
-              borderWidth: 2,
-              borderColor: "#2e5bff",
-              hoverBorderWidth: 4,
-              hoverBorderColor: "#000",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          animation: {
-            animateScale: true,
-            animateRotate: true,
-          },
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              fontColor: "#000",
-            },
-          },
-          tooltips: {
-            enabled: true,
-          },
-        },
-      });
+    // pagination handle
+    clickCallback(pageNum) {
+      console.log(pageNum);
     },
-  
-    // init trip by type chart
-    initTripByTypeChart(){
-    var tripsByTypeChartData = {
-      datasets: [{
-        data: [30, 30, 40, 30],
-        backgroundColor: [
-          '#2E5BFF',
-          '#F7C137',
-          '#8C54FF',
-          '#00C1D4'
-        ],
-        hoverBackgroundColor: [
-          '#2E5BFF',
-          '#F7C137',
-          '#8C54FF',
-          '#00C1D4'
-        ],
-        borderColor: [
-          '#2E5BFF',
-          '#F7C137',
-          '#8C54FF',
-          '#00C1D4'
-        ],
-        legendColor: [
-          '#2E5BFF',
-          '#F7C137',
-          '#8C54FF',
-          '#00C1D4'
-        ]
-
-      }],
-
-      // These labels appear in the legend and in the tooltips when hovering different arcs
-      labels: [
-        'Bus',
-        'Truck',
-        'Minivan',
-        'Others'
-      ]
-    };
-    var tripsByTypeChartOptions = {
-      responsive: true,
-      animation: {
-        animateScale: true,
-        animateRotate: true,
-      },
-      // cutoutPercentage: 70,
-      legend: false,
-      legendCallback: function () {
-        var text = [];
-        text.push('<ul>');
-        text.push('<div class="row">');
-        for (var i = 0; i < tripsByTypeChartData.datasets[0].data.length; i++) {
-          text.push('<li class="col-6" style="font-size:18px">')
-          text.push('<span class="legend-dots" style="background:' +
-            tripsByTypeChartData.datasets[0].legendColor[i] +
-            '"></span>');
-          if (tripsByTypeChartData.labels[i]) {
-            text.push(tripsByTypeChartData.labels[i]);
-          }
-
-        }
-        text.push("</li>");
-        text.push('</ul>');
-        return text.join('');
+    // Init data for Driver ID Dropdown
+    initDriverIDs() {
+      this.driverIDs = ["D01", "D02", "D03"];
+      // wait for api
+    },
+    // Init data for Vehicle ID Dropdown
+    initVehicleIDs() {
+      this.vehicleIDs = ["V01", "V02", "V03"];
+      // wait for api
+    },
+    // Init data for Driver Status Dropdown
+    initStatusList() {
+      // wait for api
+      this.statusList = [
+        {
+          statusID: "S01",
+          statusName: "Available",
+        },
+        {
+          statusID: "S02",
+          statusName: "On Route",
+        },
+        {
+          statusID: "S03",
+          statusName: "On leave",
+        },
+      ];
+    },
+    initDriversList() {
+      axios
+        .get(
+          "https://vehiclemanagementapplication.azurewebsites.net/api/v1/users?roleName=Driver"
+        )
+        .then((response) => {
+          this.driversList = response.data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    // Set filter to visible
+    clickToViewFilter() {
+      if (this.isFilterVisible && !this.isTableVisible) {
+        this.isFilterVisible = !this.isFilterVisible;
+        setTimeout(() => {
+          this.isTableVisible = !this.isTableVisible;
+        }, 300);
+      } else if (!this.isFilterVisible && this.isTableVisible) {
+        this.isTableVisible = !this.isTableVisible;
+        setTimeout(() => {
+          this.isFilterVisible = !this.isFilterVisible;
+        }, 300);
       }
-    };
-    var tripsByTypeChartCanvas = $("#trips-by-type-chart").get(0).getContext("2d");
-    var trafficChart = new Chart(tripsByTypeChartCanvas, {
-      type: 'pie',
-      data: tripsByTypeChartData,
-      options: tripsByTypeChartOptions
-    });
-    $("#trips-by-type-chart-legend").html(trafficChart.generateLegend());
-    }
+    },
   },
 };
 </script>
@@ -388,5 +258,5 @@ export default {
 @import "../assets/css/style.css";
 </style>
 <style>
-@import "../assets/css/overview.css";
+@import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>

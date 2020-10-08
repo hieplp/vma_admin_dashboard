@@ -6,7 +6,7 @@
       class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center"
     >
       <a class="navbar-brand brand-logo" href="../../index.html"
-        ><i class="mdi mdi-car-connected"></i>AVM</a
+        ><i class="mdi mdi-car-connected"></i>VMA</a
       >
       <a class="navbar-brand brand-logo-mini" href="../../index.html"
         ><i class="mdi mdi-car-connected"></i
