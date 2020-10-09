@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="container-scroller">
-    <div v-if="false">
+    <div v-if="true">
       <TopMenu />
       <div
         class="container-fluid page-body-wrapper"
