@@ -1,193 +1,60 @@
 /* eslint-disable no-unused-vars */
 <template>
   <div class="content-wrapper">
+    <loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      :loader="'dots'"
+      :color="'#2e5bff'"
+    ></loading>
+
     <div class="page-header">
-      <h3 class="page-title">Contributor Dashboard</h3>
+      <h3 class="page-title">Contributors Dashboard</h3>
       <div class="dropdown">
         <button
-          class="btn btn-primary dropdown-toggle"
+          class="btn btn-gradient-info dropdown-toggle"
           type="button"
-          id="dropdownMenuButton"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-          data-target="filter"
+          v-on:click="clickToViewFilter()"
         >
-          + Filter List
+          Filter
         </button>
-        <div class="dropdown-menu" id="filter">
-          <form class="forms-sample">
-            <div class="form-group">
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1"
-                  >Contributor name</label
-                >
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity1"
-                  placeholder="Contributor name"
-                />
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1"
-                  >Contributor location</label
-                >
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity2"
-                  placeholder="Contributor location"
-                />
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1">Total vehicle</label>
-                <input
-                  type="number"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity3"
-                  placeholder="Total vehicle"
-                />
-              </div>
-              <br />
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary form-control form-control-sm"
-            >
-              Filter
-            </button>
-          </form>
-        </div>
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-12 grid-margin stretch-card">
+      <!-- Drivers table -->
+      <div
+        class="grid-margin stretch-card"
+        v-bind:class="{
+          'col-lg-12': isTableVisible,
+          'col-lg-9': !isTableVisible,
+        }"
+        v-if="contributorList.length > 0"
+      >
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title">Contributor List</h4>
-            <p class="card-description">103 total</p>
-            <table class="table table-striped">
+            <h4 class="card-title">Driver List</h4>
+            <p class="card-description">{{ this.totalContributor }} total</p>
+            <table class="table ">
               <thead>
-                <tr class="text-secondary">
+                <tr>
+                  <th>NO.</th>
                   <th>ID</th>
                   <th>NAME</th>
-                  <th>LOCATION</th>
-                  <th>TOTAL VEHICLE</th>
-                  <th></th>
+                  <th>PHONE NUMBER</th>
+                  <th>TOTAL VEHICLES</th>
+                  <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#015
-                  </td>
-                  <td>DungNH</td>
-                  <td>Location#1</td>
-                  <td>10</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#023
-                  </td>
-                  <td>HungND</td>
-                  <td>Location#3</td>
-                  <td>6</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#008
-                  </td>
-                  <td>HiepLP</td>
-                  <td>Location#4</td>
-                  <td>7</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-4.png"
-                      alt="image"
-                    />#010
-                  </td>
-                  <td>NganLH</td>
-                  <td>Location#2</td>
-                  <td>9</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#033
-                  </td>
-                  <td>ThanhPT</td>
-                  <td>Location#6</td>
-                  <td>2</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#011
-                  </td>
-                  <td>ThanhNT</td>
-                  <td>Location#2</td>
-                  <td>3</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#003
-                  </td>
-                  <td>HaiDN</td>
-                  <td>Location#1</td>
-                  <td>1</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#001
-                  </td>
-                  <td>ThanhNC</td>
-                  <td>Location#6</td>
-                  <td>8</td>
+                <tr
+                  v-for="(contributor, index) in this.contributorList"
+                  :key="contributor.userId"
+                >
+                  <td class="text-secondary">{{ index + 1 }}</td>
+                  <td>{{ contributor.userId }}</td>
+                  <td>{{ contributor.fullName }}</td>
+                  <td>{{ contributor.phoneNumber }}</td>
+                  <td>{{ contributor.totalVehicles }}</td>
                   <td>
                     <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
                   </td>
@@ -195,8 +62,92 @@
               </tbody>
             </table>
           </div>
+          <div v-if="this.totalContributor > 15">
+            <!-- The css class comes from semantic ui. -->
+            <paginate
+              :page-count="Math.round(this.totalContributor / 15)"
+              :page-range="3"
+              :margin-pages="1"
+              :click-handler="clickCallback"
+              :first-last-button="true"
+              :prev-text="'Prev'"
+              :next-text="'Next'"
+              :container-class="'pagination'"
+              :page-class="'page-item'"
+              :next-class="'page-item'"
+              :prev-class="'page-item'"
+              :active-class="'page-active'"
+            >
+            </paginate>
+          </div>
         </div>
       </div>
+
+      <!-- Filter -->
+      <transition name="slide-fade">
+        <div class="col-3 card filter" v-if="isFilterVisible">
+          <div class="form-group">
+            <h4 class="card-title mt-4">Filter</h4>
+            <div class="col-sm-12">
+              <!-- Search Driver ID -->
+              <label>Driver ID</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Driver name"
+                v-model="searchDriverID"
+                @keypress="isNumber($event)"
+                maxlength="12"
+              />
+            </div>
+            <div class="col-12 mt-3">
+              <label>Driver Name</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                v-model="searchDriverName"
+                placeholder="Driver name"
+              />
+            </div>
+            <!-- Phone number dropdown-->
+            <div class="col-12 mt-3">
+              <!-- Search Driver ID -->
+              <label>Phone Number</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Phone Number"
+                v-model="searchPhoneNumber"
+                @keypress="isNumber($event)"
+                maxlength="11"
+              />
+            </div>
+            <!-- Driver status dropdown -->
+            <div class="col-12 mt-3">
+              <label>Status</label>
+              <select class="form-control form-control-sm" name="status">
+                <option
+                  v-for="status in this.statusList"
+                  :key="status.statusID"
+                  :value="status.statusID"
+                  >{{ status.statusName }}</option
+                >
+              </select>
+            </div>
+
+            <br />
+            <div class="col-12 mt-1">
+              <button
+                class="btn btn-outline-info w-100"
+                type="button"
+                v-on:click="clickToViewFilter()"
+              >
+                Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -206,134 +157,106 @@ import "../assets/vendors/js/vendor.bundle.base.js";
 import "../assets/js/off-canvas.js";
 import "../assets/js/hoverable-collapse.js";
 import "../assets/js/misc.js";
-import Chart from "chart.js";
-import $ from "jquery";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
+
+const ContributorRepository = RepositoryFactory.get("contributors");
 
 export default {
-  name: "OverView",
+  name: "Contributors",
   props: {},
+  components: {
+    Loading,
+  },
+  data() {
+    return {
+      isFilterVisible: false,
+      isTableVisible: true,
+      driverIDs: [],
+      vehicleIDs: [],
+      statusList: [],
+      contributorList: [],
+      searchPhoneNumber: "",
+      searchDriverID: "",
+      searchDriverName: "",
+      isLoading: true,
+      totalContributors: 0,
+    };
+  },
   mounted() {
-    this.initRevenueChart();
-    this.initTripByTypeChart();
+    this.initDriverIDs();
+    this.initVehicleIDs();
+    this.initStatusList();
+    this.initContributorsList();
   },
   methods: {
-    // init revenue chart
-    initRevenueChart() {
-      let revenueChart = document
-        .getElementById("revenueChart")
-        .getContext("2d");
-      // Global Options
-      Chart.defaults.global.defaultFontFamily = "Lato";
-      Chart.defaults.global.defaultFontSize = 18;
-      Chart.defaults.global.defaultFontColor = "#777";
-
-      // gradient color
-      let gradient = revenueChart.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
-      gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
-
-      new Chart(revenueChart, {
-        type: "line", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        data: {
-          labels: [
-            "May 1",
-            "May 2",
-            "May 3",
-            "May 4",
-            "May 5",
-            "May 6",
-            "May 7",
-          ],
-          datasets: [
-            {
-              label: "Revenue",
-              lineTension: 0,
-              data: [617594, 181045, 153060, 555555, 105162, 95072, 617594],
-              backgroundColor: gradient,
-              borderWidth: 2,
-              borderColor: "#2e5bff",
-              hoverBorderWidth: 4,
-              hoverBorderColor: "#000",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          animation: {
-            animateScale: true,
-            animateRotate: true,
-          },
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              fontColor: "#000",
-            },
-          },
-          tooltips: {
-            enabled: true,
-          },
-        },
-      });
+    isNumber(evt) {
+      evt = evt ? evt : window.event;
+      var charCode = evt.which ? evt.which : evt.keyCode;
+      if (
+        charCode > 31 &&
+        (charCode < 48 || charCode > 57) &&
+        charCode !== 46
+      ) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
     },
-
-    // init trip by type chart
-    initTripByTypeChart() {
-      var tripsByTypeChartData = {
-        datasets: [
-          {
-            data: [30, 30, 40, 30],
-            backgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            hoverBackgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            borderColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            legendColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-          },
-        ],
-
-        // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: ["Bus", "Truck", "Minivan", "Others"],
-      };
-      var tripsByTypeChartOptions = {
-        responsive: true,
-        animation: {
-          animateScale: true,
-          animateRotate: true,
+    // pagination handle
+    clickCallback(pageNum) {
+      console.log(pageNum);
+    },
+    // Init data for Driver ID Dropdown
+    initDriverIDs() {
+      this.driverIDs = ["D01", "D02", "D03"];
+      // wait for api
+    },
+    // Init data for Vehicle ID Dropdown
+    initVehicleIDs() {
+      this.vehicleIDs = ["V01", "V02", "V03"];
+      // wait for api
+    },
+    // Init data for Driver Status Dropdown
+    initStatusList() {
+      // wait for api
+      this.statusList = [
+        {
+          statusID: "S01",
+          statusName: "Available",
         },
-        // cutoutPercentage: 70,
-        legend: false,
-        legendCallback: function () {
-          var text = [];
-          text.push("<ul>");
-          text.push('<div class="row">');
-          for (
-            var i = 0;
-            i < tripsByTypeChartData.datasets[0].data.length;
-            i++
-          ) {
-            text.push('<li class="col-6" style="font-size:18px">');
-            text.push(
-              '<span class="legend-dots" style="background:' +
-                tripsByTypeChartData.datasets[0].legendColor[i] +
-                '"></span>'
-            );
-            if (tripsByTypeChartData.labels[i]) {
-              text.push(tripsByTypeChartData.labels[i]);
-            }
-          }
-          text.push("</li>");
-          text.push("</ul>");
-          return text.join("");
+        {
+          statusID: "S02",
+          statusName: "On Route",
         },
-      };
-      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
-        .get(0)
-        .getContext("2d");
-      var trafficChart = new Chart(tripsByTypeChartCanvas, {
-        type: "pie",
-        data: tripsByTypeChartData,
-        options: tripsByTypeChartOptions,
-      });
-      $("#trips-by-type-chart-legend").html(trafficChart.generateLegend());
+        {
+          statusID: "S03",
+          statusName: "On leave",
+        },
+      ];
+    },
+    async initContributorsList() {
+      const { data } = await ContributorRepository.get();
+      this.contributorList = data.contributorList;
+      this.totalContributor = data.totalContributor;
+      if (this.contributorList.length > 0) {
+        this.isLoading = false;
+      }
+    },
+    // Set filter to visible
+    clickToViewFilter() {
+      if (this.isFilterVisible && !this.isTableVisible) {
+        this.isFilterVisible = !this.isFilterVisible;
+        setTimeout(() => {
+          this.isTableVisible = !this.isTableVisible;
+        }, 300);
+      } else if (!this.isFilterVisible && this.isTableVisible) {
+        this.isTableVisible = !this.isTableVisible;
+        setTimeout(() => {
+          this.isFilterVisible = !this.isFilterVisible;
+        }, 300);
+      }
     },
   },
 };
@@ -349,7 +272,4 @@ export default {
 </style>
 <style>
 @import "../assets/css/style.css";
-</style>
-<style>
-@import "../assets/css/overview.css";
 </style>
