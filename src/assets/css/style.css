@@ -16381,7 +16381,7 @@ code {
   width: 18px;
   height: 18px;
   border-radius: 2px;
-  border: solid #b66dff;
+  border: solid #3d96dfc7;
   border-width: 2px;
   -webkit-transition: all;
   transition: all;
@@ -16416,7 +16416,7 @@ code {
     from(#da8cff),
     to(#9a55ff)
   );
-  background: linear-gradient(to right, #da8cff, #9a55ff);
+background: linear-gradient(to right, #90caf9, #047edf 99%);
   border-width: 0;
 }
 .form-check
@@ -18645,7 +18645,7 @@ dl li {
 }
 
 .filter {
-  max-height: 450px !important;
+  max-height: 500px !important;
   padding-bottom: 30px;
 }
 

@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
 <template>
   <div class="content-wrapper">
+    <loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      :loader="'dots'"
+      :color="'#2e5bff'"
+    ></loading>
+
     <div class="page-header">
       <h3 class="page-title">Driver Dashboard</h3>
       <div class="dropdown">
@@ -26,22 +33,29 @@
         <div class="card">
           <div class="card-body">
             <h4 class="card-title">Driver List</h4>
-            <p class="card-description">103 total</p>
+            <p class="card-description">{{ this.totalDrivers }} total</p>
             <table class="table ">
               <thead>
-                <tr class="text-secondary">
+                <tr class="">
+                  <th>No.</th>
                   <th>ID</th>
                   <th>NAME</th>
+                  <th>PHONE NUMBER</th>
                   <th>VEHICLE ID</th>
                   <th>STATUS</th>
                   <th>ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="driver in this.driversList" :key="driver.driverID">
+                <tr
+                  v-for="(driver, index) in this.driversList"
+                  :key="driver.userId"
+                >
+                  <td class="text-secondary">{{ index + 1 }}</td>
                   <td>{{ driver.userId }}</td>
-                  <td>{{ driver.fullname }}</td>
-                  <td>{{ driver.vehicleID }}</td>
+                  <td>{{ driver.fullName }}</td>
+                  <td>{{ driver.phoneNumber }}</td>
+                  <td>{{ driver.vehicleId }}</td>
                   <td><label class="badge badge-warning">On Route</label></td>
                   <td>
                     <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
@@ -50,10 +64,10 @@
               </tbody>
             </table>
           </div>
-          <div>
+          <div v-if="this.totalDrivers > 15">
             <!-- The css class comes from semantic ui. -->
             <paginate
-              :page-count="Math.round(driversTotalSize/15)"
+              :page-count="Math.round(this.totalDrivers / 15)"
               :page-range="3"
               :margin-pages="1"
               :click-handler="clickCallback"
@@ -77,57 +91,41 @@
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
             <div class="col-sm-12">
-              <label for="exampleDropdownFormPassword1">Driver name</label>
+              <!-- Search Driver ID -->
+              <label>Driver ID</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                id="exampleInputCity1"
+                placeholder="Driver name"
+                v-model="searchDriverID"
+                @keypress="isNumber($event)"
+                maxlength="12"
+              />
+            </div>
+            <div class="col-12 mt-3">
+              <label>Driver Name</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                v-model="searchDriverName"
                 placeholder="Driver name"
               />
             </div>
-            <br />
-            <!-- Driver ID Dropdown-->
-            <div class="col-sm-12">
-              <label>Driver ID</label>
+            <!-- Phone number dropdown-->
+            <div class="col-12 mt-3">
+              <!-- Search Driver ID -->
+              <label>Phone Number</label>
               <input
-                class="form-control form-control-sm"
                 type="text"
-                name="driverID"
-                list="driverIDsList"
-                placeholder="Driver ID"
-              />
-              <datalist id="driverIDsList">
-                <option
-                  v-for="driverID in this.driverIDs"
-                  :key="driverID"
-                  :value="driverID"
-                >
-                </option>
-              </datalist>
-            </div>
-            <br />
-            <!-- Vehicle id dropdown -->
-            <div class="col-sm-12">
-              <label>Vehicle ID</label>
-              <input
                 class="form-control form-control-sm"
-                type="text"
-                name="vehicleID"
-                list="vehicleIDsList"
-                placeholder="Vehicle ID"
+                placeholder="Phone Number"
+                v-model="searchPhoneNumber"
+                @keypress="isNumber($event)"
+                maxlength="11"
               />
-              <datalist id="vehicleIDsList">
-                <option
-                  v-for="vehicleID in this.vehicleIDs"
-                  :key="vehicleID"
-                  :value="vehicleID"
-                >
-                </option>
-              </datalist>
             </div>
-            <br />
             <!-- Driver status dropdown -->
-            <div class="col-12">
+            <div class="col-12 mt-3">
               <label>Status</label>
               <select class="form-control form-control-sm" name="status">
                 <option
@@ -140,7 +138,7 @@
             </div>
 
             <br />
-            <div class="col-12 ">
+            <div class="col-12 mt-1">
               <button
                 class="btn btn-outline-info w-100"
                 type="button"
@@ -157,15 +155,18 @@
 </template>
 
 <script>
-import "../assets/vendors/js/vendor.bundle.base.js";
-import "../assets/js/off-canvas.js";
-import "../assets/js/hoverable-collapse.js";
-import "../assets/js/misc.js";
-import axios from "axios";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
+
+const DriverRepository = RepositoryFactory.get("drivers");
 
 export default {
   name: "Drivers",
   props: {},
+  components: {
+    Loading,
+  },
   data() {
     return {
       isFilterVisible: false,
@@ -174,7 +175,11 @@ export default {
       vehicleIDs: [],
       statusList: [],
       driversList: [],
-      driversTotalSize: 99,
+      searchPhoneNumber: "",
+      searchDriverID: "",
+      searchDriverName: "",
+      isLoading: true,
+      totalDrivers: 0,
     };
   },
   mounted() {
@@ -184,6 +189,19 @@ export default {
     this.initDriversList();
   },
   methods: {
+    isNumber(evt) {
+      evt = evt ? evt : window.event;
+      var charCode = evt.which ? evt.which : evt.keyCode;
+      if (
+        charCode > 31 &&
+        (charCode < 48 || charCode > 57) &&
+        charCode !== 46
+      ) {
+        evt.preventDefault();
+      } else {
+        return true;
+      }
+    },
     // pagination handle
     clickCallback(pageNum) {
       console.log(pageNum);
@@ -216,17 +234,13 @@ export default {
         },
       ];
     },
-    initDriversList() {
-      axios
-        .get(
-          "https://vehiclemanagementapplication.azurewebsites.net/api/v1/users?roleName=Driver"
-        )
-        .then((response) => {
-          this.driversList = response.data;
-        })
-        .catch((e) => {
-          console.log(e);
-        });
+    async initDriversList() {
+      const { data } = await DriverRepository.get();
+      this.driversList = data.driverList;
+      this.totalDrivers = data.totalDrivers;
+      if (this.driversList.length > 0) {
+        this.isLoading = false;
+      }
     },
     // Set filter to visible
     clickToViewFilter() {
@@ -256,7 +270,4 @@ export default {
 </style>
 <style>
 @import "../assets/css/style.css";
-</style>
-<style>
-@import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>
