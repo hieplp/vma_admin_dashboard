@@ -213,8 +213,6 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
-      contributorIDs: [],
-      vehicleIDs: [],
       statusList: [],
       contributorsList: [],
       searchPhoneNumber: "",
@@ -229,8 +227,6 @@ export default {
     };
   },
   mounted() {
-    this.initContributorIDs();
-    this.initVehicleIDs();
     this.initStatusList();
     this.initContributorsList();
   },
@@ -252,16 +248,6 @@ export default {
         this.searchTotalVehicles
       );
       this.isLoading = false;
-    },
-    // Init data for Contributor ID Dropdown
-    initContributorIDs() {
-      this.contributorIDs = ["D01", "D02", "D03"];
-      // wait for api
-    },
-    // Init data for Vehicle ID Dropdown
-    initVehicleIDs() {
-      this.vehicleIDs = ["V01", "V02", "V03"];
-      // wait for api
     },
     // Init data for Contributor Status Dropdown
     async initStatusList() {

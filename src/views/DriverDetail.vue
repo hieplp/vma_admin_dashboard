@@ -152,7 +152,6 @@ export default {
     },
     // Handle update icon click
     handleUpdIconClick() {
-      console.log("123");
       this.isUpdateVisible = !this.isUpdateVisible;
     },
   },
