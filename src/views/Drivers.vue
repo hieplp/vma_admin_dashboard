@@ -1,15 +1,17 @@
-/* eslint-disable no-unused-vars */
 <template>
   <div class="content-wrapper">
     <loading
       :active.sync="isLoading"
       :can-cancel="false"
       :loader="'dots'"
+      :is-full-page="false"
       :color="'#2e5bff'"
     ></loading>
 
     <div class="page-header">
-      <h3 class="page-title">Driver Dashboard</h3>
+      <h3 class="page-title">
+        <router-link to="/drivers" class="nav-link">Drivers</router-link>
+      </h3>
       <div class="dropdown">
         <button
           class="btn btn-gradient-info dropdown-toggle"
@@ -28,16 +30,15 @@
           'col-lg-12': isTableVisible,
           'col-lg-9': !isTableVisible,
         }"
-        v-if="driversList.length > 0"
       >
-        <div class="card">
+        <div class="card" v-if="driversList.length > 0">
           <div class="card-body">
             <h4 class="card-title">Driver List</h4>
             <p class="card-description">{{ this.totalDrivers }} total</p>
             <table class="table ">
               <thead>
                 <tr class="">
-                  <th>No.</th>
+                  <th>NO.</th>
                   <th>ID</th>
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
@@ -51,23 +52,46 @@
                   v-for="(driver, index) in this.driversList"
                   :key="driver.userId"
                 >
-                  <td class="text-secondary">{{ index + 1 }}</td>
+                  <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
                   <td>{{ driver.userId }}</td>
                   <td>{{ driver.fullName }}</td>
                   <td>{{ driver.phoneNumber }}</td>
-                  <td>{{ driver.vehicleId }}</td>
-                  <td><label class="badge badge-warning">On Route</label></td>
                   <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
+                    <p v-if="driver.vehicleId">
+                      {{ driver.vehicleId }}
+                    </p>
+                    <p v-else>N/A</p>
+                  </td>
+                  <td>
+                    <label
+                      class="badge"
+                      v-bind:class="{
+                        'badge-info': driver.userStatusName === 'Active',
+                        'badge-danger': driver.userStatusName === 'Inactive',
+                        'badge-warning':
+                          driver.userStatusName === 'Pending Approval',
+                        'badge-dark': driver.userStatusName === 'Disabled',
+                      }"
+                      >{{ driver.userStatusName }}</label
+                    >
+                  </td>
+                  <td>
+                    <router-link
+                      :to="{
+                        name: 'DriverDetail',
+                        params: { userId: driver.userId },
+                      }"
+                      >Manage</router-link
+                    >
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div v-if="this.totalDrivers > 15">
-            <!-- The css class comes from semantic ui. -->
             <paginate
-              :page-count="Math.round(this.totalDrivers / 15)"
+              v-model="currentPage"
+              :page-count="Math.floor(this.totalDrivers / 15) + 1"
               :page-range="3"
               :margin-pages="1"
               :click-handler="clickCallback"
@@ -83,6 +107,12 @@
             </paginate>
           </div>
         </div>
+        <!-- Empty list -->
+        <div class="card empty-list" v-else-if="!isLoading">
+          <i class="mdi mdi-account-off"></i>
+          <h1>NOTHING</h1>
+          <h3>Your list is empty.</h3>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -96,7 +126,7 @@
               <input
                 type="text"
                 class="form-control form-control-sm"
-                placeholder="Driver name"
+                placeholder="Driver ID"
                 v-model="searchDriverID"
                 @keypress="isNumber($event)"
                 maxlength="12"
@@ -113,7 +143,6 @@
             </div>
             <!-- Phone number dropdown-->
             <div class="col-12 mt-3">
-              <!-- Search Driver ID -->
               <label>Phone Number</label>
               <input
                 type="text"
@@ -121,30 +150,43 @@
                 placeholder="Phone Number"
                 v-model="searchPhoneNumber"
                 @keypress="isNumber($event)"
-                maxlength="11"
+                maxlength="10"
               />
             </div>
             <!-- Driver status dropdown -->
             <div class="col-12 mt-3">
               <label>Status</label>
-              <select class="form-control form-control-sm" name="status">
+              <select
+                class="form-control form-control-sm"
+                name="status"
+                v-model="searchStatusID"
+              >
                 <option
                   v-for="status in this.statusList"
-                  :key="status.statusID"
-                  :value="status.statusID"
-                  >{{ status.statusName }}</option
+                  :key="status.userStatusId"
+                  :value="status.userStatusId"
+                  >{{ status.userStatusName }}</option
                 >
               </select>
             </div>
 
             <br />
-            <div class="col-12 mt-1">
+            <div class="col-12 mt-3">
               <button
                 class="btn btn-outline-info w-100"
                 type="button"
-                v-on:click="clickToViewFilter()"
+                v-on:click="searchDrivers()"
               >
                 Filter
+              </button>
+            </div>
+            <div class="col-12 mt-2">
+              <button
+                class="btn btn-outline-danger w-100"
+                type="button"
+                v-on:click="clearSearchValue()"
+              >
+                Clear
               </button>
             </div>
           </div>
@@ -155,11 +197,13 @@
 </template>
 
 <script>
+import { isNumber } from "../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
 
 const DriverRepository = RepositoryFactory.get("drivers");
+const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
   name: "Drivers",
@@ -171,73 +215,85 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
-      driverIDs: [],
-      vehicleIDs: [],
       statusList: [],
       driversList: [],
       searchPhoneNumber: "",
       searchDriverID: "",
       searchDriverName: "",
+      searchStatusID: "",
       isLoading: true,
       totalDrivers: 0,
+      page: 0,
+      currentPage: 1,
     };
   },
   mounted() {
-    this.initDriverIDs();
-    this.initVehicleIDs();
     this.initStatusList();
     this.initDriversList();
   },
   methods: {
     isNumber(evt) {
-      evt = evt ? evt : window.event;
-      var charCode = evt.which ? evt.which : evt.keyCode;
-      if (
-        charCode > 31 &&
-        (charCode < 48 || charCode > 57) &&
-        charCode !== 46
-      ) {
-        evt.preventDefault();
-      } else {
-        return true;
-      }
+      isNumber(evt);
     },
     // pagination handle
-    clickCallback(pageNum) {
-      console.log(pageNum);
-    },
-    // Init data for Driver ID Dropdown
-    initDriverIDs() {
-      this.driverIDs = ["D01", "D02", "D03"];
-      // wait for api
-    },
-    // Init data for Vehicle ID Dropdown
-    initVehicleIDs() {
-      this.vehicleIDs = ["V01", "V02", "V03"];
-      // wait for api
+    async clickCallback(pageNum) {
+      this.isLoading = true;
+      this.currentPage = pageNum;
+      this.page = pageNum - 1;
+      this.driversList = await DriverRepository.get(
+        this.page,
+        this.searchDriverName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchDriverID
+      );
+      this.isLoading = false;
     },
     // Init data for Driver Status Dropdown
-    initStatusList() {
+    async initStatusList() {
       // wait for api
-      this.statusList = [
-        {
-          statusID: "S01",
-          statusName: "Available",
-        },
-        {
-          statusID: "S02",
-          statusName: "On Route",
-        },
-        {
-          statusID: "S03",
-          statusName: "On leave",
-        },
-      ];
+      this.statusList = await UserStatusRepository.get();
+      this.statusList.push({
+        userStatusId: "",
+        userStatusName: "None",
+      });
     },
+    // Clear search item value
+    clearSearchValue() {
+      this.searchDriverID = "";
+      this.searchDriverName = "";
+      this.searchPhoneNumber = "";
+      this.searchStatusID = "";
+    },
+    // Search driver
+    async searchDrivers() {
+      this.isLoading = true;
+      this.page = 0;
+      this.currentPage = 1;
+      this.driversList = await DriverRepository.get(
+        this.page,
+        this.searchDriverName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchDriverID
+      );
+      this.totalDrivers = await DriverRepository.getTotalDriver(
+        this.searchDriverName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchDriverID
+      );
+      this.isLoading = false;
+    },
+    // Init data for driver list
     async initDriversList() {
-      const { data } = await DriverRepository.get();
-      this.driversList = data.driverList;
-      this.totalDrivers = data.totalDrivers;
+      this.driversList = await DriverRepository.init();
+      this.totalDrivers = await DriverRepository.getTotalDriver(
+        this.searchDriverName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchDriverID
+      );
       if (this.driversList.length > 0) {
         this.isLoading = false;
       }
@@ -259,15 +315,9 @@ export default {
   },
 };
 </script>
-
+<style>
+.filter {
+  max-height: 450px !important;
+}
+</style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-
-<style>
-@import "../assets/vendors/mdi/css/materialdesignicons.min.css";
-</style>
-<style>
-@import "../assets/vendors/css/vendor.bundle.base.css";
-</style>
-<style>
-@import "../assets/css/style.css";
-</style>

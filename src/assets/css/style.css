@@ -15400,7 +15400,7 @@ code {
     to(#fe7096)
   );
   background: linear-gradient(to right, #ffbf96, #fe7096);
-  color: #000;
+  color: #ffffff;
 }
 
 .btn-inverse-light {
@@ -18645,7 +18645,6 @@ dl li {
 }
 
 .filter {
-  max-height: 500px !important;
   padding-bottom: 30px;
 }
 
@@ -18691,6 +18690,24 @@ dl li {
 }
 .page-active a {
   color: #ffffff !important;
+}
+
+.page-title a:hover{
+  text-decoration: none;
+}
+
+.page-title .active{
+  color: #918d8d;
+}
+
+.empty-list {
+  font-size: 250px;
+  text-align: center;
+  color: #aab3b3;
+  padding-bottom: 2%;
+}
+.empty-list h1 {
+  color: #747474;
 }
 
 /*# sourceMappingURL=style.css.map */
