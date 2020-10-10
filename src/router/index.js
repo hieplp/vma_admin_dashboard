@@ -20,6 +20,11 @@ const routes = [
     component: Drivers,
   },
   {
+    path: "/drivers/:userId",
+    name: "DriverDetail",
+    component: DriverDetail,
+  },
+  {
     path: "/contributors",
     name: "Contributors",
     component: Contributors,
@@ -29,15 +34,13 @@ const routes = [
     name: "Vehicles",
     component: Vehicles,
   },
-  {
-    path: "/driverdetail",
-    name: "DriverDetail",
-    component: DriverDetail,
-  },
 ];
 
 const router = new VueRouter({
   routes,
+  scrollBehavior() {
+    document.getElementById("app").scrollIntoView();
+  },
 });
 
 export default router;
