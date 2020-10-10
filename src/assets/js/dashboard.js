@@ -1,3 +1,11 @@
+/* eslint-disable no-control-regex */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable no-self-assign */
+/* eslint-disable no-empty */
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-cond-assign */
+/* eslint-disable no-undef */
 (function($) {
   'use strict';
   $(function() {
