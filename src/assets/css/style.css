@@ -16416,7 +16416,7 @@ code {
     from(#da8cff),
     to(#9a55ff)
   );
-background: linear-gradient(to right, #90caf9, #047edf 99%);
+  background: linear-gradient(to right, #90caf9, #047edf 99%);
   border-width: 0;
 }
 .form-check
@@ -16801,7 +16801,7 @@ select.form-control {
   padding: 0.4375rem 0.75rem;
   border: 0;
   outline: 1px solid #ebedf2;
-  color: #c9c8c8;
+  color: #525050;
 }
 select.form-control:focus {
   outline: 1px solid #ebedf2;
@@ -18651,10 +18651,10 @@ dl li {
 /* Enter and leave animations can use different */
 /* durations and timing functions.              */
 .slide-fade-enter-active {
-  transition: all .3s ease;
+  transition: all 0.3s ease;
 }
 .slide-fade-leave-active {
-  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active below version 2.1.8 */ {
@@ -18692,11 +18692,11 @@ dl li {
   color: #ffffff !important;
 }
 
-.page-title a:hover{
+.page-title a:hover {
   text-decoration: none;
 }
 
-.page-title .active{
+.page-title .active {
   color: #918d8d;
 }
 
@@ -18708,6 +18708,14 @@ dl li {
 }
 .empty-list h1 {
   color: #747474;
+}
+
+.confirm-dialog .vc-container {
+  width: 300px !important;
+  /* border-radius: %; */
+}
+.confirm-dialog h4 {
+  margin-bottom: 20px;
 }
 
 /*# sourceMappingURL=style.css.map */

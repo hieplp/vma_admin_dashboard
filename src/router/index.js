@@ -5,6 +5,7 @@ import Drivers from "../views/Drivers.vue";
 import Contributors from "../views/Contributors.vue";
 import Vehicles from "../views/Vehicles.vue";
 import DriverDetail from "../views/DriverDetail.vue";
+import ContributorDetail from "../views/ContributorDetail.vue";
 
 Vue.use(VueRouter);
 
@@ -28,6 +29,11 @@ const routes = [
     path: "/contributors",
     name: "Contributors",
     component: Contributors,
+  },
+  {
+    path: "/contributors/:userId",
+    name: "ContributorDetail",
+    component: ContributorDetail,
   },
   {
     path: "/vehicles",
