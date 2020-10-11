@@ -23,8 +23,8 @@
                 alt="image"
               />
               <div class="col-12 text-center">
-                <h2>{{ detail.name }}</h2>
-                <h4 class="text-secondary">ID : {{ detail.id }}</h4>
+                <h2>{{ driver.fullName }}</h2>
+                <h4 class="text-secondary">ID : {{ driver.userId }}</h4>
               </div>
             </div>
             <div class="right floated edit-btn">
@@ -47,7 +47,7 @@
                   <input
                     type="text"
                     class="form-control"
-                    v-model="detail.name"
+                    v-model="driver.fullName"
                     :disabled="!isUpdateVisible"
                   />
                 </div>
@@ -58,7 +58,7 @@
                   <input
                     type="date"
                     class="form-control"
-                    v-model="detail.birthdate"
+                    v-model="driver.dateOfBirth"
                     :disabled="!isUpdateVisible"
                   />
                 </div>
@@ -66,12 +66,14 @@
               <div class="form-group col-sm">
                 <label class="col-md-8 col-form-label">Gender</label>
                 <div class="col-12">
-                  <input
-                    type="text"
+                  <select
                     class="form-control"
-                    v-model="detail.gender"
+                    v-model="driver.gender"
                     :disabled="!isUpdateVisible"
-                  />
+                  >
+                    <option :value="true">Male</option>
+                    <option :value="false">Female</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -82,7 +84,7 @@
                   <input
                     type="text"
                     class="form-control"
-                    v-model="detail.salary"
+                    v-model="driver.baseSalary"
                     @keypress="isNumber($event)"
                     :disabled="!isUpdateVisible"
                   />
@@ -94,7 +96,7 @@
                   <input
                     type="text"
                     class="form-control"
-                    v-model="detail.phonenumber"
+                    v-model="driver.phoneNumber"
                     :disabled="!isUpdateVisible"
                     @keypress="isNumber($event)"
                     maxlength="10"
@@ -107,12 +109,32 @@
                   <input
                     type="text"
                     class="form-control"
-                    v-model="detail.address"
+                    v-model="driver.address"
                     :disabled="!isUpdateVisible"
                   />
                 </div>
               </div>
             </div>
+            <!-- Button group -->
+            <div class="row justify-content-center mt-4" v-if="isUpdateVisible">
+              <div class="col-4">
+                <button
+                  class="btn btn-gradient-info btn-fw"
+                  type="button"
+                  v-on:click="update()"
+                >
+                  Update
+                </button>
+                <button
+                  class="btn btn-gradient-danger btn-fw ml-2"
+                  type="button"
+                  v-on:click="cancelUpdate()"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <vue-confirm-dialog class="confirm-dialog"></vue-confirm-dialog>
           </div>
         </div>
       </div>
@@ -122,29 +144,29 @@
 
 <script>
 import { isNumber } from "../assets/js/input.js";
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import moment from "moment";
+
+const DriverRepository = RepositoryFactory.get("drivers");
 
 export default {
+  components: {},
   data() {
     return {
+      driver: {},
+      // TODO: DELETE THIS detail
       detail: {
-        id: "#12016",
-        name: "Nguyễn Hoàng Kiều Trinh",
-        role: "Driver",
-        status: "Available",
-        salary: 240,
-        phonenumber: "0769969167",
-        gender: "Male",
-        address: " 49/1A Road number 5",
-        birthdate: "1999-06-14",
         image:
           "https://nghesiviet.vn/storage/files/7/kieutrinh/hot-girl-kieu-trinh.jpg",
       },
+      tempDriver: {},
       userId: "",
       isUpdateVisible: false,
     };
   },
   mounted() {
     this.userId = this.$route.params.userId;
+    this.initDriverData();
   },
   methods: {
     isNumber(evt) {
@@ -153,6 +175,38 @@ export default {
     // Handle update icon click
     handleUpdIconClick() {
       this.isUpdateVisible = !this.isUpdateVisible;
+      this.tempDriver = Object.assign({}, this.driver);
+    },
+    // Init data for driver's detailed information
+    async initDriverData() {
+      this.driver = await DriverRepository.getDetailDriver(this.userId);
+      if (this.driver) {
+        this.driver.dateOfBirth = moment(this.driver.dateOfBirth).format(
+          "YYYY-MM-DD"
+        );
+      }
+    },
+    // Cancel update
+    cancelUpdate() {
+      this.driver = Object.assign({}, this.tempDriver);
+      console.log(this.tempDriver);
+      this.isUpdateVisible = !this.isUpdateVisible;
+    },
+    // Update driver
+    update() {
+      this.$confirm({
+        title: "Update Confirmation",
+        message: "Do you want to update this driver?",
+        button: {
+          no: "No",
+          yes: "Yes",
+        },
+        callback: (confirm) => {
+          if (confirm) {
+            // ... do something
+          }
+        },
+      });
     },
   },
 };
@@ -182,5 +236,9 @@ export default {
 
 .col-form-label {
   color: #746d6d;
+}
+
+.btn {
+  font-size: 17px;
 }
 </style>

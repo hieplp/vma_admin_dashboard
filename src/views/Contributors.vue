@@ -45,6 +45,7 @@
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
                   <th>TOTAL VEHICLES</th>
+                  <th>STATUS</th>
                   <th>ACTION</th>
                 </tr>
               </thead>
@@ -64,15 +65,28 @@
                     <p v-else>N/A</p>
                   </td>
                   <td>
-                    <!-- <router-link
+                    <label
+                      class="badge"
+                      v-bind:class="{
+                        'badge-info': contributor.userStatusName === 'Active',
+                        'badge-danger':
+                          contributor.userStatusName === 'Inactive',
+                        'badge-warning':
+                          contributor.userStatusName === 'Pending Approval',
+                        'badge-dark': contributor.userStatusName === 'Disabled',
+                      }"
+                      >{{ contributor.userStatusName }}</label
+                    >
+                  </td>
+                  <td>
+                    <router-link
                       :to="{
                         name: 'ContributorDetail',
                         params: { userId: contributor.userId },
                       }"
                     >
                       Manage
-                    </router-link> -->
-                    Manage
+                    </router-link>
                   </td>
                 </tr>
               </tbody>
@@ -145,12 +159,29 @@
             <!-- Total vehicles-->
             <div class="col-12 mt-3">
               <label>Total Vehicles</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Total Vehicles"
+              <div class="row">
+                <div class="col-5">
+                  <input
+                    disabled
+                    class="form-control form-control-sm"
+                    v-model="searchTotalVehicles[0]"
+                  />
+                </div>
+                <div class="col-2">
+                  <h1>-</h1>
+                </div>
+                <div class="col-5">
+                  <input
+                    disabled
+                    class="form-control form-control-sm"
+                    v-model="searchTotalVehicles[1]"
+                  />
+                </div>
+              </div>
+              <vue-slider
+                :min="minTotalVehicles"
+                :max="maxTotalVehicles"
                 v-model="searchTotalVehicles"
-                @keypress="isNumber($event)"
               />
             </div>
             <!-- Contributor status dropdown -->
@@ -199,6 +230,8 @@ import { isNumber } from "../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/antd.css";
 
 const ContributorRepository = RepositoryFactory.get("contributors");
 const UserStatusRepository = RepositoryFactory.get("userStatus");
@@ -208,6 +241,7 @@ export default {
   props: {},
   components: {
     Loading,
+    VueSlider,
   },
   data() {
     return {
@@ -218,17 +252,20 @@ export default {
       searchPhoneNumber: "",
       searchContributorID: "",
       searchContributorName: "",
-      searchTotalVehicles: "",
+      searchTotalVehicles: [],
       searchStatusID: "",
+      minTotalVehicles: 0,
+      maxTotalVehicles: 0,
       isLoading: true,
       totalContributors: 0,
       page: 0,
       currentPage: 1,
     };
   },
-  mounted() {
-    this.initStatusList();
-    this.initContributorsList();
+  async mounted() {
+    await this.initTotalVehicleSlider();
+    await this.initStatusList();
+    await this.initContributorsList();
   },
   methods: {
     isNumber(evt) {
@@ -263,7 +300,7 @@ export default {
       this.searchContributorName = "";
       this.searchPhoneNumber = "";
       this.searchStatusID = "";
-      this.searchTotalVehicles = "";
+      this.searchTotalVehicles = [this.minTotalVehicles, this.maxTotalVehicles];
     },
     // Search contributor
     async searchContributors() {
@@ -291,7 +328,14 @@ export default {
     },
     // Init data for contributor list
     async initContributorsList() {
-      this.contributorsList = await ContributorRepository.init();
+      this.contributorsList = await ContributorRepository.get(
+        this.page,
+        this.searchContributorName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchContributorID,
+        this.searchTotalVehicles
+      );
 
       this.totalContributors = await ContributorRepository.getTotalContributor(
         this.searchContributorName,
@@ -304,6 +348,16 @@ export default {
       if (this.contributorsList.length > 0) {
         this.isLoading = false;
       }
+    },
+    // Init data for total vehicles slider
+    async initTotalVehicleSlider() {
+      this.minTotalVehicles = await ContributorRepository.getTotalVehiclesCount(
+        0
+      );
+      this.maxTotalVehicles = await ContributorRepository.getTotalVehiclesCount(
+        1
+      );
+      this.searchTotalVehicles = [this.minTotalVehicles, this.maxTotalVehicles];
     },
     // Set filter to visible
     clickToViewFilter() {

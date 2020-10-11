@@ -1,3 +1,5 @@
+/* eslint-disable no-dupe-keys */
+/* eslint-disable no-redeclare */
 /* eslint-disable no-control-regex */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-prototype-builtins */

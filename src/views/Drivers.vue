@@ -227,9 +227,9 @@ export default {
       currentPage: 1,
     };
   },
-  mounted() {
-    this.initStatusList();
-    this.initDriversList();
+  async mounted() {
+    await this.initStatusList();
+    await this.initDriversList();
   },
   methods: {
     isNumber(evt) {
@@ -287,16 +287,20 @@ export default {
     },
     // Init data for driver list
     async initDriversList() {
-      this.driversList = await DriverRepository.init();
+      this.driversList = await DriverRepository.get(
+        this.page,
+        this.searchDriverName,
+        this.searchPhoneNumber,
+        this.searchStatusID,
+        this.searchDriverID
+      );
       this.totalDrivers = await DriverRepository.getTotalDriver(
         this.searchDriverName,
         this.searchPhoneNumber,
         this.searchStatusID,
         this.searchDriverID
       );
-      if (this.driversList.length > 0) {
-        this.isLoading = false;
-      }
+      this.isLoading = false;
     },
     // Set filter to visible
     clickToViewFilter() {
