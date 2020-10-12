@@ -115,6 +115,45 @@
                 </div>
               </div>
             </div>
+            <div class="row">
+              <div class="form-group col-sm ">
+              <label class="col-md-8 col-form-label">Documents</label>
+              
+              <div class="ui cards">
+                <div class="row justify-content-center">
+      <div
+        class="ui card form-group col-md-5"
+        v-for="document in this.documents"
+        :key="document.id" 
+      >
+      <div class="ui placeholder segment">
+      <div class="ui two column stackable center aligned grid">
+        <div class="ui vertical divider"></div>
+        <div class="middle aligned row">
+          <div class="column" >
+              <silent-box :image="{src: document.imagelink, thumbnailHeight: imageHeight,
+                thumbnailWidth: imageWidth , description: document.type}" ></silent-box>
+          </div>
+          <div class="column">
+        <div class="content left aligned">
+          <h4 class="header">{{ document.type }}</h4>
+          <div class="description" >
+            <p>Document ID : {{ document.id }}</p>
+            <p>Document Type: {{ document.type }}</p>
+            <p>Registered location: {{ document.registeredlocation }}</p>
+            <p>Registered date: {{ document.registereddate }}</p>
+            <p>Expiry date: {{ document.expirydate }}</p>
+          </div>
+        </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      </div>
+    </div>
+              </div>
+              </div>
+            </div>
             <!-- Button group -->
             <div class="row justify-content-center mt-4" v-if="isUpdateVisible">
               <div class="col-4">
@@ -153,6 +192,46 @@ export default {
   components: {},
   data() {
     return {
+      imageHeight: "150px",
+      imageWidth: "185px" , 
+      documents: [
+        {
+          id: 123456789,
+          type: "Document Type 1",
+          imagelink:
+            "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+          registeredlocation: "location#1",
+          registereddate: "1/1/1999",
+          expirydate: "1/1/2025",
+        },
+        {
+          id: 123456788,
+          type: "Document Type 2",
+          imagelink:
+            "https://img.vietnamfinance.vn/webp-jpg/upload/news/ledinhnga/2019/11/1/giay-phep-lai-xe-mau-moi_0111140413.webp",
+          registeredlocation: "location#2",
+          registereddate: "1/1/1998",
+          expirydate: "1/1/2024",
+        },
+        {
+          id: 123456787,
+          type: "Document Type 3",
+          imagelink:
+            "https://tintucxeco.net/wp-content/uploads/2019/07/cavet-xe-la-gi.png",
+          registeredlocation: "location#3",
+          registereddate: "1/1/1997",
+          expirydate: "1/1/2023",
+        },
+        {
+          id: 123456786,
+          type: "Document Type 3",
+          imagelink:
+            "https://tintucxeco.net/wp-content/uploads/2019/07/cavet-xe-la-gi.png",
+          registeredlocation: "location#3",
+          registereddate: "1/1/1997",
+          expirydate: "1/1/2023",
+        },
+      ],
       driver: {},
       // TODO: DELETE THIS detail
       detail: {
