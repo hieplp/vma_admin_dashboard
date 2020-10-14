@@ -345,9 +345,7 @@ export default {
         this.searchTotalVehicles
       );
 
-      if (this.contributorsList.length > 0) {
-        this.isLoading = false;
-      }
+      this.isLoading = false;
     },
     // Init data for total vehicles slider
     async initTotalVehicleSlider() {

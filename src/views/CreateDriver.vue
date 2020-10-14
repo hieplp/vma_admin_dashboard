@@ -1,161 +1,594 @@
-/* eslint-disable no-unused-vars */
 <template>
   <div class="content-wrapper">
     <div class="page-header">
       <h3 class="page-title">Create Driver</h3>
     </div>
+
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <form class="ui form">
-              <h4 class="ui dividing header">Basic Information</h4>
-                <div class="field">
-                  <label>Profile image</label>
-                  <img :src="previewImage" class="ui large image" />
-                  <input type="file" accept="image/png" @change=uploadImage>
+            <div class="ui two steps">
+              <button
+                class="step"
+                v-on:click="changeTab()"
+                v-bind:class="{ active: isUserInfoVisible }"
+              >
+                <i class="mdi mdi-account-box icon"></i>
+                <div class="content">
+                  <div class="title">Basic Information</div>
                 </div>
-              <div class="two fields">
-                <div class="field">
-                  <label>Full Name</label>
-                  <input type="text" name="Name" placeholder="Full name">
+              </button>
+              <button
+                class="step"
+                v-on:click="changeTab()"
+                v-bind:class="{ active: !isUserInfoVisible }"
+              >
+                <i class="mdi mdi-file-document icon"></i>
+                <div class="content">
+                  <div class="title">Document</div>
                 </div>
-                <div class="field">
-                  <label>Phone Number</label>
-                  <input type="text" name="Phone Number" placeholder="Phone Number" @keypress="isNumber($event)" maxlength="10">
-                </div>
+              </button>
             </div>
-  <div class="three fields">
-    <div class="field">
-      <label>Gender</label>
-      <select class="ui fluid dropdown">
-        <option value="">Male</option>
-        <option value="">Female</option>
-      </select>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="field">
-      <label>Birthdate</label>
-      <input
-                    type="date"
-                    class="form-control"
-                    v-model="time1"
-     />
-    </div>
-    <div class="field">
-      <label>Address</label>
-      <input type="text" name="Address" placeholder="Address">
-    </div>
-  </div>
-  </form>
-    </div>
-  </div>
-  </div>
-  </div>
-  <div class="row">
+    <!-- User Information -->
+    <div class="row" v-if="isUserInfoVisible">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <form class="ui form">
-              <h4 class="ui dividing header">Job Information</h4>
-              <div class="field">
+            <div class="ui form">
+              <h4 class="ui dividing header">Basic Information</h4>
+
+              <div class="field justify-content-center">
+                <label>Profile image</label>
+              </div>
+              <div class="row justify-content-center">
+                <label for="upload-photo" class="upload-pro">
+                  <img
+                    src="../assets/images/unnamed.png"
+                    class="ui medium circular image pro-img"
+                    alt="image"
+                    v-if="profileImagePrev == null"
+                  />
+                  <img
+                    :src="profileImagePrev"
+                    class="ui medium circular image pro-img"
+                    alt="image"
+                    v-else
+                  />
+                  <div class="upload-pro-plus ">
+                    <i class="mdi mdi-plus"></i>
+                  </div>
+                </label>
+                <input
+                  id="upload-photo"
+                  type="file"
+                  accept="image/*"
+                  @change="uploadProfile($event)"
+                />
+              </div>
+              <div class="field justify-content-center">
+                <label>Profile image</label>
+                <img :src="previewImage" class="ui large image" />
+                <div class="ui corner labeled input">
+                  <input type="file" accept="image/png" @change="uploadImage" />
+                  <div class="ui corner label">
+                    <i class="asterisk icon"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Full Name</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" name="Name" placeholder="Full name" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Address</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" placeholder="Address" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Gender</label>
+                  <select class="ui fluid dropdown">
+                    <option value="true">Male</option>
+                    <option value="false">Female</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Phone Number</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      name="Phone Number"
+                      placeholder="Phone Number"
+                      @keypress="isNumber($event)"
+                      maxlength="10"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Birthdate</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field ">
                   <label>Basic Salary</label>
-                  <input type="text" name="Salary" placeholder="Basic Salary" @keypress="isNumber($event)" maxlength="10">
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      name="Salary"
+                      placeholder="Basic Salary"
+                      @keypress="isNumber($event)"
+                      maxlength="10"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="field">
-                  <label>Documents</label>
-                  <multiselect v-model="documentValue" :options="options" placeholder="Search or add a document" label="name" track-by="code" :multiple="true" :taggable="true">
-                  </multiselect>
-              </div>
-              <div class="ui horizontal divider">
-    Or
-  </div>
-              <div class="field">
-                  <button class="form-control btn btn-gradient-info">
-                    Create Document
+              <!-- Button group -->
+              <div class="row justify-content-center mt-5">
+                <div class="col-4">
+                  <button class="btn btn-gradient-danger btn-fw" type="button">
+                    Clear
                   </button>
+                  <button
+                    class="btn btn-gradient-info btn-fw ml-2"
+                    type="button"
+                    v-on:click="changeTab()"
+                  >
+                    Continue
+                  </button>
+                </div>
               </div>
-              </form>
+            </div>
           </div>
-  </div>
-  </div>
-  </div>
-    <button class="form-control btn btn-gradient-info">
-                    Create Driver
-    </button>
+        </div>
+      </div>
+    </div>
+    <!-- User document -->
+    <div class="row" v-else>
+      <!-- Indentify Card -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Indentify Card</h4>
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="(img, index) in indentifyImagePrev"
+                    :key="index"
+                  >
+                    <img :src="img" class="ui large image" />
+                    <button
+                      class="close-btn"
+                      v-on:click="removeImage(index, 'indentifyImage')"
+                    >
+                      <i class="mdi mdi-close-circle"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="ui corner labeled input">
+                  <label
+                    class="btn btn-gradient-info btn-icon-text"
+                    for="upload-photo"
+                  >
+                    <i class="mdi mdi-upload btn-icon-prepend" />Select image...
+                  </label>
+                  <input
+                    id="upload-photo"
+                    type="file"
+                    accept="image/*"
+                    @change="uploadImage($event, 'indentifyImage')"
+                  />
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Indentify ID</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" name="Name" placeholder="Indentify ID" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" placeholder="Register location" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>ExpiryDate</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Health Insurance -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Health Insurance</h4>
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="(img, index) in indentifyImagePrev"
+                    :key="index"
+                  >
+                    <img :src="img" class="ui large image" />
+                    <button
+                      class="close-btn"
+                      v-on:click="removeImage(index, 'indentifyImage')"
+                    >
+                      <i class="mdi mdi-close-circle"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="ui corner labeled input">
+                  <label
+                    class="btn btn-gradient-info btn-icon-text"
+                    for="upload-photo"
+                  >
+                    <i class="mdi mdi-upload btn-icon-prepend" />Select image...
+                  </label>
+                  <input
+                    id="upload-photo"
+                    type="file"
+                    accept="image/*"
+                    @change="uploadImage($event, 'indentifyImage')"
+                  />
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>ID</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" name="Name" placeholder="ID" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" placeholder="Register location" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>ExpiryDate</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Driving License -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Driving License</h4>
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="(img, index) in indentifyImagePrev"
+                    :key="index"
+                  >
+                    <img :src="img" class="ui large image" />
+                    <button
+                      class="close-btn"
+                      v-on:click="removeImage(index, 'indentifyImage')"
+                    >
+                      <i class="mdi mdi-close-circle"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="ui corner labeled input">
+                  <label
+                    class="btn btn-gradient-info btn-icon-text"
+                    for="upload-photo"
+                  >
+                    <i class="mdi mdi-upload btn-icon-prepend" />Select image
+                  </label>
+                  <input
+                    id="upload-photo"
+                    type="file"
+                    accept="image/*"
+                    @change="uploadImage($event, 'indentifyImage')"
+                  />
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Driving License ID</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      name="Name"
+                      placeholder="Driving License ID"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui corner labeled input">
+                    <input type="text" placeholder="Register location" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label>ExpiryDate</label>
+                  <div class="ui corner labeled input">
+                    <input type="date" class="form-control" v-model="time1" />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import "../assets/js/misc.js";
-import $ from 'jquery';
 import { isNumber } from "../assets/js/input.js";
+import * as firebase from "firebase";
 
 export default {
   data() {
     return {
-      documentValue:null,
-      previewImage:null,
+      // Profile image
+      profileImage: null,
+      profileImagePrev: null,
+      documentValue: null,
+      previewImage: null,
       time1: null,
+      isUserInfoVisible: true,
+      uploadValue: 0,
+      img1: null,
+      imageData: null,
+      // Indentify image
+      indentifyImage: [],
+      indentifyImagePrev: [],
+      // Health Insurance
+      healthInsuranceImage: [],
+      healthInsuranceImagePrev: [],
       detail: {
-        id: "#12016",
-        name: "Nguyen Duc Hung",
-        role: "Driver",
-        status: "Available",
-        salary: 240,
-        phonenumber: "0769969167",
-        gender: "Male",
-        address: " 49/1A Road number 5",
-        birthdate: "1999-06-14",
         image:
-          "https://scontent.fsgn2-5.fna.fbcdn.net/v/t1.0-9/80742826_2481110258768067_7881332290297528320_o.jpg?_nc_cat=104&_nc_sid=09cbfe&_nc_ohc=VJG3Q1dHlZYAX-s3ZaS&_nc_ht=scontent.fsgn2-5.fna&oh=ba9e135faf34bae3d4a72bfa4c64c612&oe=5FA3D1F3",
+          "https://nghesiviet.vn/storage/files/7/kieutrinh/hot-girl-kieu-trinh.jpg",
       },
-      options: [
-        { name: 'Document#1', code: 'Document#1' },
-        { name: 'Document#2', code: 'Document#2' },
-        { name: 'Document#3', code: 'Document#3' }
-      ],
     };
   },
-  mounted() {
-    $('.ui.dropdown').dropdown({
-  allowAdditions: true,
-    });
-  },
-  methods:{
-            uploadImage(e){
-                const image = e.target.files[0];
-                const reader = new FileReader();
-                reader.readAsDataURL(image);
-                reader.onload = e =>{
-                    this.previewImage = e.target.result;
-                    console.log(this.previewImage);
-                };
-            },
-            addTag (newTag) {
-      const tag = {
-        name: newTag,
-        code: newTag.substring(0, 2) + Math.floor((Math.random() * 10000000))
-      }
-      this.options.push(tag)
-      this.value.push(tag)
+  mounted() {},
+  methods: {
+    // Upload profile img
+    uploadProfile(e) {
+      const image = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(image);
+      reader.onload = (e) => {
+        this.profileImagePrev = e.target.result;
+      };
+      this.profileImage = image;
+    },
+    uploadImage(e, imageType) {
+      const image = e.target.files[0];
+      const reader = new FileReader();
+      reader.readAsDataURL(image);
+      reader.onload = (e) => {
+        let arr = this.$data[imageType + "Prev"];
+        arr.push(e.target.result);
+        // this.previewImage = e.target.result;
+      };
+
+      let arr = this.$data[imageType];
+      arr.push(image);
+    },
+    // Remove image from list
+    removeImage(index, imageType) {
+      let imgArr = this.$data[imageType];
+      let imgPrevArr = this.$data[imageType + "Prev"];
+      this.$delete(imgArr, index);
+      this.$delete(imgPrevArr, index);
+    },
+    // Upload image to firebase
+    uploadImageToFirebase() {
+      this.img1 = null;
+      const storageRef = firebase
+        .storage()
+        .ref(`${this.imageData.name}`)
+        .put(this.imageData);
+      storageRef.on(
+        `state_changed`,
+        (snapshot) => {
+          this.uploadValue =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        },
+        (error) => {
+          console.log(error.message);
+        },
+        () => {
+          this.uploadValue = 100;
+          storageRef.snapshot.ref.getDownloadURL().then((url) => {
+            this.img1 = url;
+            console.log(this.img1);
+          });
+        }
+      );
+    },
+    changeTab() {
+      this.isUserInfoVisible = !this.isUserInfoVisible;
     },
     isNumber(evt) {
       isNumber(evt);
     },
-        }
+  },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
+<style>
+.field label {
+  margin-top: 10px !important;
+}
+.asterisk.icon {
+  color: red;
+}
+.preview-img {
+  position: relative;
+}
+.close-btn {
+  position: absolute;
+  top: 0%;
+  right: 8%;
+  color: red;
+  font-size: 30px;
+  background-color: transparent;
+  border: none;
+  visibility: hidden;
+}
+.preview-img:hover > .close-btn {
+  visibility: visible;
+}
 
-<style>
-@import "../assets/vendors/mdi/css/materialdesignicons.min.css";
-</style>
-<style>
-@import "../assets/vendors/css/vendor.bundle.base.css";
-</style>
-<style>
-@import "../assets/css/style.css";
+#upload-photo {
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
+}
+.step i {
+  color: #047edf !important;
+}
+/* Upload profile img */
+.upload-pro {
+  position: relative;
+}
+.upload-pro:hover > .upload-pro-plus {
+  cursor: pointer;
+  visibility: visible;
+}
+
+.upload-pro img {
+  border-radius: 55%;
+  min-width : 200px;
+  max-width : 300px;
+  min-height: 200px;
+  max-height: 300px;
+}
+.upload-pro-plus {
+  position: absolute;
+  z-index: 1000;
+  background-color: rgba(221, 209, 209, 0.5);
+  color: rgb(138, 135, 135);
+  width: 100%;
+  height: 100%;
+  top: 0%;
+  left: 0%;
+  font-size: 80px;
+  border-radius: 55%;
+  visibility: hidden;
+}
+.upload-pro-plus i {
+  position: absolute;
+  left: 29%;
+  top: 29%;
+}
 </style>
 <style>
 @import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";

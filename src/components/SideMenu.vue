@@ -32,7 +32,9 @@
       <li
         class="nav-item"
         id="Drivers"
-        v-bind:class="{ active: this.$route.name === 'Drivers' ? true : false }"
+        v-bind:class="{
+          active: this.$route.name.includes('Driver') ? true : false,
+        }"
       >
         <router-link to="/drivers" class="nav-link">
           <i class="mdi mdi-account-outline menu-icon"></i>
@@ -43,7 +45,7 @@
         class="nav-item"
         id="Contributors"
         v-bind:class="{
-          active: this.$route.name === 'Contributors' ? true : false,
+          active: this.$route.name.includes('Contributor') ? true : false,
         }"
       >
         <router-link to="/contributors" class="nav-link">
@@ -55,7 +57,7 @@
         class="nav-item"
         id="Vehicles"
         v-bind:class="{
-          active: this.$route.name === 'Vehicles' ? true : false,
+          active: this.$route.name.includes('Vehicle') ? true : false,
         }"
       >
         <router-link to="/vehicles" class="nav-link">

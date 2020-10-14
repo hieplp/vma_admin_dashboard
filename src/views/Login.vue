@@ -60,13 +60,24 @@
                   SIGN IN
                 </button>
               </div>
+              <div class="mt-3">
+                <button
+                  class="btn btn-block btn-gradient-info btn-lg font-weight-medium auth-form-btn"
+                  v-on:click="login"
+                >
+                  SIGN IN
+                </button>
+              </div>
               <div
                 class="my-2 d-flex justify-content-between align-items-center"
               >
                 <div class="form-check">
                   <label class="form-check-label text-muted">
-                    <input type="checkbox" class="form-check-input form-check-info" /> Keep me
-                    signed in
+                    <input
+                      type="checkbox"
+                      class="form-check-input form-check-info"
+                    />
+                    Keep me signed in
                   </label>
                 </div>
               </div>
@@ -80,6 +91,7 @@
 </template>
 
 <script>
+
 export default {
   name: "Login",
   data() {
@@ -107,7 +119,7 @@ export default {
     login() {
       // Check valid phone number
       this.isPhoneErrVisible = this.phoneNumber.length !== 10 ? true : false;
-      
+
       // Check valid password
       this.isPasswordErrVisible = this.password.length === 0 ? true : false;
 

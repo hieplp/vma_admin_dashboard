@@ -13,6 +13,14 @@
         <router-link to="/drivers" class="nav-link">Drivers</router-link>
       </h3>
       <div class="dropdown">
+        <router-link to="/create-driver"
+          class="btn btn-gradient-info btn-icon-text mr-2"
+          type="button"
+          v-on:click="clickToViewFilter()"
+        >
+          <i class="mdi mdi-account-plus btn-icon-prepend"></i>
+          Create
+        </router-link>
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"

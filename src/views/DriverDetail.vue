@@ -115,45 +115,6 @@
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="form-group col-sm ">
-              <label class="col-md-8 col-form-label">Documents</label>
-              
-              <div class="ui cards">
-                <div class="row justify-content-center">
-      <div
-        class="ui card form-group col-md-5"
-        v-for="document in this.documents"
-        :key="document.id" 
-      >
-      <div class="ui placeholder segment">
-      <div class="ui two column stackable center aligned grid">
-        <div class="ui vertical divider"></div>
-        <div class="middle aligned row">
-          <div class="column" >
-              <silent-box :image="{src: document.imagelink, thumbnailHeight: imageHeight,
-                thumbnailWidth: imageWidth , description: document.type}" ></silent-box>
-          </div>
-          <div class="column">
-        <div class="content left aligned">
-          <h4 class="header">{{ document.type }}</h4>
-          <div class="description" >
-            <p>Document ID : {{ document.id }}</p>
-            <p>Document Type: {{ document.type }}</p>
-            <p>Registered location: {{ document.registeredlocation }}</p>
-            <p>Registered date: {{ document.registereddate }}</p>
-            <p>Expiry date: {{ document.expirydate }}</p>
-          </div>
-        </div>
-          </div>
-        </div>
-      </div>
-      </div>
-      </div>
-    </div>
-              </div>
-              </div>
-            </div>
             <!-- Button group -->
             <div class="row justify-content-center mt-4" v-if="isUpdateVisible">
               <div class="col-4">
@@ -178,6 +139,82 @@
         </div>
       </div>
     </div>
+
+    <!-- Document -->
+    <div class="row">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="form-group col-sm ">
+                <h4 class="col-md-8 ">Documents</h4>
+
+                <div class="ui cards col-lg-12 justify-content-center mt-4">
+                  <div class="row">
+                    <div
+                      class=" col-4 mb-5 document"
+                      v-for="(userDocument, index) in this.userDocumentList"
+                      :key="userDocument.userDocumentId"
+                    >
+                      <div class="ui slide masked reveal image">
+                        <img
+                          :src="userDocument.documentImages[0].imageLink"
+                          class="visible content document-img"
+                          @click="openGallery(index)"
+                        />
+                        <img
+                          :src="userDocument.documentImages[1].imageLink"
+                          class="hidden content document-img"
+                          @click="openGallery(index)"
+                        />
+                      </div>
+
+                      <div class="content mt-2">
+                        <div class="Header mt-3">
+                          <h3 class="header">
+                            {{ userDocument.userDocumentType }}
+                          </h3>
+                        </div>
+                        <div class="pro-devider">
+                          <h4
+                            class="ui horizontal divider header text-secondary"
+                          >
+                            <i class="id card outline icon"></i>
+                          </h4>
+                        </div>
+                        <div class="extra">
+                           <p>
+                            <span>Register ID:</span>
+                            {{ userDocument.userDocumentId }}
+                          </p>
+                          <p>
+                            <span>Register Date:</span>
+                            {{ userDocument.registerDate }}
+                          </p>
+                          <p>
+                            <span>Register Location:</span>
+                            {{ userDocument.registerLocation }}
+                          </p>
+                          <p class="mb-3">
+                            <span>Register Date:</span>
+                            {{ userDocument.expiryDate }}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <LightBox
+                    ref="lightbox"
+                    :media="media"
+                    :showLightBox="false"
+                  ></LightBox>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -185,51 +222,21 @@
 import { isNumber } from "../assets/js/input.js";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
 import moment from "moment";
+import LightBox from "vue-image-lightbox";
+
+require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 
 const DriverRepository = RepositoryFactory.get("drivers");
-
 export default {
-  components: {},
+  components: { LightBox },
   data() {
     return {
       imageHeight: "150px",
-      imageWidth: "185px" , 
-      documents: [
+      imageWidth: "185px",
+      media: [
         {
-          id: 123456789,
-          type: "Document Type 1",
-          imagelink:
-            "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-          registeredlocation: "location#1",
-          registereddate: "1/1/1999",
-          expirydate: "1/1/2025",
-        },
-        {
-          id: 123456788,
-          type: "Document Type 2",
-          imagelink:
-            "https://img.vietnamfinance.vn/webp-jpg/upload/news/ledinhnga/2019/11/1/giay-phep-lai-xe-mau-moi_0111140413.webp",
-          registeredlocation: "location#2",
-          registereddate: "1/1/1998",
-          expirydate: "1/1/2024",
-        },
-        {
-          id: 123456787,
-          type: "Document Type 3",
-          imagelink:
-            "https://tintucxeco.net/wp-content/uploads/2019/07/cavet-xe-la-gi.png",
-          registeredlocation: "location#3",
-          registereddate: "1/1/1997",
-          expirydate: "1/1/2023",
-        },
-        {
-          id: 123456786,
-          type: "Document Type 3",
-          imagelink:
-            "https://tintucxeco.net/wp-content/uploads/2019/07/cavet-xe-la-gi.png",
-          registeredlocation: "location#3",
-          registereddate: "1/1/1997",
-          expirydate: "1/1/2023",
+          thumb: "",
+          src: "",
         },
       ],
       driver: {},
@@ -241,6 +248,69 @@ export default {
       tempDriver: {},
       userId: "",
       isUpdateVisible: false,
+      isImageVisible: false,
+      userDocumentList: [
+        {
+          documentImages: [
+            {
+              documentImageId: 0,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+            {
+              documentImageId: 1,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+          ],
+          expiryDate: "2020-10-13T13:12:35.641Z",
+          registerDate: "2020-10-13T13:12:35.641Z",
+          registerLocation: "HCM",
+          userDocumentId: "1",
+          userDocumentType: "Document 1",
+          userId: "1",
+        },
+        {
+          documentImages: [
+            {
+              documentImageId: 0,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+            {
+              documentImageId: 1,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+          ],
+          expiryDate: "2020-10-13T13:12:35.641Z",
+          registerDate: "2020-10-13T13:12:35.641Z",
+          registerLocation: "HCM",
+          userDocumentId: "2",
+          userDocumentType: "Document 1",
+          userId: "1",
+        },
+        {
+          documentImages: [
+            {
+              documentImageId: 0,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+            {
+              documentImageId: 1,
+              imageLink:
+                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
+            },
+          ],
+          expiryDate: "2020-10-13T13:12:35.641Z",
+          registerDate: "2020-10-13T13:12:35.641Z",
+          registerLocation: "HCM",
+          userDocumentId: "3",
+          userDocumentType: "Document 1",
+          userId: "1",
+        },
+      ],
     };
   },
   mounted() {
@@ -250,6 +320,21 @@ export default {
   methods: {
     isNumber(evt) {
       isNumber(evt);
+    },
+    // Handle document image light box
+    openGallery(index) {
+      this.isImageVisible = true;
+      this.$refs.lightbox.showImage(0);
+      this.media = [];
+      let documentImages = this.userDocumentList[index].documentImages;
+      documentImages.forEach((img) => {
+        let temp = {
+          thumb: img.imageLink,
+          src: img.imageLink,
+        };
+        this.media.push(temp);
+      });
+      this.isImageVisible = true;
     },
     // Handle update icon click
     handleUpdIconClick() {
@@ -314,10 +399,33 @@ export default {
 }
 
 .col-form-label {
-  color: #746d6d;
+  color: #242323;
+  font-weight: 600;
 }
 
 .btn {
   font-size: 17px;
+}
+.ui.card {
+  margin: 0%;
+}
+.document-img:hover {
+  cursor: pointer;
+}
+
+.document .content {
+  border: #cecdcd 1px solid;
+}
+.document .content .extra p {
+  font-size: 14px !important;
+}
+
+.document .content .extra span {
+  font-weight: 700;
+  margin-left: 10px;
+}
+
+.document .header {
+  text-align: center;
 }
 </style>
