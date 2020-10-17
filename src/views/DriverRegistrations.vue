@@ -10,17 +10,11 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/drivers" class="nav-link">Drivers</router-link>
+        <router-link to="/drivers" class="nav-link"
+          >Driver Registraions</router-link
+        >
       </h3>
       <div class="dropdown">
-        <router-link to="/create-driver"
-          class="btn btn-gradient-info btn-icon-text mr-2"
-          type="button"
-          v-on:click="clickToViewFilter()"
-        >
-          <i class="mdi mdi-account-plus btn-icon-prepend"></i>
-          Create
-        </router-link>
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"
@@ -161,23 +155,6 @@
                 maxlength="10"
               />
             </div>
-            <!-- Driver status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Status</label>
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="searchStatusID"
-              >
-                <option
-                  v-for="status in this.statusList"
-                  :key="status.userStatusId"
-                  :value="status.userStatusId"
-                  >{{ status.userStatusName }}</option
-                >
-              </select>
-            </div>
-
             <br />
             <div class="col-12 mt-3">
               <button
@@ -211,10 +188,9 @@ import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
 
 const DriverRepository = RepositoryFactory.get("drivers");
-const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
-  name: "Drivers",
+  name: "DriverRegistrations",
   props: {},
   components: {
     Loading,
@@ -223,12 +199,11 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
-      statusList: [],
       driversList: [],
       searchPhoneNumber: "",
       searchDriverID: "",
       searchDriverName: "",
-      searchStatusID: "",
+      searchStatusID: "3",
       isLoading: true,
       totalDrivers: 0,
       page: 0,
@@ -236,7 +211,6 @@ export default {
     };
   },
   async mounted() {
-    await this.initStatusList();
     await this.initDriversList();
   },
   methods: {
@@ -257,21 +231,11 @@ export default {
       );
       this.isLoading = false;
     },
-    // Init data for Driver Status Dropdown
-    async initStatusList() {
-      // wait for api
-      this.statusList = await UserStatusRepository.get();
-      this.statusList.push({
-        userStatusId: "",
-        userStatusName: "None",
-      });
-    },
     // Clear search item value
     clearSearchValue() {
       this.searchDriverID = "";
       this.searchDriverName = "";
       this.searchPhoneNumber = "";
-      this.searchStatusID = "";
     },
     // Search driver
     async searchDrivers() {

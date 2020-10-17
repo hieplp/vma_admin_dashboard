@@ -106,7 +106,6 @@ var lightColor = getComputedStyle(document.body).getPropertyValue("--light");
       } else {
         body.toggleClass("sidebar-icon-only");
         sidebar.children().toggleClass("custom-nav");
-        console.log("hahah");
       }
     });
 

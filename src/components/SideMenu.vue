@@ -32,7 +32,13 @@
       <li
         class="nav-item"
         id="Drivers"
-        v-bind:class="{ active: this.$route.name === 'Drivers' ? true : false }"
+        v-bind:class="{
+          active:
+            this.$route.name.includes('Driver') &&
+            !this.$route.name.includes('Registration')
+              ? true
+              : false,
+        }"
       >
         <router-link to="/drivers" class="nav-link">
           <i class="mdi mdi-account-outline menu-icon"></i>
@@ -43,7 +49,7 @@
         class="nav-item"
         id="Contributors"
         v-bind:class="{
-          active: this.$route.name === 'Contributors' ? true : false,
+          active: this.$route.name.includes('Contributor') ? true : false,
         }"
       >
         <router-link to="/contributors" class="nav-link">
@@ -55,7 +61,7 @@
         class="nav-item"
         id="Vehicles"
         v-bind:class="{
-          active: this.$route.name === 'Vehicles' ? true : false,
+          active: this.$route.name.includes('Vehicle') ? true : false,
         }"
       >
         <router-link to="/vehicles" class="nav-link">
@@ -63,6 +69,36 @@
           <span class="menu-title">Vehicles</span>
         </router-link>
       </li>
+      <!-- Driver registrations -->
+      <li
+        class="nav-item"
+        v-bind:class="{
+          active: this.$route.name.includes('Registration') ? true : false,
+        }"
+      >
+        <a
+          class="nav-link"
+          data-toggle="collapse"
+          @click="isRegistrationsVisible = !isRegistrationsVisible"
+          href="#"
+        >
+          <i class="mdi mdi-settings menu-icon"></i>
+          <span class="menu-title">Registrations</span>
+        </a>
+      </li>
+      <li class="nav-item" v-if="isRegistrationsVisible" id="Registrations">
+        <router-link to="/driver-registrations" class="nav-link sub-menu-title">
+          <i class="mdi mdi-account-outline mr-3" />
+          <span class="menu-title">Drivers</span>
+        </router-link>
+      </li>
+      <li class="nav-item" v-if="isRegistrationsVisible">
+        <a class="nav-link sub-menu-title" href="#">
+          <i class="mdi mdi mdi-account-multiple-outline mr-3" />
+          <span class="menu-title">Contributors</span>
+        </a>
+      </li>
+
       <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="mdi mdi-clipboard-alert menu-icon"></i>
@@ -75,6 +111,7 @@
           <span class="menu-title">Reports</span>
         </a>
       </li>
+
       <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="mdi mdi-settings menu-icon"></i>
@@ -87,13 +124,32 @@
 
 <script>
 export default {
-  props: {},
-  mounted() {},
+  data() {
+    return {
+      isRegistrationsVisible: false,
+    };
+  },
   methods: {
     setSideMenuActive() {
       document.getElementById(this.$route.name).className += " active";
-      console.log(document.getElementById(this.$route.name).className);
     },
   },
 };
 </script>
+<style>
+.nav-link:hover {
+  cursor: pointer;
+}
+.sub-menu-title i {
+  font-size: 20px !important;
+  color: #74777a !important;
+}
+.sub-menu-title {
+  margin-left: 25px;
+  font-weight: 600;
+}
+
+.sub-menu-title span {
+  font-size: 16px !important;
+}
+</style>

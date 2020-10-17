@@ -6,6 +6,8 @@ import Contributors from "../views/Contributors.vue";
 import Vehicles from "../views/Vehicles.vue";
 import DriverDetail from "../views/DriverDetail.vue";
 import ContributorDetail from "../views/ContributorDetail.vue";
+import CreateDriver from "../views/CreateDriver.vue";
+import DriverRegistrations from "../views/DriverRegistrations.vue";
 
 Vue.use(VueRouter);
 
@@ -26,6 +28,11 @@ const routes = [
     component: DriverDetail,
   },
   {
+    path: "/create-driver",
+    name: "CreateDriver",
+    component: CreateDriver,
+  },
+  {
     path: "/contributors",
     name: "Contributors",
     component: Contributors,
@@ -39,6 +46,11 @@ const routes = [
     path: "/vehicles",
     name: "Vehicles",
     component: Vehicles,
+  },
+  {
+    path: "/driver-registrations",
+    name: "DriverRegistrations",
+    component: DriverRegistrations,
   },
 ];
 
