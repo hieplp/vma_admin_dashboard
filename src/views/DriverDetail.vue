@@ -1,5 +1,13 @@
 <template>
-  <div class="content-wrapper">
+  <div class="content-wrapper" ref="container">
+    <loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      :loader="'dots'"
+      :is-full-page="false"
+      :color="'#2e5bff'"
+    ></loading>
+
     <div class="page-header">
       <h3 class="page-title test">
         <router-link to="/drivers">
@@ -7,326 +15,328 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          {{ this.userId }}
+          {{ this.$route.params.userId }}
         </span>
       </h3>
     </div>
+
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <!-- Image -->
-            <div class="row justify-content-center">
-              <img
-                :src="detail.image"
-                class="ui medium circular image pro-img"
-                alt="image"
-              />
-              <div class="col-12 text-center">
-                <h2>{{ driver.fullName }}</h2>
-                <h4 class="text-secondary">ID : {{ driver.userId }}</h4>
-              </div>
-            </div>
-            <div class="right floated edit-btn">
-              <button class="ui icon button" v-on:click="handleUpdIconClick()">
-                <i class="edit icon"></i>
+            <div class="ui two steps">
+              <button
+                class="step"
+                v-on:click="changeTab()"
+                v-bind:class="{ active: isUserInfoVisible }"
+              >
+                <i class="mdi mdi-account-box icon"></i>
+                <div class="content">
+                  <div class="title">Basic Information</div>
+                </div>
+              </button>
+              <button
+                class="step"
+                v-on:click="changeTab()"
+                v-bind:class="{ active: !isUserInfoVisible }"
+              >
+                <i class="mdi mdi-file-document icon"></i>
+                <div class="content">
+                  <div class="title">Document</div>
+                </div>
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- User Information -->
+    <div class="row" v-if="isUserInfoVisible">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Basic Information</h4>
 
-            <!-- Detailed information -->
-            <div class="pro-devider">
-              <h4 class="ui horizontal divider header text-secondary">
-                <i class="id card outline icon"></i>
+              <div class="field">
+                <label>Profile image</label>
+              </div>
+              <div class="row justify-content-center">
+                <div class="upload-pro">
+                  <img
+                    src="../assets/images/unnamed.png"
+                    class="ui medium circular image pro-img"
+                    alt="image"
+                    v-if="
+                      this.driver.imageLink === null ||
+                        (this.driver.imageLink != null &&
+                          this.driver.imageLink.length === 0)
+                    "
+                  />
+                  <img
+                    :src="this.driver.imageLink"
+                    class="ui medium circular image pro-img"
+                    alt="image"
+                    v-else
+                  />
+                </div>
+              </div>
+
+              <div class="two fields mt-4">
+                <!-- Full name -->
+                <div class="field">
+                  <label>Full Name</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      v-model="driver.fullName"
+                      name="Name"
+                      placeholder="Full name"
+                      maxlength="50"
+                      disabled
+                    />
+                  </div>
+                </div>
+                <!-- Address -->
+                <div class="field">
+                  <label>Address</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      v-model="driver.address"
+                      placeholder="Address"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <!-- Gender  -->
+                <div class="field">
+                  <label>Gender</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      name="Phone Number"
+                      :value="driver.gender ? 'Male' : 'Female'"
+                      disabled
+                    />
+                  </div>
+                </div>
+                <!-- Phone number -->
+                <div class="field">
+                  <label>Phone Number</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      name="Phone Number"
+                      v-model="driver.phoneNumber"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <!-- Birthdate -->
+                <div class="field">
+                  <label>Birthdate</label>
+                  <div class="ui input">
+                    <input
+                      type="date"
+                      :value="getDate(driver.dateOfBirth)"
+                      class="form-control"
+                      disabled
+                    />
+                  </div>
+                </div>
+                <!-- Base Salary -->
+                <div class="field ">
+                  <label>Base Salary</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      name="Salary"
+                      v-model="driver.baseSalary"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- Button group -->
+              <div class="row justify-content-center mt-5">
+                <button
+                  class="btn btn-gradient-info btn-fw ml-2"
+                  type="button"
+                  v-on:click="changeTab()"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- User document -->
+    <div class="row" v-else>
+      <div
+        class="col-lg-12 grid-margin stretch-card"
+        v-for="(document, docIndex) in this.driver.userDocumentList"
+        :key="document.userDocumentId"
+      >
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">
+                {{ document.userDocumentType }}
               </h4>
-            </div>
-
-            <div class="row">
-              <div class="form-group col-sm">
-                <label class="col-md-6 col-form-label">Full name</label>
-                <div class="col-sm-12">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="driver.fullName"
-                    :disabled="!isUpdateVisible"
-                  />
-                </div>
-              </div>
-              <div class="form-group col-sm">
-                <label class="col-md-6 col-form-label">Birth Date</label>
-                <div class="col-sm-12">
-                  <input
-                    type="date"
-                    class="form-control"
-                    v-model="driver.dateOfBirth"
-                    :disabled="!isUpdateVisible"
-                  />
-                </div>
-              </div>
-              <div class="form-group col-sm">
-                <label class="col-md-8 col-form-label">Gender</label>
-                <div class="col-12">
-                  <select
-                    class="form-control"
-                    v-model="driver.gender"
-                    :disabled="!isUpdateVisible"
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="img in document.documentImages"
+                    :key="img.documentImageId"
                   >
-                    <option :value="true">Male</option>
-                    <option :value="false">Female</option>
-                  </select>
+                    <img
+                      :src="img.imageLink"
+                      class="ui large image"
+                      @click="openGallery(docIndex)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>User Document ID</label>
+                  <div class="ui input">
+                    <input
+                      :value="document.userDocumentId"
+                      type="text"
+                      name="Name"
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui input">
+                    <input
+                      type="text"
+                      :value="document.registerLocation"
+                      disabled
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui input">
+                    <input
+                      type="date"
+                      :value="getDate(document.registerDate)"
+                      class="form-control"
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Expiry Date</label>
+                  <div class="ui input">
+                    <input
+                      type="date"
+                      class="form-control"
+                      :value="getDate(document.expiryDate)"
+                      disabled
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="form-group col-sm">
-                <label class="col-md-6 col-form-label">Base Salary</label>
-                <div class="col-sm-12">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="driver.baseSalary"
-                    @keypress="isNumber($event)"
-                    :disabled="!isUpdateVisible"
-                  />
-                </div>
-              </div>
-              <div class="form-group col-sm">
-                <label class="col-md-8 col-form-label">Phone number</label>
-                <div class="col-sm-12">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="driver.phoneNumber"
-                    :disabled="!isUpdateVisible"
-                    @keypress="isNumber($event)"
-                    maxlength="10"
-                  />
-                </div>
-              </div>
-              <div class="form-group col-sm">
-                <label class="col-md-8 col-form-label">Address</label>
-                <div class="col-sm-12">
-                  <input
-                    type="text"
-                    class="form-control"
-                    v-model="driver.address"
-                    :disabled="!isUpdateVisible"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- Button group -->
-            <div class="row justify-content-center mt-4" v-if="isUpdateVisible">
-              <div class="col-4">
-                <button
-                  class="btn btn-gradient-info btn-fw"
-                  type="button"
-                  v-on:click="update()"
-                >
-                  Update
-                </button>
-                <button
-                  class="btn btn-gradient-danger btn-fw ml-2"
-                  type="button"
-                  v-on:click="cancelUpdate()"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-            <vue-confirm-dialog class="confirm-dialog"></vue-confirm-dialog>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Document -->
-    <div class="row">
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="row">
-              <div class="form-group col-sm ">
-                <h4 class="col-md-8 ">Documents</h4>
-
-                <div class="ui cards col-lg-12 justify-content-center mt-4">
-                  <div class="row">
-                    <div
-                      class=" col-4 mb-5 document"
-                      v-for="(userDocument, index) in this.userDocumentList"
-                      :key="userDocument.userDocumentId"
-                    >
-                      <div class="ui slide masked reveal image">
-                        <img
-                          :src="userDocument.documentImages[0].imageLink"
-                          class="visible content document-img"
-                          @click="openGallery(index)"
-                        />
-                        <img
-                          :src="userDocument.documentImages[1].imageLink"
-                          class="hidden content document-img"
-                          @click="openGallery(index)"
-                        />
-                      </div>
-
-                      <div class="content mt-2">
-                        <div class="Header mt-3">
-                          <h3 class="header">
-                            {{ userDocument.userDocumentType }}
-                          </h3>
-                        </div>
-                        <div class="pro-devider">
-                          <h4
-                            class="ui horizontal divider header text-secondary"
-                          >
-                            <i class="id card outline icon"></i>
-                          </h4>
-                        </div>
-                        <div class="extra">
-                           <p>
-                            <span>Register ID:</span>
-                            {{ userDocument.userDocumentId }}
-                          </p>
-                          <p>
-                            <span>Register Date:</span>
-                            {{ userDocument.registerDate }}
-                          </p>
-                          <p>
-                            <span>Register Location:</span>
-                            {{ userDocument.registerLocation }}
-                          </p>
-                          <p class="mb-3">
-                            <span>Register Date:</span>
-                            {{ userDocument.expiryDate }}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <LightBox
-                    ref="lightbox"
-                    :media="media"
-                    :showLightBox="false"
-                  ></LightBox>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div v-if="isImageVisible">
+      <!-- Light box -->
+      <LightBox ref="lightbox" :media="media" :showLightBox="false"></LightBox>
     </div>
   </div>
 </template>
 
 <script>
-import { isNumber } from "../assets/js/input.js";
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import Loading from "vue-loading-overlay";
 import moment from "moment";
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
 import LightBox from "vue-image-lightbox";
 
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 
 const DriverRepository = RepositoryFactory.get("drivers");
+
 export default {
-  components: { LightBox },
+  name: "DriverDetail",
+  components: {
+    Loading,
+    LightBox,
+  },
   data() {
     return {
-      imageHeight: "150px",
-      imageWidth: "185px",
-      media: [
-        {
-          thumb: "",
-          src: "",
-        },
-      ],
+      driverID: "",
       driver: {},
-      // TODO: DELETE THIS detail
-      detail: {
-        image:
-          "https://nghesiviet.vn/storage/files/7/kieutrinh/hot-girl-kieu-trinh.jpg",
-      },
-      tempDriver: {},
-      userId: "",
-      isUpdateVisible: false,
+
+      // Profile image
+      profileImage: null,
+      profileImagePrev: null,
+      documentValue: null,
+      isUserInfoVisible: true,
+      uploadValue: 0,
+      img1: null,
+      imageData: null,
+      // Indentify image
+      indentifyImage: [],
+      indentifyImagePrev: [],
+      // Health Insurance
+      healthInsuranceImage: [],
+      healthInsuranceImagePrev: [],
+      // Driving License
+      drivingLicenseImage: [],
+      drivingLicenseImagePrev: [],
+
+      isLoading: false,
       isImageVisible: false,
-      userDocumentList: [
-        {
-          documentImages: [
-            {
-              documentImageId: 0,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-            {
-              documentImageId: 1,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-          ],
-          expiryDate: "2020-10-13T13:12:35.641Z",
-          registerDate: "2020-10-13T13:12:35.641Z",
-          registerLocation: "HCM",
-          userDocumentId: "1",
-          userDocumentType: "Document 1",
-          userId: "1",
-        },
-        {
-          documentImages: [
-            {
-              documentImageId: 0,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-            {
-              documentImageId: 1,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-          ],
-          expiryDate: "2020-10-13T13:12:35.641Z",
-          registerDate: "2020-10-13T13:12:35.641Z",
-          registerLocation: "HCM",
-          userDocumentId: "2",
-          userDocumentType: "Document 1",
-          userId: "1",
-        },
-        {
-          documentImages: [
-            {
-              documentImageId: 0,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-            {
-              documentImageId: 1,
-              imageLink:
-                "https://media.doisongphapluat.com/thumb_x500x/517/2017/10/11/3-khong-mang-giay-to-tuy-than-ra-duong-co-bi-phat-dspl.php.jpg",
-            },
-          ],
-          expiryDate: "2020-10-13T13:12:35.641Z",
-          registerDate: "2020-10-13T13:12:35.641Z",
-          registerLocation: "HCM",
-          userDocumentId: "3",
-          userDocumentType: "Document 1",
-          userId: "1",
-        },
-      ],
+
+      media: [],
     };
   },
   mounted() {
     this.userId = this.$route.params.userId;
-    this.initDriverData();
+
+    this.initDriver();
   },
   methods: {
-    isNumber(evt) {
-      isNumber(evt);
+    initDriver() {
+      DriverRepository.getDetailDriver(this.userId).then((res) => {
+        let driver = Object.assign({}, res.data.driverDetail);
+        this.driver = driver;
+        console.log(res.data);
+      });
+    },
+    changeTab() {
+      this.isUserInfoVisible = !this.isUserInfoVisible;
+    },
+    getDate(date) {
+      return moment(date).format("YYYY-MM-DD");
     },
     // Handle document image light box
     openGallery(index) {
       this.isImageVisible = true;
+      // this.$refs.lightbox.showImage(index);\
       this.$refs.lightbox.showImage(0);
       this.media = [];
-      let documentImages = this.userDocumentList[index].documentImages;
+      let documentImages = this.driver.userDocumentList[index].documentImages;
       documentImages.forEach((img) => {
         let temp = {
           thumb: img.imageLink,
@@ -336,96 +346,107 @@ export default {
       });
       this.isImageVisible = true;
     },
-    // Handle update icon click
-    handleUpdIconClick() {
-      this.isUpdateVisible = !this.isUpdateVisible;
-      this.tempDriver = Object.assign({}, this.driver);
-    },
-    // Init data for driver's detailed information
-    async initDriverData() {
-      this.driver = await DriverRepository.getDetailDriver(this.userId);
-      if (this.driver) {
-        this.driver.dateOfBirth = moment(this.driver.dateOfBirth).format(
-          "YYYY-MM-DD"
-        );
-      }
-    },
-    // Cancel update
-    cancelUpdate() {
-      this.driver = Object.assign({}, this.tempDriver);
-      console.log(this.tempDriver);
-      this.isUpdateVisible = !this.isUpdateVisible;
-    },
-    // Update driver
-    update() {
-      this.$confirm({
-        title: "Update Confirmation",
-        message: "Do you want to update this driver?",
-        button: {
-          no: "No",
-          yes: "Yes",
-        },
-        callback: (confirm) => {
-          if (confirm) {
-            // ... do something
-          }
-        },
-      });
-    },
   },
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+.field label {
+  margin-top: 10px !important;
+}
+.asterisk.icon {
+  color: red;
+}
+.preview-img {
+  position: relative;
+}
+.close-btn {
+  position: absolute;
+  top: 0%;
+  right: 8%;
+  color: red;
+  font-size: 30px;
+  background-color: transparent;
+  border: none;
+  visibility: hidden;
+}
+.preview-img:hover > .close-btn {
+  visibility: visible;
+}
+
+.upload-photo {
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
+}
+.step i {
+  color: #047edf !important;
+}
+/* Upload profile img */
+.upload-pro {
+  position: relative;
+}
+.upload-pro:hover > .upload-pro-plus {
+  cursor: pointer;
+  visibility: visible;
+}
+
+.upload-pro img {
+  border-radius: 50%;
+  width: 280px !important;
+  height: 280px !important;
+}
+.upload-pro-plus {
+  position: absolute;
+  z-index: 1000;
+  background-color: rgba(221, 209, 209, 0.5);
+  color: rgb(138, 135, 135);
+  width: 100%;
+  height: 100%;
+  top: 0%;
+  left: 0%;
+  font-size: 80px;
+  border-radius: 55%;
+  visibility: hidden;
+}
+.upload-pro-plus i {
+  position: absolute;
+  left: 35%;
+  top: 35%;
+}
+
+.cus-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(92, 90, 87, 0.637);
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  padding-top: 12%;
+  color: white;
+}
+.cus-modal .header {
+  color: white;
+  font-size: 35px !important;
+}
+
+.ui.input input[type="text"][disabled] {
+  font-size: 15px;
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+
+.ui.input input[type="date"][disabled] {
+  font-size: 15px;
+  color: #000000 !important;
+  font-weight: 500 !important;
+}
+</style>
 <style>
 @import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>
-<style>
-.pro-img {
-  width: 180px !important;
-  margin-bottom: 1%;
-}
-.edit-btn {
-  position: absolute;
-  top: 2%;
-  right: 1%;
-}
-.pro-devider {
-  margin: 2% 30% 4% 30%;
-}
-
-.form-control {
-  font-size: 14px;
-}
-
-.col-form-label {
-  color: #242323;
-  font-weight: 600;
-}
-
-.btn {
-  font-size: 17px;
-}
-.ui.card {
-  margin: 0%;
-}
-.document-img:hover {
-  cursor: pointer;
-}
-
-.document .content {
-  border: #cecdcd 1px solid;
-}
-.document .content .extra p {
-  font-size: 14px !important;
-}
-
-.document .content .extra span {
-  font-weight: 700;
-  margin-left: 10px;
-}
-
-.document .header {
-  text-align: center;
-}
-</style>
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
+G

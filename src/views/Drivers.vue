@@ -8,12 +8,59 @@
       :color="'#2e5bff'"
     ></loading>
 
+    <!-- Delete confimation -->
+    <div
+      class="ui basic cus-modal justify-content-center"
+      v-if="isDeleteConVisible"
+    >
+      <div class="ui icon header col-12">
+        <i class="user plus icon mb-3"></i>
+        Delete Confirmation
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>Do you want to delete driver with id {{ this.deleteUserID }}?</h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          type="button"
+          class="ui blue primary button"
+          @click="handleDialog('isDeleteConVisible', '')"
+        >
+          <i class="checkmark icon"></i>
+          Cancel
+        </button>
+        <button type="button" class="ui red  button" @click="deleteDriver()">
+          <i class="trash alternate icon"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+    <!-- Error message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isError">
+      <div class="ui icon header col-12">
+        <i class="frown outline icon mb-3"></i>
+        Delete Driver Fail!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          {{ this.errMsg }}
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button @click="isError = !isError" class="ui blue primary button">
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
+
     <div class="page-header">
       <h3 class="page-title">
         <router-link to="/drivers" class="nav-link">Drivers</router-link>
       </h3>
       <div class="dropdown">
-        <router-link to="/create-driver"
+        <router-link
+          to="/create-driver"
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
           v-on:click="clickToViewFilter()"
@@ -83,14 +130,32 @@
                       >{{ driver.userStatusName }}</label
                     >
                   </td>
-                  <td>
-                    <router-link
+                  <td class="row justify-content-center btn-action">
+                    <!-- <router-link
                       :to="{
                         name: 'DriverDetail',
                         params: { userId: driver.userId },
                       }"
                       >Manage</router-link
+                    > -->
+                    <button
+                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
+                      @click="viewDetail(driver.userId)"
                     >
+                      <i class="mdi mdi-account-box-outline"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                    >
+                      <i class="mdi mdi-grease-pencil"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                      :disabled="driver.userStatusName === 'Disabled'"
+                      @click="handleDialog('isDeleteConVisible', driver.userId)"
+                    >
+                      <i class="mdi mdi-delete-forever"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -233,6 +298,10 @@ export default {
       totalDrivers: 0,
       page: 0,
       currentPage: 1,
+      isDeleteConVisible: false,
+      isError: false,
+      errMsg: "",
+      deleteUserID: "",
     };
   },
   async mounted() {
@@ -278,20 +347,7 @@ export default {
       this.isLoading = true;
       this.page = 0;
       this.currentPage = 1;
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
-      this.totalDrivers = await DriverRepository.getTotalDriver(
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
-      this.isLoading = false;
+      await this.initDriversList();
     },
     // Init data for driver list
     async initDriversList() {
@@ -324,12 +380,67 @@ export default {
         }, 300);
       }
     },
+    // View driver detail
+    viewDetail(userId) {
+      this.$router.push({
+        name: "DriverDetail",
+        params: { userId: userId },
+      });
+    },
+    // Delete driver
+    async deleteDriver() {
+      this.handleDialog("isDeleteConVisible", "");
+      this.isLoading = true;
+      await DriverRepository.delete(this.deleteUserID)
+        .then((res) => {
+          console.log(res);
+          this.searchDrivers();
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.message;
+          console.log(err);
+        });
+      this.isLoading = false;
+    },
+    // Close delete driver confimation dialog
+    handleDialog(dialogName, userId) {
+      if (userId.length !== 0) {
+        this.deleteUserID = userId;
+      }
+      this.$data[dialogName] = !this.$data[dialogName];
+    },
   },
 };
 </script>
 <style>
 .filter {
   max-height: 450px !important;
+}
+.label {
+  font-size: 13px;
+}
+.form-control {
+  font-size: 13px;
+}
+.btn-action .btn i {
+  font-size: 20px;
+}
+.cus-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(92, 90, 87, 0.637);
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  padding-top: 12%;
+  color: white;
+}
+.cus-modal .header {
+  color: white;
+  font-size: 35px !important;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
