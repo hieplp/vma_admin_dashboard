@@ -10,9 +10,12 @@
 
     <div class="page-header">
       <h3 class="page-title test">
-        <router-link to="/drivers">
+        <!-- <router-link to="/drivers">
           Drivers
-        </router-link>
+        </router-link> -->
+        <a @click="$router.go(-1)" href="javascript:void(0)">
+          {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }}
+        </a>
         <span class="text-secondary">/</span>
         <span>
           {{ this.$route.params.userId }}
@@ -143,7 +146,7 @@
                   <div class="ui input">
                     <input
                       type="date"
-                      :value="getDate(driver.dateOfBirth)"
+                      :value="driver.dateOfBirth"
                       class="form-control"
                       disabled
                     />
@@ -259,10 +262,8 @@
       </div>
     </div>
 
-    <div v-if="isImageVisible">
-      <!-- Light box -->
-      <LightBox ref="lightbox" :media="media" :showLightBox="false"></LightBox>
-    </div>
+    <!-- Light box -->
+    <LightBox ref="lightbox" :media="media" :showLightBox="false"></LightBox>
   </div>
 </template>
 
@@ -308,8 +309,19 @@ export default {
       isLoading: false,
       isImageVisible: false,
 
-      media: [],
+      media: [
+        {
+          thumb: "",
+          src: "",
+        },
+      ],
+      prevRoute: null,
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
   },
   mounted() {
     this.userId = this.$route.params.userId;
@@ -319,9 +331,7 @@ export default {
   methods: {
     initDriver() {
       DriverRepository.getDetailDriver(this.userId).then((res) => {
-        let driver = Object.assign({}, res.data.driverDetail);
-        this.driver = driver;
-        console.log(res.data);
+        this.driver = res;
       });
     },
     changeTab() {
@@ -331,10 +341,8 @@ export default {
       return moment(date).format("YYYY-MM-DD");
     },
     // Handle document image light box
-    openGallery(index) {
-      this.isImageVisible = true;
+    async openGallery(index) {
       // this.$refs.lightbox.showImage(index);\
-      this.$refs.lightbox.showImage(0);
       this.media = [];
       let documentImages = this.driver.userDocumentList[index].documentImages;
       documentImages.forEach((img) => {
@@ -344,7 +352,7 @@ export default {
         };
         this.media.push(temp);
       });
-      this.isImageVisible = true;
+      await this.$refs.lightbox.showImage(0);
     },
   },
 };

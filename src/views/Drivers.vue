@@ -14,7 +14,7 @@
       v-if="isDeleteConVisible"
     >
       <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
+        <i class="user times icon mb-3"></i>
         Delete Confirmation
       </div>
       <div class="content col-12 row justify-content-center">
@@ -48,6 +48,31 @@
       </div>
       <div class="actions row justify-content-center mt-5">
         <button @click="isError = !isError" class="ui blue primary button">
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
+
+    <!-- Success message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
+      <div class="ui icon header col-12">
+        <i class="check circle icon mb-3"></i>
+        Delete successfully!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>Driver with id {{ this.deleteUserID }} is deleted successfully.</h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          @click="
+            () => {
+              isSuccess = !isSuccess;
+              this.searchDrivers();
+            }
+          "
+          class="ui blue primary button"
+        >
           <i class="checkmark icon"></i>
           Ok
         </button>
@@ -99,7 +124,7 @@
                   <th>PHONE NUMBER</th>
                   <th>VEHICLE ID</th>
                   <th>STATUS</th>
-                  <th>ACTION</th>
+                  <th class="text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,13 +156,6 @@
                     >
                   </td>
                   <td class="row justify-content-center btn-action">
-                    <!-- <router-link
-                      :to="{
-                        name: 'DriverDetail',
-                        params: { userId: driver.userId },
-                      }"
-                      >Manage</router-link
-                    > -->
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(driver.userId)"
@@ -146,6 +164,7 @@
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                      @click="updateDriver(driver.userId)"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
@@ -300,6 +319,7 @@ export default {
       currentPage: 1,
       isDeleteConVisible: false,
       isError: false,
+      isSuccess: false,
       errMsg: "",
       deleteUserID: "",
     };
@@ -317,13 +337,7 @@ export default {
       this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
+      this.initDriversList();
       this.isLoading = false;
     },
     // Init data for Driver Status Dropdown
@@ -356,13 +370,15 @@ export default {
         this.searchDriverName,
         this.searchPhoneNumber,
         this.searchStatusID,
-        this.searchDriverID
+        this.searchDriverID,
+        1
       );
       this.totalDrivers = await DriverRepository.getTotalDriver(
         this.searchDriverName,
         this.searchPhoneNumber,
         this.searchStatusID,
-        this.searchDriverID
+        this.searchDriverID,
+        1
       );
       this.isLoading = false;
     },
@@ -387,14 +403,22 @@ export default {
         params: { userId: userId },
       });
     },
+    // View driver detail
+    updateDriver(userId) {
+      this.$router.push({
+        name: "UpdateDriver",
+        params: { userId: userId },
+      });
+    },
     // Delete driver
     async deleteDriver() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
       await DriverRepository.delete(this.deleteUserID)
         .then((res) => {
-          console.log(res);
-          this.searchDrivers();
+          if (res) {
+            this.isSuccess = true;
+          }
         })
         .catch((err) => {
           this.isError = !this.isError;

@@ -8,10 +8,127 @@
       :color="'#2e5bff'"
     ></loading>
 
+    <!-- Reject confimation -->
+    <div
+      class="ui basic cus-modal justify-content-center"
+      v-if="isRejectConVisible"
+    >
+      <div class="ui icon header col-12">
+        <i class="user times icon mb-3"></i>
+        Reject Confirmation
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          Do you want to reject registration of driver with id
+          {{ this.selectedUserID }}?
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          type="button"
+          class="ui blue primary button"
+          @click="handleDialog('isRejectConVisible', '')"
+        >
+          <i class="x icon"></i>
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="ui red  button"
+          @click="updateStatus('4', 'isRejectConVisible')"
+        >
+          <i class="trash alternate icon"></i>
+          Reject
+        </button>
+      </div>
+    </div>
+
+    <!-- Accept confimation -->
+    <div
+      class="ui basic cus-modal justify-content-center"
+      v-if="isAcceptConVisible"
+    >
+      <div class="ui icon header col-12">
+        <i class="user plus icon mb-3"></i>
+        Accept Confirmation
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          Do you want to accept registration of driver with id
+          {{ this.selectedUserID }}?
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          type="button"
+          class="ui red  button"
+          @click="handleDialog('isAcceptConVisible', '')"
+        >
+          <i class="x icon"></i>
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="ui blue button"
+          @click="updateStatus('2', 'isAcceptConVisible')"
+        >
+          <i class="checkmark icon icon"></i>
+          Accept
+        </button>
+      </div>
+    </div>
+
+    <!-- Error message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isError">
+      <div class="ui icon header col-12">
+        <i class="frown outline icon mb-3"></i>
+        {{ this.actionName === "2" ? "Accept" : "Reject" }} fail!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          {{ this.errMsg }}
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button @click="isError = !isError" class="ui blue primary button">
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
+
+    <!-- Success message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
+      <div class="ui icon header col-12">
+        <i class="check circle icon mb-3"></i>
+        {{ this.actionName === "2" ? "Accept" : "Reject" }} successfully!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          Registration of driver with id {{ this.selectedUserID }} is
+          {{ this.actionName === "2" ? "accepted" : "rejected" }} successfully.
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          @click="
+            () => {
+              isSuccess = !isSuccess;
+              this.searchDrivers();
+            }
+          "
+          class="ui blue primary button"
+        >
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
+
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/drivers" class="nav-link"
-          >Driver Registraions</router-link
+        <router-link to="/driver-registrations" class="nav-link"
+          >Driver Registrations</router-link
         >
       </h3>
       <div class="dropdown">
@@ -44,9 +161,7 @@
                   <th>ID</th>
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
-                  <th>VEHICLE ID</th>
-                  <th>STATUS</th>
-                  <th>ACTION</th>
+                  <th class="text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,33 +173,26 @@
                   <td>{{ driver.userId }}</td>
                   <td>{{ driver.fullName }}</td>
                   <td>{{ driver.phoneNumber }}</td>
-                  <td>
-                    <p v-if="driver.vehicleId">
-                      {{ driver.vehicleId }}
-                    </p>
-                    <p v-else>N/A</p>
-                  </td>
-                  <td>
-                    <label
-                      class="badge"
-                      v-bind:class="{
-                        'badge-info': driver.userStatusName === 'Active',
-                        'badge-danger': driver.userStatusName === 'Inactive',
-                        'badge-warning':
-                          driver.userStatusName === 'Pending Approval',
-                        'badge-dark': driver.userStatusName === 'Disabled',
-                      }"
-                      >{{ driver.userStatusName }}</label
+
+                  <td class="row justify-content-center btn-action">
+                    <button
+                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
+                      @click="viewDetail(driver.userId)"
                     >
-                  </td>
-                  <td>
-                    <router-link
-                      :to="{
-                        name: 'DriverDetail',
-                        params: { userId: driver.userId },
-                      }"
-                      >Manage</router-link
+                      <i class="mdi mdi-account-box-outline"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-success btn-rounded btn-icon mr-1"
+                      @click="handleDialog('isAcceptConVisible', driver.userId)"
                     >
+                      <i class="mdi mdi-check"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                      @click="handleDialog('isRejectConVisible', driver.userId)"
+                    >
+                      <i class="mdi mdi-close"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -155,6 +263,7 @@
                 maxlength="10"
               />
             </div>
+
             <br />
             <div class="col-12 mt-3">
               <button
@@ -188,6 +297,7 @@ import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
 
 const DriverRepository = RepositoryFactory.get("drivers");
+const UserRepository = RepositoryFactory.get("users");
 
 export default {
   name: "DriverRegistrations",
@@ -199,6 +309,7 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
+      statusList: [],
       driversList: [],
       searchPhoneNumber: "",
       searchDriverID: "",
@@ -208,6 +319,13 @@ export default {
       totalDrivers: 0,
       page: 0,
       currentPage: 1,
+      isAcceptConVisible: false,
+      isRejectConVisible: false,
+      isError: false,
+      isSuccess: false,
+      errMsg: "",
+      selectedUserID: "",
+      actionName: 0,
     };
   },
   async mounted() {
@@ -222,13 +340,7 @@ export default {
       this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
+      this.initDriversList();
       this.isLoading = false;
     },
     // Clear search item value
@@ -242,20 +354,7 @@ export default {
       this.isLoading = true;
       this.page = 0;
       this.currentPage = 1;
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
-      this.totalDrivers = await DriverRepository.getTotalDriver(
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID
-      );
-      this.isLoading = false;
+      await this.initDriversList();
     },
     // Init data for driver list
     async initDriversList() {
@@ -264,13 +363,15 @@ export default {
         this.searchDriverName,
         this.searchPhoneNumber,
         this.searchStatusID,
-        this.searchDriverID
+        this.searchDriverID,
+        2
       );
       this.totalDrivers = await DriverRepository.getTotalDriver(
         this.searchDriverName,
         this.searchPhoneNumber,
         this.searchStatusID,
-        this.searchDriverID
+        this.searchDriverID,
+        2
       );
       this.isLoading = false;
     },
@@ -288,12 +389,72 @@ export default {
         }, 300);
       }
     },
+    // View driver detail
+    viewDetail(userId) {
+      this.$router.push({
+        name: "DriverDetail",
+        params: { userId: userId },
+      });
+    },
+    // Delete driver
+    async updateStatus(userStatus, dialogName) {
+      this.handleDialog(dialogName, "");
+      this.isLoading = true;
+      await UserRepository.updateUserStatusByUserId(
+        this.selectedUserID,
+        userStatus
+      )
+        .then((res) => {
+          if (res) {
+            this.actionName = userStatus;
+            this.isSuccess = true;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.message;
+          console.log(err);
+        });
+      this.isLoading = false;
+    },
+    // Close delete driver confimation dialog
+    handleDialog(dialogName, userId) {
+      if (userId.length !== 0) {
+        this.selectedUserID = userId;
+      }
+      this.$data[dialogName] = !this.$data[dialogName];
+    },
   },
 };
 </script>
 <style>
 .filter {
   max-height: 450px !important;
+}
+.label {
+  font-size: 13px;
+}
+.form-control {
+  font-size: 13px;
+}
+.btn-action .btn i {
+  font-size: 20px;
+}
+.cus-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(92, 90, 87, 0.637);
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  padding-top: 12%;
+  color: white;
+}
+.cus-modal .header {
+  color: white;
+  font-size: 35px !important;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

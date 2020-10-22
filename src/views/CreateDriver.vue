@@ -152,34 +152,6 @@
                     Full name is required!
                   </div>
                 </div>
-                <!-- Address -->
-                <div class="field">
-                  <label>Address</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      v-model="driver.address"
-                      placeholder="Address"
-                      maxlength="100"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="isAddressErr">
-                    Address is required!
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <!-- Gender  -->
-                <div class="field">
-                  <label>Gender</label>
-                  <select class="ui fluid dropdown" v-model="driver.gender">
-                    <option value="1">Male</option>
-                    <option value="0">Female</option>
-                  </select>
-                </div>
                 <!-- Phone number -->
                 <div class="field">
                   <label>Phone Number</label>
@@ -204,7 +176,17 @@
                   </div>
                 </div>
               </div>
-              <div class="two fields">
+
+              <div class="three fields">
+                <!-- Gender  -->
+                <div class="field">
+                  <label>Gender</label>
+                  <select class="ui fluid dropdown" v-model="driver.gender">
+                    <option value="true">Male</option>
+                    <option value="false">Female</option>
+                  </select>
+                </div>
+
                 <!-- Birthdate -->
                 <div class="field">
                   <label>Birthdate</label>
@@ -243,14 +225,122 @@
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="isBirthDateErr"
-                  >
+                  <div class="ui pointing red basic label" v-if="isSalaryErr">
                     Base salary is required!
                   </div>
                 </div>
               </div>
+
+              <div class="two fields">
+                <!-- Adress -->
+                <div class="field">
+                  <label>Address</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="driver.address"
+                      maxlength="30"
+                      placeholder="Address"
+                      class="form-control"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                  <div class="ui pointing red basic label" v-if="isAddressErr">
+                    Address is required!
+                  </div>
+                </div>
+                <!-- Wards/Communes  -->
+                <div class="field">
+                  <label>Wards/Communes</label>
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui fluid dropdown cus-select"
+                      v-model="selectedWard"
+                      :disabled="this.wards.length === 0"
+                    >
+                      <option :value="{ name: '' }">
+                        Wards/Communes
+                      </option>
+                      <option
+                        v-for="ward in wards"
+                        :key="ward.code"
+                        :value="ward"
+                        >{{ ward.name_with_type }}</option
+                      >
+                    </select>
+                    <div class="ui left corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+
+                  <div class="ui pointing red basic label" v-if="isWardErr">
+                    Ward/Commune is required!
+                  </div>
+                </div>
+              </div>
+
+              <div class="two fields">
+                <!-- Districts -->
+                <div class="field">
+                  <label>Districts</label>
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui fluid dropdown cus-select"
+                      @change="handleDropdownChange(2)"
+                      v-model="selectedDistrict"
+                      :disabled="this.districts.length === 0"
+                    >
+                      <option :value="{ name: '' }">
+                        Districts
+                      </option>
+                      <option
+                        v-for="district in districts"
+                        :key="district.code"
+                        :value="district"
+                        >{{ district.name_with_type }}</option
+                      >
+                    </select>
+                    <div class="ui left corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+
+                  <div class="ui pointing red basic label" v-if="isDistrictErr">
+                    District is required!
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Cities/Provinces</label>
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui dropdown cus-select"
+                      @change="handleDropdownChange(1)"
+                      v-model="selectedCity"
+                    >
+                      <option :value="{ name: '' }">
+                        Cities/Provinces
+                      </option>
+                      <option
+                        v-for="city in cities"
+                        :key="city.code"
+                        :value="city"
+                      >
+                        {{ city.name_with_type }}
+                      </option>
+                    </select>
+                    <div class="ui left corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+
+                  <div class="ui pointing red basic label" v-if="isCityErr">
+                    City/Province is required!
+                  </div>
+                </div>
+              </div>
+
               <!-- Button group -->
               <div class="row justify-content-center mt-5">
                 <button
@@ -295,11 +385,15 @@
                   class="ui pointing below red basic label"
                   v-if="indentify.imageErr"
                 >
-                  Image is required!
+                  Image is required 2 images!
                 </div>
                 <div class="ui corner labeled input">
                   <label
-                    class="btn btn-gradient-info btn-icon-text"
+                    class="btn btn-icon-text cus-disable"
+                    v-bind:class="{
+                      'btn-gradient-info':
+                        indentifyImage !== null && indentifyImage.length < 2,
+                    }"
                     for="upload-photo"
                   >
                     <i class="mdi mdi-upload btn-icon-prepend" />Select image...
@@ -311,6 +405,9 @@
                     type="file"
                     accept="image/*"
                     @change="uploadImage($event, 'indentifyImage')"
+                    :disabled="
+                      indentifyImage !== null && indentifyImage.length === 2
+                    "
                   />
                 </div>
               </div>
@@ -344,33 +441,11 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Location</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      v-model="driver.userDocumentReqList[0].registerLocation"
-                      placeholder="Register location"
-                      maxlength="100"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="indentify.registerLocationErr"
-                  >
-                    Register location is required!
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
-                      v-model="driver.userDocumentReqList[0].registerDate"
+                      v-model="driver.userDocumentReqList[0].registeredDate"
                       class="form-control"
                     />
                     <div class="ui corner label">
@@ -379,32 +454,38 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="indentify.registerDateErr"
+                    v-if="indentify.registeredDateErr"
                   >
-                    Register date is required!
+                    Registered date is required!
                   </div>
                 </div>
                 <div class="field">
-                  <label>Expiry Date</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      class="form-control"
-                      v-model="driver.userDocumentReqList[0].expiryDate"
-                      :min="driver.userDocumentReqList[0].registerDate"
-                      :disabled="
-                        driver.userDocumentReqList[0].registerDate.length === 0
-                      "
-                    />
-                    <div class="ui corner label">
+                  <label>Registered Location</label>
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui dropdown cus-select"
+                      v-model="driver.userDocumentReqList[0].registeredLocation"
+                    >
+                      <option :value="''">
+                        Cities/Provinces
+                      </option>
+                      <option
+                        v-for="city in cities"
+                        :key="city.code"
+                        :value="city.name_with_type"
+                      >
+                        {{ city.name_with_type }}
+                      </option>
+                    </select>
+                    <div class="ui left corner label">
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="indentify.expiryDateErr"
+                    v-if="indentify.registeredLocationErr"
                   >
-                    Expiry date is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -439,11 +520,16 @@
                   class="ui pointing below red basic label"
                   v-if="healthInsurance.imageErr"
                 >
-                  Image is required!
+                  Image is required 2 images!
                 </div>
                 <div class="ui corner labeled input">
                   <label
-                    class="btn btn-gradient-info btn-icon-text"
+                    class="btn btn-icon-text cus-disable"
+                    v-bind:class="{
+                      'btn-gradient-info':
+                        healthInsuranceImage !== null &&
+                        healthInsuranceImage.length < 2,
+                    }"
                     for="upload-health-photo"
                   >
                     <i class="mdi mdi-upload btn-icon-prepend" />Select image...
@@ -454,6 +540,10 @@
                     type="file"
                     accept="image/*"
                     @change="uploadImage($event, 'healthInsuranceImage')"
+                    :disabled="
+                      healthInsuranceImage !== null &&
+                        healthInsuranceImage.length === 2
+                    "
                   />
                 </div>
               </div>
@@ -488,34 +578,12 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Location</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      placeholder="Register location"
-                      maxlength="100"
-                      v-model="driver.userDocumentReqList[1].registerLocation"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="healthInsurance.registerLocationErr"
-                  >
-                    Register location is required!
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
                       class="form-control"
-                      v-model="driver.userDocumentReqList[1].registerDate"
+                      v-model="driver.userDocumentReqList[1].registeredDate"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -523,32 +591,39 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="healthInsurance.registerDateErr"
+                    v-if="healthInsurance.registeredDateErr"
                   >
-                    Register date is required!
+                    Registered date is required!
                   </div>
                 </div>
                 <div class="field">
-                  <label>ExpiryDate</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      class="form-control"
-                      v-model="driver.userDocumentReqList[1].expiryDate"
-                      :min="driver.userDocumentReqList[1].registerDate"
-                      :disabled="
-                        driver.userDocumentReqList[1].registerDate.length === 0
-                      "
-                    />
-                    <div class="ui corner label">
+                  <label>Registered Location</label>
+
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui dropdown cus-select"
+                      v-model="driver.userDocumentReqList[1].registeredLocation"
+                    >
+                      <option :value="''">
+                        Cities/Provinces
+                      </option>
+                      <option
+                        v-for="city in cities"
+                        :key="city.code"
+                        :value="city.name_with_type"
+                      >
+                        {{ city.name_with_type }}
+                      </option>
+                    </select>
+                    <div class="ui left corner label">
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="healthInsurance.expiryDateErr"
+                    v-if="healthInsurance.registeredLocationErr"
                   >
-                    Expiry date is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -583,11 +658,16 @@
                   class="ui pointing below red basic label"
                   v-if="drivingLicense.imageErr"
                 >
-                  Image is required!
+                  Image is required 2 images!
                 </div>
                 <div class="ui corner labeled input">
                   <label
-                    class="btn btn-gradient-info btn-icon-text"
+                    class="btn btn-icon-text cus-disable"
+                    v-bind:class="{
+                      'btn-gradient-info':
+                        drivingLicenseImage !== null &&
+                        drivingLicenseImage.length < 2,
+                    }"
                     for="upload-drive-photo"
                   >
                     <i class="mdi mdi-upload btn-icon-prepend" />Select image
@@ -598,6 +678,10 @@
                     type="file"
                     accept="image/*"
                     @change="uploadImage($event, 'drivingLicenseImage')"
+                    :disabled="
+                      drivingLicenseImage !== null &&
+                        drivingLicenseImage.length === 2
+                    "
                   />
                 </div>
               </div>
@@ -630,17 +714,26 @@
                     Driving license id is duplicated!
                   </div>
                 </div>
+
                 <div class="field">
                   <label>Driving license type</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      placeholder="Driving license type"
-                      style="text-transform:uppercase"
-                      v-model="driver.userDocumentReqList[2].otherInformation"
-                      maxlength="4"
-                    />
-                    <div class="ui corner label">
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui dropdown cus-select"
+                      v-model="selectedDrivingLicenseTypes"
+                    >
+                      <option :value="{ name: '' }">
+                        Driving License Type
+                      </option>
+                      <option
+                        v-for="drivingLicenseType in drivingLicenseTypes"
+                        :key="drivingLicenseType.name"
+                        :value="drivingLicenseType"
+                      >
+                        {{ drivingLicenseType.name }}
+                      </option>
+                    </select>
+                    <div class="ui left corner label">
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
@@ -652,34 +745,15 @@
                   </div>
                 </div>
               </div>
-              <div class="field">
-                <label>Register Location</label>
-                <div class="ui corner labeled input">
-                  <input
-                    type="text"
-                    placeholder="Register location"
-                    maxlength="100"
-                    v-model="driver.userDocumentReqList[2].registerLocation"
-                  />
-                  <div class="ui corner label">
-                    <i class="asterisk icon"></i>
-                  </div>
-                </div>
-                <div
-                  class="ui pointing red basic label"
-                  v-if="drivingLicense.registerLocationErr"
-                >
-                  Register location is required!
-                </div>
-              </div>
+
               <div class="two fields">
                 <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
                       class="form-control"
-                      v-model="driver.userDocumentReqList[2].registerDate"
+                      v-model="driver.userDocumentReqList[2].registeredDate"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -687,32 +761,38 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="drivingLicense.registerDateErr"
+                    v-if="drivingLicense.registeredDateErr"
                   >
-                    Register date is required!
+                    Registered date is required!
                   </div>
                 </div>
                 <div class="field">
-                  <label>ExpiryDate</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      class="form-control"
-                      v-model="driver.userDocumentReqList[2].expiryDate"
-                      :min="driver.userDocumentReqList[2].registerDate"
-                      :disabled="
-                        driver.userDocumentReqList[2].registerDate.length === 0
-                      "
-                    />
-                    <div class="ui corner label">
+                  <label>Registered Location</label>
+                  <div class="ui left corner labeled input">
+                    <select
+                      class="ui dropdown cus-select"
+                      v-model="driver.userDocumentReqList[2].registeredLocation"
+                    >
+                      <option :value="''">
+                        Cities/Provinces
+                      </option>
+                      <option
+                        v-for="city in cities"
+                        :key="city.code"
+                        :value="city.name_with_type"
+                      >
+                        {{ city.name_with_type }}
+                      </option>
+                    </select>
+                    <div class="ui left corner label">
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="drivingLicense.expiryDateErr"
+                    v-if="drivingLicense.registeredLocationErr"
                   >
-                    Expiry date is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -757,10 +837,10 @@ import { isNumber } from "../assets/js/input.js";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
+// import citiesJson from "../assets/json/addresses/tinh_tp.json";
+
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
-
 const DriverRepository = RepositoryFactory.get("drivers");
-
 export default {
   name: "CreateDriver",
   components: {
@@ -773,7 +853,7 @@ export default {
         fullName: "",
         address: "",
         phoneNumber: "",
-        gender: 1,
+        gender: true,
         dateOfBirth: "",
         imageLink: "",
         baseSalary: "",
@@ -783,8 +863,8 @@ export default {
           {
             userDocumentId: "",
             userDocumentTypeId: "1",
-            registerLocation: "",
-            registerDate: "",
+            registeredLocation: "",
+            registeredDate: "",
             expiryDate: "",
             otherInformation: "",
             documentImagesReqList: [],
@@ -793,8 +873,8 @@ export default {
           {
             userDocumentId: "",
             userDocumentTypeId: "2",
-            registerLocation: "",
-            registerDate: "",
+            registeredLocation: "",
+            registeredDate: "",
             expiryDate: "",
             otherInformation: "",
             documentImagesReqList: [],
@@ -803,15 +883,14 @@ export default {
           {
             userDocumentId: "",
             userDocumentTypeId: "3",
-            registerLocation: "",
-            registerDate: "",
+            registeredLocation: "",
+            registeredDate: "",
             expiryDate: "",
             otherInformation: "",
             documentImagesReqList: [],
           },
         ],
       },
-
       // Profile image
       profileImage: null,
       profileImagePrev: null,
@@ -830,26 +909,30 @@ export default {
       drivingLicenseImagePrev: [],
       // Basic Information Error
       isFullNameErr: false,
-      isAddressErr: false,
       isPhoneNumberErr: false,
       isBirthDateErr: false,
       isSalaryErr: false,
       isUserImgErr: false,
+      // Address error
+      isAddressErr: false,
+      isWardErr: false,
+      isDistrictErr: false,
+      isCityErr: false,
 
       // Document Information Error
       indentify: {
         documentIdErr: false,
         documentDupErr: false,
-        registerLocationErr: false,
-        registerDateErr: false,
+        registeredLocationErr: false,
+        registeredDateErr: false,
         expiryDateErr: false,
         imageErr: false,
       },
       healthInsurance: {
         documentIdErr: false,
         documentDupErr: false,
-        registerLocationErr: false,
-        registerDateErr: false,
+        registeredLocationErr: false,
+        registeredDateErr: false,
         expiryDateErr: false,
         imageErr: false,
       },
@@ -857,8 +940,8 @@ export default {
         documentIdErr: false,
         documentDupErr: false,
         otherInfoErr: false,
-        registerLocationErr: false,
-        registerDateErr: false,
+        registeredLocationErr: false,
+        registeredDateErr: false,
         expiryDateErr: false,
         imageErr: false,
       },
@@ -867,9 +950,32 @@ export default {
       isCreatedSuccessfully: false,
       isError: false,
       errMsg: "",
+
+      // address
+      cities: [],
+      selectedCity: {
+        name: "",
+      },
+      districts: [],
+      selectedDistrict: {
+        name: "",
+      },
+      wards: [],
+      selectedWard: {
+        name: "",
+      },
+      drivingLicenseTypes: [],
+      selectedDrivingLicenseTypes: {
+        name: "",
+      },
+      documentExpiryDate: [],
     };
   },
   mounted() {
+    this.cities = this.getJsonObjects("tinh_tp.json");
+    this.drivingLicenseTypes = require("../assets/json/indentify/type.json");
+    this.documentExpiryDate = require("../assets/json/expiryDate.json");
+
     let today = new Date();
     this.maxBirthDate =
       today.getFullYear() -
@@ -882,6 +988,38 @@ export default {
       today.getDate();
   },
   methods: {
+    getExpiryDate(date, ex) {
+      let dateArr = date.split("-");
+      return Number(dateArr[0]) + ex + "-" + dateArr[1] + "-" + dateArr[2];
+    },
+
+    getJsonObjects(str) {
+      return require("../assets/json/addresses/" + str);
+    },
+
+    handleDropdownChange(name) {
+      if (name === 1) {
+        if (this.selectedCity.name !== "") {
+          this.districts = this.getJsonObjects(
+            "quan-huyen/" + this.selectedCity.code + ".json"
+          );
+        } else {
+          this.districts = [];
+        }
+        this.selectedDistrict = { name: "" };
+        this.selectedWard = { name: "" };
+        this.wards = [];
+      } else if (name === 2) {
+        if (this.selectedDistrict.name !== "") {
+          this.wards = this.getJsonObjects(
+            "xa-phuong/" + this.selectedDistrict.code + ".json"
+          );
+        } else {
+          this.selectedWard = { name: "" };
+        }
+      }
+    },
+
     // Upload profile img
     uploadProfile(e) {
       const image = e.target.files[0];
@@ -900,7 +1038,6 @@ export default {
         let arr = this.$data[imageType + "Prev"];
         arr.push(e.target.result);
       };
-
       let arr = this.$data[imageType];
       arr.push(image);
     },
@@ -913,6 +1050,7 @@ export default {
     },
     // Upload image to firebase
     uploadImageToFirebase(imageData, imgTypeName) {
+      console.log(imgTypeName);
       return new Promise((resolve) => {
         var seft = this;
         let date = moment(new Date()).format("YYYYMMDDHHmmss");
@@ -933,19 +1071,28 @@ export default {
           () => {
             this.uploadValue = 100;
             storageRef.snapshot.ref.getDownloadURL().then((url) => {
-              // let lastIndex = url.lastIndexOf("/");
-              // seft.img1 = url.substring(lastIndex);
-              seft.img1 = url;
-              resolve();
+              resolve(url);
             });
           }
         );
+      });
+    },
+    deleteImageFromFirebase(img) {
+      return new Promise((resolve) => {
+        firebase
+          .storage()
+          .refFromURL(img)
+          .delete();
+        resolve();
       });
     },
     // Cheack basic information
     checkBasicInformation() {
       this.isFullNameErr = this.driver.fullName.length === 0;
       this.isAddressErr = this.driver.address.length === 0;
+      this.isWardErr = this.selectedWard.name.length === 0;
+      this.isDistrictErr = this.selectedDistrict.name.length === 0;
+      this.isCityErr = this.selectedCity.name.length === 0;
       this.isPhoneNumberErr =
         this.driver.phoneNumber
           .replace("(", "")
@@ -956,13 +1103,15 @@ export default {
       this.isSalaryErr = this.driver.baseSalary.length === 0;
       this.isUserImgErr =
         this.profileImage === null || this.profileImage === null;
-
       return (
         this.isFullNameErr ||
         this.isAddressErr ||
         this.isPhoneNumberErr ||
         this.isBirthDateErr ||
         this.isSalaryErr ||
+        this.isWardErr ||
+        this.isDistrictErr ||
+        this.isCityErr ||
         this.isUserImgErr
       );
     },
@@ -970,73 +1119,56 @@ export default {
     checkDocumentInfo() {
       // Check indentify card
       let indentify = this.driver.userDocumentReqList[0];
-
       let indentifyID = indentify.userDocumentId;
       this.indentify.documentIdErr =
         indentifyID.length !== 9 && indentifyID.length !== 12;
-      this.indentify.registerLocationErr =
-        indentify.registerLocation.length === 0;
-      this.indentify.registerDateErr = indentify.registerDate.length === 0;
-      this.indentify.expiryDateErr = indentify.expiryDate.length === 0;
+      this.indentify.registeredLocationErr =
+        indentify.registeredLocation.length === 0;
+      this.indentify.registeredDateErr = indentify.registeredDate.length === 0;
       this.indentify.imageErr =
-        this.indentifyImage.length === 0 ||
-        this.indentifyImagePrev.length === 0;
-
+        this.indentifyImage.length < 2 || this.indentifyImagePrev.length < 2;
       let isIndentifyValid =
         this.indentify.documentIdErr ||
-        this.indentify.registerLocationErr ||
-        this.indentify.registerDateErr ||
-        this.indentify.expiryDateErr ||
+        this.indentify.registeredLocationErr ||
+        this.indentify.registeredDateErr ||
         this.indentify.imageErr;
-
       // Check health insurance
       let healthInsurance = this.driver.userDocumentReqList[1];
-
       this.healthInsurance.documentIdErr =
         healthInsurance.userDocumentId.length !== 15;
+      this.healthInsurance.registeredLocationErr =
+        healthInsurance.registeredLocation.length === 0;
+      this.healthInsurance.registeredDateErr =
+        healthInsurance.registeredDate.length === 0;
 
-      this.healthInsurance.registerLocationErr =
-        healthInsurance.registerLocation.length === 0;
-      this.healthInsurance.registerDateErr =
-        healthInsurance.registerDate.length === 0;
-      this.healthInsurance.expiryDateErr =
-        healthInsurance.expiryDate.length === 0;
       this.healthInsurance.imageErr =
-        this.healthInsuranceImage.length === 0 ||
-        this.healthInsuranceImage.length === 0;
-
+        this.healthInsuranceImage.length < 2 ||
+        this.healthInsuranceImage.length < 2;
       let isHealthInsuranceValid =
         this.healthInsurance.documentIdErr ||
-        this.healthInsurance.registerLocationErr ||
-        this.healthInsurance.registerDateErr ||
-        this.healthInsurance.expiryDateErr ||
+        this.healthInsurance.registeredLocationErr ||
+        this.healthInsurance.registeredDateErr ||
         this.healthInsurance.imageEr;
-
       // Check driving license
       let drivingLicense = this.driver.userDocumentReqList[2];
-
       this.drivingLicense.documentIdErr =
         drivingLicense.userDocumentId.length !== 12;
       this.drivingLicense.otherInfoErr =
-        drivingLicense.otherInformation.length === 0;
-      this.drivingLicense.registerLocationErr =
-        drivingLicense.registerLocation.length === 0;
-      this.drivingLicense.registerDateErr =
-        drivingLicense.registerDate.length === 0;
-      this.drivingLicense.expiryDateErr =
-        drivingLicense.expiryDate.length === 0;
-      this.drivingLicense.imageErr =
-        this.drivingLicenseImage.length === 0 ||
-        this.drivingLicenseImagePrev.length === 0;
+        this.selectedDrivingLicenseTypes.name.length === 0;
+      this.drivingLicense.registeredLocationErr =
+        drivingLicense.registeredLocation.length === 0;
+      this.drivingLicense.registeredDateErr =
+        drivingLicense.registeredDate.length === 0;
 
+      this.drivingLicense.imageErr =
+        this.drivingLicenseImage.length < 2 ||
+        this.drivingLicenseImagePrev.length < 2;
       let isDrivingLicenseValid =
         this.drivingLicense.documentIdErr ||
         this.drivingLicense.otherInfoErr ||
-        this.drivingLicense.registerLocationErr ||
-        this.drivingLicense.registerDateErr ||
-        this.drivingLicense.expiryDateErr ||
+        this.drivingLicense.registeredLocationErr ||
+        this.drivingLicense.registeredDateErr ||
         this.drivingLicense.imageErr;
-
       return (
         isIndentifyValid || isHealthInsuranceValid || isDrivingLicenseValid
       );
@@ -1045,20 +1177,44 @@ export default {
       let isValid = this.checkDocumentInfo();
       if (!isValid) {
         this.isLoading = true;
-
         this.driver.userId = this.driver.userDocumentReqList[0].userDocumentId;
 
         this.indentify.documentDupErr = false;
         this.healthInsurance.documentDupErr = false;
         this.drivingLicense.documentDupErr = false;
 
-        // Init image list for indentify card
-        await this.uploadImageToFirebase(this.profileImage, "profile").then(
-          () => {
-            let url = this.img1;
-            this.driver.imageLink = url;
-          }
+        // Init document expiry date
+        this.driver.userDocumentReqList[0].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[0].registeredDate,
+          this.documentExpiryDate.indentify
         );
+        this.driver.userDocumentReqList[1].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[1].registeredDate,
+          this.documentExpiryDate.indentify
+        );
+        this.driver.userDocumentReqList[2].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[2].registeredDate,
+          this.selectedDrivingLicenseTypes.expiryDate
+        );
+        this.driver.userDocumentReqList[2].otherInformation = this.selectedDrivingLicenseTypes.name;
+
+        this.driver.address =
+          this.driver.address +
+          ", " +
+          this.selectedWard.name_with_type +
+          ", " +
+          this.selectedDistrict.name_with_type +
+          ", " +
+          this.selectedCity.name_with_type;
+
+        // Init image list for indentify card
+        if (this.profileImage) {
+          this.driver.imageLink = await this.uploadImageToFirebase(
+            this.profileImage,
+            "profile"
+          );
+          this.profileImage = null;
+        }
 
         this.driver.phoneNumber = this.driver.phoneNumber
           .replace("(", "")
@@ -1066,11 +1222,21 @@ export default {
           .replace(" ", "")
           .replace("-", "");
 
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[0].documentImagesReqList
+        );
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[1].documentImagesReqList
+        );
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[2].documentImagesReqList
+        );
+        console.log(this.driver);
+
         await this.getFirebaseLinks("indentifyImage", 0);
         await this.getFirebaseLinks("healthInsuranceImage", 1);
         await this.getFirebaseLinks("drivingLicenseImage", 2);
 
-        console.log(this.driver);
         await DriverRepository.create(this.driver)
           .then((res) => {
             if (res) {
@@ -1079,7 +1245,6 @@ export default {
             console.log(res);
           })
           .catch((ex) => {
-            this.isError = true;
             if (
               ex.debugMessage.includes(
                 "Cannot insert duplicate key in object 'dbo.user_document'"
@@ -1103,12 +1268,23 @@ export default {
                 this.healthInsurance.documentDupErr = true;
                 this.$refs.healthInsurId.focus();
               }
-            }
-            if (
+              if (
+                ex.debugMessage.includes(
+                  this.driver.userDocumentReqList[0].userDocumentId
+                )
+              ) {
+                this.errMsg = "Indentify ID is duplicated!";
+                this.indentify.documentDupErr = true;
+                this.$refs.indentifyID.focus();
+              }
+              this.isError = true;
+            } else if (
               ex.debugMessage.includes(
                 "Cannot insert duplicate key in object 'dbo.user'"
               )
             ) {
+              console.log(563712731273);
+              this.isError = true;
               this.errMsg = "Indentify ID is duplicated!";
               this.indentify.documentDupErr = true;
               this.$refs.indentifyID.focus();
@@ -1119,25 +1295,35 @@ export default {
       }
     },
     // Get firebase links
-    getFirebaseLinks(imgTypeName, index) {
+    async getFirebaseLinks(imgTypeName, index) {
       let imgDataList = this.$data[imgTypeName];
-      imgDataList.forEach((img) => {
-        this.uploadImageToFirebase(img, imgTypeName).then(() => {
-          let url = this.img1;
-          let document = this.driver.userDocumentReqList[index];
-          let imgLinks = document.documentImagesReqList;
-
-          let img = {
+      let imgArr = [];
+      let document = this.driver.userDocumentReqList[index];
+      console.log(imgDataList);
+      if (imgDataList) {
+        for (let img of imgDataList) {
+          console.log(123);
+          let url = await this.uploadImageToFirebase(img, imgTypeName);
+          let imgObj = {
             documentId: document.userDocumentId,
             documentImageId: 0,
             imageLink: url,
           };
-          imgLinks.push(img);
-        });
-      });
+          imgArr.push(imgObj);
+        }
+        document.documentImagesReqList = imgArr;
+      }
+    },
+    // Delete firebase imgs
+    async deleteFirebaseLink(imgs) {
+      for (let img of imgs) {
+        await this.deleteImageFromFirebase(img.imageLink);
+      }
+      imgs = [];
     },
     changeTab() {
       let isValid = this.checkBasicInformation();
+      // let isValid = false;
       if (!isValid) {
         this.isUserInfoVisible = !this.isUserInfoVisible;
       }
@@ -1150,7 +1336,6 @@ export default {
       var x = this.driver.phoneNumber
         .replace(/\D/g, "")
         .match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-
       if (x[1].charAt(0) !== "0" && x[1].length != 0) {
         x[1] = "0" + x[1];
       }
@@ -1163,7 +1348,7 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style>
+<style scoped>
 .field label {
   margin-top: 10px !important;
 }
@@ -1205,11 +1390,13 @@ export default {
 }
 
 .upload-pro img {
-  border-radius: 55%;
-  min-width: 200px;
-  max-width: 300px;
-  min-height: 200px;
-  max-height: 300px;
+  border-radius: 50%;
+  /* min-width: 200px; */
+  /* max-width: 300px; */
+  /* min-height: 200px; */
+  /* max-height: 300px; */
+  width: 280px !important;
+  height: 280px !important;
 }
 .upload-pro-plus {
   position: absolute;
@@ -1226,8 +1413,8 @@ export default {
 }
 .upload-pro-plus i {
   position: absolute;
-  left: 29%;
-  top: 29%;
+  left: 35%;
+  top: 35%;
 }
 
 .cus-modal {
@@ -1245,6 +1432,14 @@ export default {
 .cus-modal .header {
   color: white;
   font-size: 35px !important;
+}
+
+.cus-select {
+  padding-left: 26px !important;
+}
+.cus-disable {
+  background-color: #858585 !important;
+  color: white;
 }
 </style>
 <style>

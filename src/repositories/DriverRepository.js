@@ -4,14 +4,14 @@ const resource = "/drivers";
 
 export default {
   // Get driver list
-  async get(page, name, phoneNumber, userStatusId, userId) {
+  async get(page, name, phoneNumber, userStatusId, userId, viewOption) {
     let driverList = [];
     try {
       const res = await Repository.get(
-        `${resource}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}`
+        `${resource}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}&viewOption=${viewOption}`
       );
       if (res.data) {
-        driverList = res.data.driverList;
+        driverList = res.data.driverRes;
       }
     } catch (ex) {
       console.log(ex);
@@ -19,11 +19,11 @@ export default {
     return driverList;
   },
   // Get total drivers count
-  async getTotalDriver(name, phoneNumber, userStatusId, userId) {
+  async getTotalDriver(name, phoneNumber, userStatusId, userId, viewOption) {
     let count = 0;
     try {
       const res = await Repository.get(
-        `${resource}/count?name=${name}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}`
+        `${resource}/count?name=${name}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}&viewOption=${viewOption}`
       );
       if (res.data) {
         count = res.data;
@@ -34,23 +34,46 @@ export default {
     return count;
   },
   // Get detailed driver
-  async getDetailDriver(userId) {
-    let driver = {};
-    try {
-      const res = await Repository.get(`${resource}/${userId}`);
-      if (res.data) {
-        driver = res.data;
-        console.log(res.data);
-      }
-    } catch (ex) {
-      console.log(ex);
-    }
-    return driver;
+  getDetailDriver(userId) {
+    return new Promise((resolve, reject) => {
+      Repository.get(`${resource}/${userId}`)
+        .then((res) => {
+          console.log(res.data.driverDetail);
+          resolve(res.data.driverDetail);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
   },
   // Create driver
-  async create(driver) {
+  create(driver) {
     return new Promise((resolve, reject) => {
       Repository.post(resource, driver)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // Create driver
+  update(driver) {
+    return new Promise((resolve, reject) => {
+      Repository.put(resource, driver)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // Delete driver
+  delete(userId) {
+    return new Promise((resolve, reject) => {
+      Repository.delete(`${resource}?userId=${userId}`)
         .then((res) => {
           resolve(res);
         })
