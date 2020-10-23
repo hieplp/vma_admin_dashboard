@@ -38,7 +38,6 @@ export default {
     return new Promise((resolve, reject) => {
       Repository.get(`${resource}/${userId}`)
         .then((res) => {
-          console.log(res.data.driverDetail);
           resolve(res.data.driverDetail);
         })
         .catch((err) => {

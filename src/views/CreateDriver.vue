@@ -1050,7 +1050,6 @@ export default {
     },
     // Upload image to firebase
     uploadImageToFirebase(imageData, imgTypeName) {
-      console.log(imgTypeName);
       return new Promise((resolve) => {
         var seft = this;
         let date = moment(new Date()).format("YYYYMMDDHHmmss");
@@ -1231,7 +1230,6 @@ export default {
         await this.deleteFirebaseLink(
           this.driver.userDocumentReqList[2].documentImagesReqList
         );
-        console.log(this.driver);
 
         await this.getFirebaseLinks("indentifyImage", 0);
         await this.getFirebaseLinks("healthInsuranceImage", 1);
@@ -1242,7 +1240,6 @@ export default {
             if (res) {
               this.isCreatedSuccessfully = true;
             }
-            console.log(res);
           })
           .catch((ex) => {
             if (
@@ -1283,7 +1280,6 @@ export default {
                 "Cannot insert duplicate key in object 'dbo.user'"
               )
             ) {
-              console.log(563712731273);
               this.isError = true;
               this.errMsg = "Indentify ID is duplicated!";
               this.indentify.documentDupErr = true;
@@ -1299,10 +1295,8 @@ export default {
       let imgDataList = this.$data[imgTypeName];
       let imgArr = [];
       let document = this.driver.userDocumentReqList[index];
-      console.log(imgDataList);
       if (imgDataList) {
         for (let img of imgDataList) {
-          console.log(123);
           let url = await this.uploadImageToFirebase(img, imgTypeName);
           let imgObj = {
             documentId: document.userDocumentId,

@@ -10,9 +10,6 @@
 
     <div class="page-header">
       <h3 class="page-title test">
-        <!-- <router-link to="/drivers">
-          Drivers
-        </router-link> -->
         <a @click="$router.go(-1)" href="javascript:void(0)">
           {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }}
         </a>
@@ -67,104 +64,124 @@
               <div class="row justify-content-center">
                 <div class="upload-pro">
                   <img
-                    src="../assets/images/unnamed.png"
+                    :src="driver.imageLink"
                     class="ui medium circular image pro-img"
                     alt="image"
+                    @click="viewProfilePhoto()"
                     v-if="
-                      this.driver.imageLink === null ||
-                        (this.driver.imageLink != null &&
-                          this.driver.imageLink.length === 0)
+                      driver.imageLink !== null && driver.imageLink.length > 0
                     "
                   />
                   <img
-                    :src="this.driver.imageLink"
+                    src="../assets/images/unnamed.png"
                     class="ui medium circular image pro-img"
                     alt="image"
-                    v-else
+                    v-else-if="profileImagePrev == null"
                   />
                 </div>
+              </div>
+
+              <div class="row justify-content-center mt-4">
+                <h4 class="col-12 text-center">ID: {{ driver.userId }}</h4>
+                <p
+                  class="badge ml-2"
+                  v-if="driver.userStatus"
+                  v-bind:class="{
+                    'badge-info': driver.userStatus.userStatusName === 'Active',
+                    'badge-danger':
+                      driver.userStatus.userStatusName === 'Inactive',
+                    'badge-warning':
+                      driver.userStatus.userStatusName === 'Pending Approval',
+                    'badge-dark':
+                      driver.userStatus.userStatusName === 'Disabled',
+                  }"
+                >
+                  {{ driver.userStatus.userStatusName }}
+                </p>
               </div>
 
               <div class="two fields mt-4">
                 <!-- Full name -->
                 <div class="field">
                   <label>Full Name</label>
-                  <div class="ui input">
-                    <input
-                      type="text"
-                      v-model="driver.fullName"
-                      name="Name"
-                      placeholder="Full name"
-                      maxlength="50"
-                      disabled
-                    />
-                  </div>
-                </div>
-                <!-- Address -->
-                <div class="field">
-                  <label>Address</label>
-                  <div class="ui input">
-                    <input
-                      type="text"
-                      v-model="driver.address"
-                      placeholder="Address"
-                      disabled
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <!-- Gender  -->
-                <div class="field">
-                  <label>Gender</label>
-                  <div class="ui input">
-                    <input
-                      type="text"
-                      name="Phone Number"
-                      :value="driver.gender ? 'Male' : 'Female'"
-                      disabled
-                    />
+                  <div class="ui corner labeled input">
+                    <input type="text" v-model="driver.fullName" readonly />
                   </div>
                 </div>
                 <!-- Phone number -->
                 <div class="field">
                   <label>Phone Number</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
+                    <input type="text" v-model="driver.phoneNumber" readonly />
+                  </div>
+                </div>
+                <!-- Vehicle ID -->
+                <div class="field">
+                  <label>Vehicle ID</label>
+                  <div class="ui action input">
                     <input
                       type="text"
-                      name="Phone Number"
-                      v-model="driver.phoneNumber"
-                      disabled
+                      :value="driver.vehicleId ? driver.vehicleId : 'N/A'"
+                      readonly
                     />
+                    <button class="ui right labeled icon button">
+                      <i class="truck icon"></i>
+                      Assign
+                    </button>
                   </div>
                 </div>
               </div>
-              <div class="two fields">
+
+              <div class="three fields">
+                <!-- Gender  -->
+                <div class="field">
+                  <label>Gender</label>
+                  <input
+                    type="text"
+                    :value="driver.gender ? 'Male' : 'Female'"
+                    readonly
+                  />
+                </div>
+
                 <!-- Birthdate -->
                 <div class="field">
                   <label>Birthdate</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
                     <input
-                      type="date"
-                      :value="driver.dateOfBirth"
+                      type="text"
+                      v-model="driver.dateOfBirth"
                       class="form-control"
-                      disabled
+                      readonly
                     />
                   </div>
                 </div>
                 <!-- Base Salary -->
                 <div class="field ">
                   <label>Base Salary</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
                     <input
                       type="text"
                       name="Salary"
                       v-model="driver.baseSalary"
-                      disabled
+                      readonly
                     />
                   </div>
                 </div>
               </div>
+
+              <!-- Adress -->
+              <div class="field">
+                <label>Address</label>
+                <div class="ui corner labeled input">
+                  <input
+                    type="text"
+                    v-model="driver.address"
+                    maxlength="30"
+                    readonly
+                  />
+                </div>
+              </div>
+
               <!-- Button group -->
               <div class="row justify-content-center mt-5">
                 <button
@@ -182,52 +199,49 @@
     </div>
     <!-- User document -->
     <div class="row" v-else>
-      <div
-        class="col-lg-12 grid-margin stretch-card"
-        v-for="(document, docIndex) in this.driver.userDocumentList"
-        :key="document.userDocumentId"
-      >
+      <!-- Indentify Card -->
+      <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
             <div class="ui form">
-              <h4 class="ui dividing header">
-                {{ document.userDocumentType }}
-              </h4>
+              <h4 class="ui dividing header">Indentify Card</h4>
               <div class="field justify-content-center">
                 <label class="mb-4">Images</label>
                 <div class="row">
                   <div
                     class="col-3 preview-img mb-3"
-                    v-for="img in document.documentImages"
+                    v-for="(img, index) in indentifyInfor.documentImages"
                     :key="img.documentImageId"
                   >
                     <img
                       :src="img.imageLink"
                       class="ui large image"
-                      @click="openGallery(docIndex)"
+                      @click="openGallery('indentifyInfor', index)"
                     />
                   </div>
                 </div>
               </div>
               <div class="two fields">
                 <div class="field">
-                  <label>User Document ID</label>
-                  <div class="ui input">
+                  <label>Indentify ID</label>
+                  <div class="ui corner labeled input">
                     <input
-                      :value="document.userDocumentId"
+                      v-model="indentifyInfor.userDocumentId"
                       type="text"
-                      name="Name"
-                      disabled
+                      readonly
+                      maxlength="12"
                     />
                   </div>
                 </div>
+
                 <div class="field">
                   <label>Register Location</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
                     <input
                       type="text"
-                      :value="document.registerLocation"
-                      disabled
+                      v-model="indentifyInfor.registeredLocation"
+                      class="form-control"
+                      readonly
                     />
                   </div>
                 </div>
@@ -235,23 +249,23 @@
               <div class="two fields">
                 <div class="field">
                   <label>Register Date</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
                     <input
-                      type="date"
-                      :value="getDate(document.registerDate)"
+                      type="text"
+                      v-model="indentifyInfor.registeredDate"
                       class="form-control"
-                      disabled
+                      readonly
                     />
                   </div>
                 </div>
                 <div class="field">
                   <label>Expiry Date</label>
-                  <div class="ui input">
+                  <div class="ui corner labeled input">
                     <input
-                      type="date"
+                      type="text"
+                      v-model="indentifyInfor.expiryDate"
                       class="form-control"
-                      :value="getDate(document.expiryDate)"
-                      disabled
+                      readonly
                     />
                   </div>
                 </div>
@@ -260,8 +274,196 @@
           </div>
         </div>
       </div>
-    </div>
+      <!-- Health Insurance -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Health Insurance</h4>
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="(img, index) in healthInsuranceInfor.documentImages"
+                    :key="img.documentImageId"
+                  >
+                    <img
+                      :src="img.imageLink"
+                      class="ui large image"
+                      @click="openGallery('healthInsuranceInfor', index)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>ID</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      name="Name"
+                      ref="healthInsurId"
+                      readonly
+                      v-model="healthInsuranceInfor.userDocumentId"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="healthInsuranceInfor.registeredLocation"
+                      class="form-control"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="healthInsuranceInfor.registeredDate"
+                      class="form-control"
+                      readonly
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Expiry Date</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="healthInsuranceInfor.expiryDate"
+                      class="form-control"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Driving License -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <h4 class="ui dividing header">Driving License</h4>
+              <div class="field justify-content-center">
+                <label class="mb-4">Images</label>
+                <div class="row">
+                  <div
+                    class="col-3 preview-img mb-3"
+                    v-for="(img, index) in drivingLicenseInfor.documentImages"
+                    :key="img.documentImageId"
+                  >
+                    <img
+                      :src="img.imageLink"
+                      class="ui large image"
+                      @click="openGallery('drivingLicenseInfor', index)"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
+                <div class="field">
+                  <label>Driving License ID</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      ref="drivLicenseID"
+                      readonly
+                      v-model="drivingLicenseInfor.userDocumentId"
+                    />
+                  </div>
+                </div>
 
+                <div class="field">
+                  <label>Driving license type</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      ref="drivLicenseID"
+                      readonly
+                      v-model="drivingLicenseInfor.otherInformation"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="two fields">
+                <div class="field">
+                  <label>Register Location</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      class="form-control"
+                      v-model="drivingLicenseInfor.registeredLocation"
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Register Date</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="drivingLicenseInfor.registeredDate"
+                      class="form-control"
+                      readonly
+                    />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Expiry Date</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="drivingLicenseInfor.expiryDate"
+                      class="form-control"
+                      readonly
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Confirm Group -->
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <!-- Button group -->
+              <div class="row justify-content-center mt-5">
+                <div class="col-4">
+                  <button
+                    class="btn btn-gradient-danger btn-fw"
+                    type="button"
+                    v-on:click="changeTab()"
+                  >
+                    Back
+                  </button>
+                  <button
+                    class="btn btn-gradient-info btn-fw ml-2"
+                    type="button"
+                    v-on:click="openConfirmation()"
+                  >
+                    Update
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Light box -->
     <LightBox ref="lightbox" :media="media" :showLightBox="false"></LightBox>
   </div>
@@ -269,10 +471,8 @@
 
 <script>
 import Loading from "vue-loading-overlay";
-import moment from "moment";
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
 import LightBox from "vue-image-lightbox";
-
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 
 const DriverRepository = RepositoryFactory.get("drivers");
@@ -285,30 +485,33 @@ export default {
   },
   data() {
     return {
-      driverID: "",
-      driver: {},
-
+      driver: {
+        userId: "",
+        fullName: "",
+        address: "",
+        phoneNumber: "",
+        gender: true,
+        dateOfBirth: "",
+        imageLink: "",
+        baseSalary: "",
+        userStatusId: 2,
+        userDocumentReqList: [],
+      },
       // Profile image
       profileImage: null,
       profileImagePrev: null,
-      documentValue: null,
       isUserInfoVisible: true,
       uploadValue: 0,
       img1: null,
       imageData: null,
-      // Indentify image
-      indentifyImage: [],
-      indentifyImagePrev: [],
-      // Health Insurance
-      healthInsuranceImage: [],
-      healthInsuranceImagePrev: [],
-      // Driving License
-      drivingLicenseImage: [],
-      drivingLicenseImagePrev: [],
 
       isLoading: false,
-      isImageVisible: false,
 
+      indentifyInfor: {},
+      healthInsuranceInfor: {},
+      drivingLicenseInfor: {},
+
+      isUpdConVisible: false,
       media: [
         {
           thumb: "",
@@ -323,28 +526,60 @@ export default {
       vm.prevRoute = from;
     });
   },
-  mounted() {
-    this.userId = this.$route.params.userId;
-
-    this.initDriver();
+  async mounted() {
+    await this.initDetailDriver();
   },
   methods: {
-    initDriver() {
-      DriverRepository.getDetailDriver(this.userId).then((res) => {
-        this.driver = res;
-      });
+    async initDetailDriver() {
+      this.isLoading = true;
+      await DriverRepository.getDetailDriver(this.$route.params.userId).then(
+        (res) => {
+          this.driver = res;
+
+          let identityCard = this.findDocumentByName(
+            this.driver.userDocumentList,
+            1
+          );
+
+          let healthInsurance = this.findDocumentByName(
+            this.driver.userDocumentList,
+            2
+          );
+          let drivingLicense = this.findDocumentByName(
+            this.driver.userDocumentList,
+            3
+          );
+
+          this.indentifyInfor = identityCard;
+          this.healthInsuranceInfor = healthInsurance;
+          this.drivingLicenseInfor = drivingLicense;
+        }
+      );
+      this.isLoading = false;
+    },
+    // Find document
+    findDocumentByName(driverDocument, userDocumentTypeId) {
+      for (let doc of driverDocument) {
+        if (doc.userDocumentType.userDocumentTypeId === userDocumentTypeId) {
+          return doc;
+        }
+      }
     },
     changeTab() {
       this.isUserInfoVisible = !this.isUserInfoVisible;
     },
-    getDate(date) {
-      return moment(date).format("YYYY-MM-DD");
-    },
-    // Handle document image light box
-    async openGallery(index) {
-      // this.$refs.lightbox.showImage(index);\
+    viewProfilePhoto() {
       this.media = [];
-      let documentImages = this.driver.userDocumentList[index].documentImages;
+      let temp = {
+        thumb: this.driver.imageLink,
+        src: this.driver.imageLink,
+      };
+      this.media.push(temp);
+      this.$refs.lightbox.showImage(0);
+    },
+    async openGallery(userDocumentType, index) {
+      this.media = [];
+      let documentImages = this.$data[userDocumentType].documentImages;
       documentImages.forEach((img) => {
         let temp = {
           thumb: img.imageLink,
@@ -352,7 +587,7 @@ export default {
         };
         this.media.push(temp);
       });
-      await this.$refs.lightbox.showImage(0);
+      await this.$refs.lightbox.showImage(index);
     },
   },
 };
@@ -363,98 +598,26 @@ export default {
 .field label {
   margin-top: 10px !important;
 }
-.asterisk.icon {
-  color: red;
-}
-.preview-img {
-  position: relative;
-}
-.close-btn {
-  position: absolute;
-  top: 0%;
-  right: 8%;
-  color: red;
-  font-size: 30px;
-  background-color: transparent;
-  border: none;
-  visibility: hidden;
-}
-.preview-img:hover > .close-btn {
-  visibility: visible;
-}
 
-.upload-photo {
-  opacity: 0;
-  position: absolute;
-  z-index: -1;
-}
 .step i {
   color: #047edf !important;
 }
-/* Upload profile img */
-.upload-pro {
-  position: relative;
-}
-.upload-pro:hover > .upload-pro-plus {
+
+.ui.large.image:hover {
   cursor: pointer;
-  visibility: visible;
+}
+.pro-img:hover {
+  cursor: pointer;
+}
+.badge {
+  font-size: 13px;
 }
 
-.upload-pro img {
-  border-radius: 50%;
-  width: 280px !important;
-  height: 280px !important;
-}
-.upload-pro-plus {
-  position: absolute;
-  z-index: 1000;
-  background-color: rgba(221, 209, 209, 0.5);
-  color: rgb(138, 135, 135);
-  width: 100%;
-  height: 100%;
-  top: 0%;
-  left: 0%;
-  font-size: 80px;
-  border-radius: 55%;
-  visibility: hidden;
-}
-.upload-pro-plus i {
-  position: absolute;
-  left: 35%;
-  top: 35%;
-}
-
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
-
-.ui.input input[type="text"][disabled] {
-  font-size: 15px;
-  color: #000000 !important;
-  font-weight: 500 !important;
-}
-
-.ui.input input[type="date"][disabled] {
-  font-size: 15px;
-  color: #000000 !important;
-  font-weight: 500 !important;
+.ui.right.labeled {
+  background-color: #3497e9;
+  color: rgb(255, 255, 255);
 }
 </style>
 <style>
 @import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
-G

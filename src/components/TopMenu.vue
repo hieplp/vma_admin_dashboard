@@ -5,12 +5,20 @@
     <div
       class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center"
     >
-      <a class="navbar-brand brand-logo" href="../../index.html"
+      <!-- <a class="navbar-brand brand-logo" href="../../index.html"
         ><i class="mdi mdi-car-connected"></i>VMA</a
       >
       <a class="navbar-brand brand-logo-mini" href="../../index.html"
         ><i class="mdi mdi-car-connected"></i
-      ></a>
+      ></a> -->
+      <img
+        class="navbar-brand brand-logo mt-3"
+        src="../assets/images/logo(transparent).png"
+      />
+      <img
+        class="navbar-brand brand-logo-mini"
+        src="../assets/images/logo(transparent).png"
+      />
     </div>
 
     <div class="navbar-menu-wrapper d-flex align-items-stretch">
@@ -135,13 +143,18 @@
 </template>
 
 <script>
-
 export default {
   props: {},
-  mounted() {
-  },
+  mounted() {},
   methods: {},
 };
 </script>
-
-
+<style>
+.brand-logo{
+  height: 115% !important;
+  width: 60% !important;
+}
+.brand-logo-mini{
+  width: 80% !important;  
+}
+</style>

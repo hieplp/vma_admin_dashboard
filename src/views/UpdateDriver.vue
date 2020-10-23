@@ -8,8 +8,6 @@
       :color="'#2e5bff'"
     ></loading>
 
-    <!-- <SuccessModal /> -->
-
     <div class="page-header">
       <h3 class="page-title test">
         <router-link to="/drivers">
@@ -26,7 +24,7 @@
       v-if="isCreatedSuccessfully"
     >
       <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
+        <i class="check circle icon mb-3"></i>
         Update Driver Successfully!
       </div>
       <div class="content col-12 row justify-content-center">
@@ -45,7 +43,7 @@
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Create Driver Fail!
+        Update Driver Fail!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -136,21 +134,24 @@
                     class="ui medium circular image pro-img"
                     alt="image"
                     v-if="
-                      driver.imageLink !== null && driver.imageLink.length > 0
+                      profileImage === null &&
+                        driver.imageLink !== null &&
+                        driver.imageLink.length > 0
                     "
-                  />
-                  <img
-                    src="../assets/images/unnamed.png"
-                    class="ui medium circular image pro-img"
-                    alt="image"
-                    v-else-if="profileImagePrev == null"
                   />
                   <img
                     :src="profileImagePrev"
                     class="ui medium circular image pro-img"
                     alt="image"
+                    v-else-if="profileImage !== null"
+                  />
+                  <img
+                    src="../assets/images/unnamed.png"
+                    class="ui medium circular image pro-img"
+                    alt="image"
                     v-else
                   />
+
                   <div class="upload-pro-plus ">
                     <i class="mdi mdi-plus"></i>
                   </div>
@@ -455,7 +456,7 @@
                     <input
                       v-model="indentifyInfor.userDocumentId"
                       type="text"
-                      disabled
+                      readonly
                       maxlength="12"
                     />
                     <div class="ui corner label">
@@ -499,7 +500,7 @@
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="indentifyInfor.registerLocation"
+                      v-model="indentifyInfor.registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -518,7 +519,7 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="indentify.registerLocationErr"
+                    v-if="indentify.registeredLocationErr"
                   >
                     Registered location is required!
                   </div>
@@ -590,7 +591,7 @@
                       type="text"
                       name="Name"
                       ref="healthInsurId"
-                      disabled
+                      readonly
                       v-model="healthInsuranceInfor.userDocumentId"
                     />
                     <div class="ui corner label">
@@ -635,7 +636,7 @@
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="healthInsuranceInfor.registerLocation"
+                      v-model="healthInsuranceInfor.registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -654,7 +655,7 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="healthInsurance.registerLocationErr"
+                    v-if="healthInsurance.registeredLocationErr"
                   >
                     Registered location is required!
                   </div>
@@ -725,7 +726,7 @@
                     <input
                       type="text"
                       ref="drivLicenseID"
-                      disabled
+                      readonly
                       v-model="drivingLicenseInfor.userDocumentId"
                     />
                     <div class="ui corner label">
@@ -802,7 +803,7 @@
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="drivingLicenseInfor.registerLocation"
+                      v-model="drivingLicenseInfor.registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -821,7 +822,7 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="drivingLicense.registerLocationErr"
+                    v-if="drivingLicense.registeredLocationErr"
                   >
                     Registered location is required!
                   </div>
@@ -1002,6 +1003,7 @@ export default {
   },
   methods: {
     initDetailDriver() {
+      this.isLoading = true;
       DriverRepository.getDetailDriver(this.$route.params.userId).then(
         (res) => {
           this.driver = res;
@@ -1073,6 +1075,8 @@ export default {
           this.drivingLicenseInfor.documentImagesReqList.forEach((img) => {
             this.drivingLicenseImagePrev.push(img);
           });
+
+          this.isLoading = false;
         }
       );
     },
@@ -1263,28 +1267,28 @@ export default {
       let indentifyID = indentify.userDocumentId;
       this.indentify.documentIdErr =
         indentifyID.length !== 9 && indentifyID.length !== 12;
-      this.indentify.registerLocationErr =
-        indentify.registerLocation.length === 0;
+      this.indentify.registeredLocationErr =
+        indentify.registeredLocation.length === 0;
       this.indentify.registeredDateErr = indentify.registeredDate.length === 0;
       this.indentify.imageErr = this.indentifyImagePrev.length < 2;
       let isIndentifyValid =
         this.indentify.documentIdErr ||
-        this.indentify.registerLocationErr ||
+        this.indentify.registeredLocationErr ||
         this.indentify.registeredDateErr ||
         this.indentify.imageErr;
       // Check health insurance
       let healthInsurance = this.healthInsuranceInfor;
       this.healthInsurance.documentIdErr =
         healthInsurance.userDocumentId.length !== 15;
-      this.healthInsurance.registerLocationErr =
-        healthInsurance.registerLocation.length === 0;
+      this.healthInsurance.registeredLocationErr =
+        healthInsurance.registeredLocation.length === 0;
       this.healthInsurance.registeredDateErr =
         healthInsurance.registeredDate.length === 0;
 
       this.healthInsurance.imageErr = this.healthInsuranceImagePrev.length < 2;
       let isHealthInsuranceValid =
         this.healthInsurance.documentIdErr ||
-        this.healthInsurance.registerLocationErr ||
+        this.healthInsurance.registeredLocationErr ||
         this.healthInsurance.registeredDateErr ||
         this.healthInsurance.imageEr;
       // Check driving license
@@ -1293,8 +1297,8 @@ export default {
         drivingLicense.userDocumentId.length !== 12;
       this.drivingLicense.otherInfoErr =
         this.selectedDrivingLicenseTypes.name.length === 0;
-      this.drivingLicense.registerLocationErr =
-        drivingLicense.registerLocation.length === 0;
+      this.drivingLicense.registeredLocationErr =
+        drivingLicense.registeredLocation.length === 0;
       this.drivingLicense.registeredDateErr =
         drivingLicense.registeredDate.length === 0;
 
@@ -1302,7 +1306,7 @@ export default {
       let isDrivingLicenseValid =
         this.drivingLicense.documentIdErr ||
         this.drivingLicense.otherInfoErr ||
-        this.drivingLicense.registerLocationErr ||
+        this.drivingLicense.registeredLocationErr ||
         this.drivingLicense.registeredDateErr ||
         this.drivingLicense.imageErr;
       return (
@@ -1320,6 +1324,8 @@ export default {
     async update() {
       this.isUpdConVisible = false;
       this.isLoading = true;
+      let oldImageLink = null;
+
       this.driver.userDocumentReqList = [
         this.indentifyInfor,
         this.healthInsuranceInfor,
@@ -1360,6 +1366,7 @@ export default {
 
       // Init image list for indentify card
       if (this.profileImage) {
+        oldImageLink = this.driver.imageLink;
         this.driver.imageLink = await this.uploadImageToFirebase(
           this.profileImage,
           "profile"
@@ -1372,24 +1379,27 @@ export default {
         .replace(" ", "")
         .replace("-", "");
 
-      // await this.deleteFirebaseLink(
-      //   this.driver.userDocumentReqList[0].documentImagesReqList
-      // );
-      // await this.deleteFirebaseLink(
-      //   this.driver.userDocumentReqList[1].documentImagesReqList
-      // );
-      // await this.deleteFirebaseLink(
-      //   this.driver.userDocumentReqList[2].documentImagesReqList
-      // );
-
       await this.getFirebaseLinks("indentify");
       await this.getFirebaseLinks("healthInsurance");
       await this.getFirebaseLinks("drivingLicense");
       // console.log(JSON.stringify(this.driver));
 
       await DriverRepository.update(this.driver)
-        .then((res) => {
+        .then(async (res) => {
           if (res) {
+            if (oldImageLink !== null) {
+              let arrTemp = [
+                {
+                  imageLink: oldImageLink,
+                },
+              ];
+              await this.deleteFirebaseLink(arrTemp);
+            }
+            await this.deleteFirebaseLink(this.indentifyImageDel);
+            await this.deleteFirebaseLink(this.healthInsuranceImageDel);
+            await this.deleteFirebaseLink(this.drivingLicenseImageDel);
+            console.log(oldImageLink);
+            console.log(this.indentifyImageDel);
             this.isCreatedSuccessfully = true;
           }
           console.log(res);
