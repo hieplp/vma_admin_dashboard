@@ -62,7 +62,7 @@
                 <label>Profile image</label>
               </div>
               <div class="row justify-content-center">
-                <div class="upload-pro">
+                <div class="upload-pro ">
                   <img
                     :src="driver.imageLink"
                     class="ui medium circular image pro-img"
@@ -442,22 +442,13 @@
             <div class="ui form">
               <!-- Button group -->
               <div class="row justify-content-center mt-5">
-                <div class="col-4">
-                  <button
-                    class="btn btn-gradient-danger btn-fw"
-                    type="button"
-                    v-on:click="changeTab()"
-                  >
-                    Back
-                  </button>
-                  <button
-                    class="btn btn-gradient-info btn-fw ml-2"
-                    type="button"
-                    v-on:click="openConfirmation()"
-                  >
-                    Update
-                  </button>
-                </div>
+                <button
+                  class="btn btn-gradient-danger btn-fw ml-2"
+                  type="button"
+                  v-on:click="changeTab()"
+                >
+                  Back
+                </button>
               </div>
             </div>
           </div>
@@ -566,6 +557,7 @@ export default {
       }
     },
     changeTab() {
+      document.getElementById("app").scrollIntoView();
       this.isUserInfoVisible = !this.isUserInfoVisible;
     },
     viewProfilePhoto() {
@@ -616,6 +608,11 @@ export default {
 .ui.right.labeled {
   background-color: #3497e9;
   color: rgb(255, 255, 255);
+}
+.upload-pro img {
+  border-radius: 50%;
+  width: 280px !important;
+  height: 280px !important;
 }
 </style>
 <style>

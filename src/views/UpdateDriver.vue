@@ -64,7 +64,7 @@
       v-if="isUpdConVisible"
     >
       <div class="ui icon header col-12">
-        <i class="user times icon mb-3"></i>
+        <i class="edit outline icon mb-3"></i>
         Update Confirmation
       </div>
       <div class="content col-12 row justify-content-center">
@@ -1456,6 +1456,7 @@ export default {
       let isValid = this.checkBasicInformation();
       // let isValid = false;
       if (!isValid) {
+        document.getElementById("app").scrollIntoView();
         this.isUserInfoVisible = !this.isUserInfoVisible;
       }
     },

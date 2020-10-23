@@ -1224,12 +1224,15 @@ export default {
         await this.deleteFirebaseLink(
           this.driver.userDocumentReqList[0].documentImagesReqList
         );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
         await this.deleteFirebaseLink(
           this.driver.userDocumentReqList[1].documentImagesReqList
         );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
         await this.deleteFirebaseLink(
           this.driver.userDocumentReqList[2].documentImagesReqList
         );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
 
         await this.getFirebaseLinks("indentifyImage", 0);
         await this.getFirebaseLinks("healthInsuranceImage", 1);
@@ -1319,6 +1322,7 @@ export default {
       let isValid = this.checkBasicInformation();
       // let isValid = false;
       if (!isValid) {
+        document.getElementById("app").scrollIntoView();
         this.isUserInfoVisible = !this.isUserInfoVisible;
       }
     },
@@ -1385,10 +1389,6 @@ export default {
 
 .upload-pro img {
   border-radius: 50%;
-  /* min-width: 200px; */
-  /* max-width: 300px; */
-  /* min-height: 200px; */
-  /* max-height: 300px; */
   width: 280px !important;
   height: 280px !important;
 }
