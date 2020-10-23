@@ -82,7 +82,7 @@
           @click="isRegistrationsVisible = !isRegistrationsVisible"
           href="#"
         >
-          <i class="mdi mdi-settings menu-icon"></i>
+          <i class="mdi mdi-account-multiple-plus menu-icon"></i>
           <span class="menu-title">Registrations</span>
         </a>
       </li>

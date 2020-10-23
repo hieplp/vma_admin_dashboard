@@ -1,396 +1,490 @@
-/* eslint-disable no-unused-vars */
 <template>
   <div class="content-wrapper">
-    <div class="page-header">
-      <h3 class="page-title">Vehicle Dashboard</h3>
-      <div class="dropdown">
+    <loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      :loader="'dots'"
+      :is-full-page="false"
+      :color="'#2e5bff'"
+    ></loading>
+
+    <!-- Delete confimation -->
+    <div
+      class="ui basic cus-modal justify-content-center"
+      v-if="isDeleteConVisible"
+    >
+      <div class="ui icon header col-12">
+        <i class="user times icon mb-3"></i>
+        Delete Confirmation
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>Do you want to delete vehicle with id {{ this.deleteUserID }}?</h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
         <button
-          class="btn btn-primary dropdown-toggle"
           type="button"
-          id="dropdownMenuButton"
-          data-toggle="dropdown"
-          aria-haspopup="true"
-          aria-expanded="false"
-          data-target="filter"
+          class="ui blue primary button"
+          @click="handleDialog('isDeleteConVisible', '')"
         >
-          + Filter List
+          <i class="checkmark icon"></i>
+          Cancel
         </button>
-        <div class="dropdown-menu" id="filter">
-          <form class="forms-sample">
-            <div class="form-group">
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1"
-                  >Distance driven (km)</label
-                >
-                <input
-                  type="number"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity1"
-                />
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword1">Vehicle id</label>
+        <button type="button" class="ui red  button" @click="deleteVehicle()">
+          <i class="trash alternate icon"></i>
+          Delete
+        </button>
+      </div>
+    </div>
+    <!-- Error message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isError">
+      <div class="ui icon header col-12">
+        <i class="frown outline icon mb-3"></i>
+        Delete Vehicle Fail!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          {{ this.errMsg }}
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button @click="isError = !isError" class="ui blue primary button">
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
 
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>#001</option>
-                  <option>#002</option>
-                  <option>#003</option>
-                  <option>#004</option>
-                  <option>#005</option>
-                </select>
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword2">Brand</label>
-                <input
-                  type="text"
-                  class="form-control form-control-sm"
-                  id="exampleInputCity1"
-                  placeholder="Brand"
-                />
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword3">Vehicle type</label>
+    <!-- Success message -->
+    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
+      <div class="ui icon header col-12">
+        <i class="check circle icon mb-3"></i>
+        Delete successfully!
+      </div>
+      <div class="content col-12 row justify-content-center">
+        <h4>
+          Vehicle with id {{ this.deleteUserID }} is deleted successfully.
+        </h4>
+      </div>
+      <div class="actions row justify-content-center mt-5">
+        <button
+          @click="
+            () => {
+              isSuccess = !isSuccess;
+              this.searchVehicles();
+            }
+          "
+          class="ui blue primary button"
+        >
+          <i class="checkmark icon"></i>
+          Ok
+        </button>
+      </div>
+    </div>
 
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>Truck</option>
-                  <option>Container</option>
-                  <option>SUV</option>
-                  <option>Bus</option>
-                  <option>Minitruck</option>
-                </select>
-              </div>
-              <br />
-              <div class="col-sm-12">
-                <label for="exampleDropdownFormPassword4">Status</label>
-
-                <select
-                  class="form-control form-control-sm"
-                  id="exampleFormControlSelect3"
-                >
-                  <option>Idle</option>
-                  <option>In Use</option>
-                  <option>In Maint</option>
-                  <option>Available</option>
-                  <option>Withdrawed</option>
-                </select>
-              </div>
-              <br />
-            </div>
-            <button
-              type="submit"
-              class="btn btn-primary form-control form-control-sm"
-            >
-              Filter
-            </button>
-          </form>
-        </div>
+    <div class="page-header">
+      <h3 class="page-title">
+        <router-link to="/vehicles" class="nav-link">Vehicles</router-link>
+      </h3>
+      <div class="dropdown">
+        <router-link
+          to="/create-vehicle"
+          class="btn btn-gradient-info btn-icon-text mr-2"
+          type="button"
+          v-on:click="clickToViewFilter()"
+        >
+          <i class="mdi mdi-account-plus btn-icon-prepend"></i>
+          Create
+        </router-link>
+        <button
+          class="btn btn-gradient-info dropdown-toggle"
+          type="button"
+          v-on:click="clickToViewFilter()"
+        >
+          Filter
+        </button>
       </div>
     </div>
     <div class="row">
-      <div class="col-lg-12 grid-margin">
-        <div class="card">
+      <!-- Vehicles table -->
+      <div
+        class="grid-margin stretch-card"
+        v-bind:class="{
+          'col-lg-12': isTableVisible,
+          'col-lg-9': !isTableVisible,
+        }"
+      >
+        <div class="card" v-if="vehiclesList.length > 0">
           <div class="card-body">
             <h4 class="card-title">Vehicle List</h4>
-            <p class="card-description">103 total</p>
-            <table class="table table-striped">
+            <p class="card-description">{{ this.totalVehicles }} total</p>
+            <table class="table ">
               <thead>
-                <tr class="text-secondary">
+                <tr class="">
+                  <th>NO.</th>
                   <th>ID</th>
-                  <th>BRAND</th>
-                  <th>VEHICLE TYPE</th>
+                  <th>MODEL</th>
+                  <th>TYPE</th>
                   <th>STATUS</th>
-                  <th>DISTANCE</th>
-                  <th></th>
+                  <th>TOTAL DISTANCE</th>
+                  <th class="text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
+                <tr
+                  v-for="(vehicle, index) in this.vehiclesList"
+                  :key="vehicle.vehicleId"
+                >
+                  <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
+                  <td>{{ vehicle.model }}</td>
+                  <td>{{ vehicle.vehicleTypeId }}</td>
+                  <td>{{ vehicle.vehicleStatusId }}</td>
+
                   <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#015
+                    <!-- <label
+                      class="badge"
+                      v-bind:class="{
+                        'badge-info': vehicle.userStatusName === 'Active',
+                        'badge-danger': vehicle.userStatusName === 'Inactive',
+                        'badge-warning':
+                          vehicle.userStatusName === 'Pending Approval',
+                        'badge-dark': vehicle.userStatusName === 'Disabled',
+                      }"
+                      >{{ vehicle.userStatusName }}</label
+                    > -->
                   </td>
-                  <td>Tesla Model X</td>
-                  <td>Truck</td>
-                  <td><label class="badge badge-info">In Use</label></td>
-                  <td>450 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#023
-                  </td>
-                  <td>Volvo Intellisafe</td>
-                  <td>Container</td>
-                  <td><label class="badge badge-warning">In Maint</label></td>
-                  <td>321 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#008
-                  </td>
-                  <td>BMW 7 Series</td>
-                  <td>SUV</td>
-                  <td><label class="badge badge-info">In Use</label></td>
-                  <td>230 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-4.png"
-                      alt="image"
-                    />#010
-                  </td>
-                  <td>Infiniti Q50S</td>
-                  <td>Bus</td>
-                  <td><label class="badge badge-danger">Idle</label></td>
-                  <td>129 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-1.png"
-                      alt="image"
-                    />#033
-                  </td>
-                  <td>Audi RS 7</td>
-                  <td>Minitruck</td>
-                  <td><label class="badge badge-danger">Idle</label></td>
-                  <td>553 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#011
-                  </td>
-                  <td>Tesla Model S</td>
-                  <td>Truck</td>
-                  <td><label class="badge badge-info">In Maint</label></td>
-                  <td>650 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-3.png"
-                      alt="image"
-                    />#003
-                  </td>
-                  <td>Tesla Model X</td>
-                  <td>Container</td>
-                  <td><label class="badge badge-success">Available</label></td>
-                  <td>452 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <img
-                      src="../assets/images/faces-clipart/pic-2.png"
-                      alt="image"
-                    />#001
-                  </td>
-                  <td>Volvo Intellisafe</td>
-                  <td>Bus</td>
-                  <td><label class="badge badge-danger">Withdrawed</label></td>
-                  <td>640 km</td>
-                  <td>
-                    <a href="#"><i class="mdi mdi-pencil"></i>Manage</a>
+                  <td>{{ vehicle.vehicleDistance }}</td>
+                  <td class="row justify-content-center btn-action">
+                    <!-- <router-link
+                      :to="{
+                        name: 'VehicleDetail',
+                        params: { userId: vehicle.userId },
+                      }"
+                      >Manage</router-link
+                    > -->
+                    <button
+                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
+                      @click="viewDetail(vehicle.userId)"
+                    >
+                      <i class="mdi mdi-account-box-outline"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                      @click="updateVehicle(vehicle.userId)"
+                    >
+                      <i class="mdi mdi-grease-pencil"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                      :disabled="vehicle.userStatusName === 'Disabled'"
+                      @click="handleDialog('isDeleteConVisible', vehicle.userId)"
+                    >
+                      <i class="mdi mdi-delete-forever"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+          <div v-if="this.totalVehicles > 15">
+            <paginate
+              v-model="currentPage"
+              :page-count="Math.floor(this.totalVehicles / 15) + 1"
+              :page-range="3"
+              :margin-pages="1"
+              :click-handler="clickCallback"
+              :first-last-button="true"
+              :prev-text="'Prev'"
+              :next-text="'Next'"
+              :container-class="'pagination'"
+              :page-class="'page-item'"
+              :next-class="'page-item'"
+              :prev-class="'page-item'"
+              :active-class="'page-active'"
+            >
+            </paginate>
+          </div>
+        </div>
+        <!-- Empty list -->
+        <div class="card empty-list" v-else-if="!isLoading">
+          <i class="mdi mdi-account-off"></i>
+          <h1>NOTHING</h1>
+          <h3>Your list is empty.</h3>
         </div>
       </div>
+
+      <!-- Filter -->
+      <transition name="slide-fade">
+        <div class="col-3 card filter" v-if="isFilterVisible">
+          <div class="form-group">
+            <h4 class="card-title mt-4">Filter</h4>
+            <div class="col-sm-12">
+              <!-- Search Vehicle ID -->
+              <label>Vehicle ID</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Vehicle ID"
+                v-model="searchVehicleID"
+                @keypress="isNumber($event)"
+                maxlength="12"
+              />
+            </div>
+            <div class="col-12 mt-3">
+              <label>Vehicle Name</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                v-model="searchVehicleName"
+                placeholder="Vehicle name"
+              />
+            </div>
+            <!-- Phone number dropdown-->
+            <div class="col-12 mt-3">
+              <label>Phone Number</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Phone Number"
+                v-model="searchPhoneNumber"
+                @keypress="isNumber($event)"
+                maxlength="10"
+              />
+            </div>
+            <!-- Vehicle status dropdown -->
+            <div class="col-12 mt-3">
+              <label>Status</label>
+              <select
+                class="form-control form-control-sm"
+                name="status"
+                v-model="searchStatusID"
+              >
+                <option
+                  v-for="status in this.statusList"
+                  :key="status.userStatusId"
+                  :value="status.userStatusId"
+                  >{{ status.userStatusName }}</option
+                >
+              </select>
+            </div>
+
+            <br />
+            <div class="col-12 mt-3">
+              <button
+                class="btn btn-outline-info w-100"
+                type="button"
+                v-on:click="searchVehicles()"
+              >
+                Filter
+              </button>
+            </div>
+            <div class="col-12 mt-2">
+              <button
+                class="btn btn-outline-danger w-100"
+                type="button"
+                v-on:click="clearSearchValue()"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
-import "../assets/vendors/js/vendor.bundle.base.js";
-import "../assets/js/off-canvas.js";
-import "../assets/js/hoverable-collapse.js";
-import "../assets/js/misc.js";
-import Chart from "chart.js";
-import $ from "jquery";
+import { isNumber } from "../assets/js/input.js";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
+import { RepositoryFactory } from "../repositories/RepositoryFactory";
+
+const VehicleRepository = RepositoryFactory.get("vehicles");
+const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
-  name: "OverView",
+  name: "Vehicles",
   props: {},
-  mounted() {
-    this.initRevenueChart();
-    this.initTripByTypeChart();
+  components: {
+    Loading,
+  },
+  data() {
+    return {
+      isFilterVisible: false,
+      isTableVisible: true,
+      statusList: [],
+      vehiclesList: [],
+      searchPhoneNumber: "",
+      searchVehicleID: "",
+      searchVehicleName: "",
+      searchStatusID: "",
+      isLoading: true,
+      totalVehicles: 0,
+      page: 0,
+      currentPage: 1,
+      isDeleteConVisible: false,
+      isError: false,
+      isSuccess: false,
+      errMsg: "",
+      deleteUserID: "",
+
+      model: "",
+      ownerId: "",
+      vehicleId: "",
+      vehicleMinDis: "",
+      vehicleMaxDis: "",
+      vehicleStatus: "",
+      vehicleType: "",
+      viewOption: 0,
+    };
+  },
+  async mounted() {
+    // await this.initStatusList();
+    await this.initVehiclesList();
   },
   methods: {
-    // init revenue chart
-    initRevenueChart() {
-      let revenueChart = document
-        .getElementById("revenueChart")
-        .getContext("2d");
-      // Global Options
-      Chart.defaults.global.defaultFontFamily = "Lato";
-      Chart.defaults.global.defaultFontSize = 18;
-      Chart.defaults.global.defaultFontColor = "#777";
-
-      // gradient color
-      let gradient = revenueChart.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
-      gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
-
-      new Chart(revenueChart, {
-        type: "line", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        data: {
-          labels: [
-            "May 1",
-            "May 2",
-            "May 3",
-            "May 4",
-            "May 5",
-            "May 6",
-            "May 7",
-          ],
-          datasets: [
-            {
-              label: "Revenue",
-              lineTension: 0,
-              data: [617594, 181045, 153060, 555555, 105162, 95072, 617594],
-              backgroundColor: gradient,
-              borderWidth: 2,
-              borderColor: "#2e5bff",
-              hoverBorderWidth: 4,
-              hoverBorderColor: "#000",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          animation: {
-            animateScale: true,
-            animateRotate: true,
-          },
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              fontColor: "#000",
-            },
-          },
-          tooltips: {
-            enabled: true,
-          },
-        },
+    isNumber(evt) {
+      isNumber(evt);
+    },
+    // pagination handle
+    async clickCallback(page) {
+      this.isLoading = true;
+      this.currentPage = page;
+      this.page = page - 1;
+      this.initVehiclesList();
+      this.isLoading = false;
+    },
+    // Init data for Vehicle Status Dropdown
+    async initStatusList() {
+      // wait for api
+      this.statusList = await UserStatusRepository.get();
+      this.statusList.push({
+        userStatusId: "",
+        userStatusName: "None",
       });
     },
-
-    // init trip by type chart
-    initTripByTypeChart() {
-      var tripsByTypeChartData = {
-        datasets: [
-          {
-            data: [30, 30, 40, 30],
-            backgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            hoverBackgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            borderColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            legendColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-          },
-        ],
-
-        // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: ["Bus", "Truck", "Minivan", "Others"],
-      };
-      var tripsByTypeChartOptions = {
-        responsive: true,
-        animation: {
-          animateScale: true,
-          animateRotate: true,
-        },
-        // cutoutPercentage: 70,
-        legend: false,
-        legendCallback: function () {
-          var text = [];
-          text.push("<ul>");
-          text.push('<div class="row">');
-          for (
-            var i = 0;
-            i < tripsByTypeChartData.datasets[0].data.length;
-            i++
-          ) {
-            text.push('<li class="col-6" style="font-size:18px">');
-            text.push(
-              '<span class="legend-dots" style="background:' +
-                tripsByTypeChartData.datasets[0].legendColor[i] +
-                '"></span>'
-            );
-            if (tripsByTypeChartData.labels[i]) {
-              text.push(tripsByTypeChartData.labels[i]);
-            }
-          }
-          text.push("</li>");
-          text.push("</ul>");
-          return text.join("");
-        },
-      };
-      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
-        .get(0)
-        .getContext("2d");
-      var trafficChart = new Chart(tripsByTypeChartCanvas, {
-        type: "pie",
-        data: tripsByTypeChartData,
-        options: tripsByTypeChartOptions,
+    // Clear search item value
+    clearSearchValue() {
+      this.searchVehicleID = "";
+      this.searchVehicleName = "";
+      this.searchPhoneNumber = "";
+      this.searchStatusID = "";
+    },
+    // Search vehicle
+    async searchVehicles() {
+      this.isLoading = true;
+      this.page = 0;
+      this.currentPage = 1;
+      await this.initVehiclesList();
+    },
+    // Init data for vehicle list
+    async initVehiclesList() {
+      this.vehiclesList = await VehicleRepository.get(
+        this.page,
+        this.model,
+        this.ownerId,
+        this.vehicleId,
+        this.vehicleMinDis,
+        this.vehicleMaxDis,
+        this.vehicleStatus,
+        this.vehicleType,
+        this.viewOption
+      );
+      this.totalVehicles = await VehicleRepository.getTotalVehicle(
+        this.model,
+        this.ownerId,
+        this.vehicleId,
+        this.vehicleMinDis,
+        this.vehicleMaxDis,
+        this.vehicleStatus,
+        this.vehicleType,
+        this.viewOption
+      );
+      this.isLoading = false;
+    },
+    // Set filter to visible
+    clickToViewFilter() {
+      if (this.isFilterVisible && !this.isTableVisible) {
+        this.isFilterVisible = !this.isFilterVisible;
+        setTimeout(() => {
+          this.isTableVisible = !this.isTableVisible;
+        }, 300);
+      } else if (!this.isFilterVisible && this.isTableVisible) {
+        this.isTableVisible = !this.isTableVisible;
+        setTimeout(() => {
+          this.isFilterVisible = !this.isFilterVisible;
+        }, 300);
+      }
+    },
+    // View vehicle detail
+    viewDetail(userId) {
+      this.$router.push({
+        name: "VehicleDetail",
+        params: { userId: userId },
       });
-      $("#trips-by-type-chart-legend").html(trafficChart.generateLegend());
+    },
+    // View vehicle detail
+    updateVehicle(userId) {
+      this.$router.push({
+        name: "UpdateVehicle",
+        params: { userId: userId },
+      });
+    },
+    // Delete vehicle
+    async deleteVehicle() {
+      this.handleDialog("isDeleteConVisible", "");
+      this.isLoading = true;
+      await VehicleRepository.delete(this.deleteUserID)
+        .then((res) => {
+          if (res) {
+            this.isSuccess = true;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.message;
+          console.log(err);
+        });
+      this.isLoading = false;
+    },
+    // Close delete vehicle confimation dialog
+    handleDialog(dialogName, userId) {
+      if (userId.length !== 0) {
+        this.deleteUserID = userId;
+      }
+      this.$data[dialogName] = !this.$data[dialogName];
     },
   },
 };
 </script>
-
+<style>
+.filter {
+  max-height: 450px !important;
+}
+.label {
+  font-size: 13px;
+}
+.form-control {
+  font-size: 13px;
+}
+.btn-action .btn i {
+  font-size: 20px;
+}
+.cus-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(92, 90, 87, 0.637);
+  z-index: 10000;
+  width: 100%;
+  height: 100%;
+  padding-top: 12%;
+  color: white;
+}
+.cus-modal .header {
+  color: white;
+  font-size: 35px !important;
+}
+</style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-
-<style>
-@import "../assets/vendors/mdi/css/materialdesignicons.min.css";
-</style>
-<style>
-@import "../assets/vendors/css/vendor.bundle.base.css";
-</style>
-<style>
-@import "../assets/css/style.css";
-</style>
-<style>
-@import "../assets/css/overview.css";
-</style>

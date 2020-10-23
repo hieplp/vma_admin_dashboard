@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseDomain = "https://vehiclemanagementapplication.azurewebsites.net";
+const baseDomain = "http://localhost:9000";
 const baseURL = `${baseDomain}/api/v1`;
 
 export default axios.create({

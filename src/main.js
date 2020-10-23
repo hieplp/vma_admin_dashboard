@@ -9,6 +9,7 @@ import VueSilentbox from "vue-silentbox";
 import VueLazyLoad from "vue-lazyload";
 import * as firebase from "firebase/app";
 import "firebase/firestore";
+// import SuiVue from 'semantic-ui-vue';
 
 Vue.config.productionTip = false;
 
@@ -16,6 +17,7 @@ Vue.use(VModal);
 Vue.use(VueConfirmDialog);
 Vue.use(VueSilentbox);
 Vue.use(VueLazyLoad);
+// Vue.use(SuiVue);
 
 Vue.component("paginate", Paginate);
 Vue.component("vue-confirm-dialog", VueConfirmDialog.default);

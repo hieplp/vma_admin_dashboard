@@ -1,0 +1,38 @@
+{
+  "B1": {
+    "name": "B1",
+    "expiryDate": 10
+  },
+  "B2": {
+    "name": "B2",
+    "expiryDate": 10
+  },
+  "C": {
+    "name": "C",
+    "expiryDate": 5
+  },
+  "D": {
+    "name": "D",
+    "expiryDate": 5
+  },
+  "E": {
+    "name": "E",
+    "expiryDate": 5
+  },
+  "FE": {
+    "name": "FE",
+    "expiryDate": 5
+  },
+  "FB2": {
+    "name": "FB2",
+    "expiryDate": 5
+  },
+  "FC": {
+    "name": "FC",
+    "expiryDate": 5
+  },
+  "FD": {
+    "name": "FD",
+    "expiryDate": 5
+  }
+}

@@ -46,7 +46,7 @@
                   <th>PHONE NUMBER</th>
                   <th>TOTAL VEHICLES</th>
                   <th>STATUS</th>
-                  <th>ACTION</th>
+                  <th class="text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,15 +78,26 @@
                       >{{ contributor.userStatusName }}</label
                     >
                   </td>
-                  <td>
-                    <router-link
-                      :to="{
-                        name: 'ContributorDetail',
-                        params: { userId: contributor.userId },
-                      }"
+                  <td class="row justify-content-center btn-action">
+                    <button
+                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
+                      @click="viewDetail(contributor.userId)"
                     >
-                      Manage
-                    </router-link>
+                      <i class="mdi mdi-account-box-outline"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                      @click="updateDriver(contributor.userId)"
+                    >
+                      <i class="mdi mdi-grease-pencil"></i>
+                    </button>
+                    <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                      :disabled="contributor.userStatusName === 'Disabled'"
+                      @click="handleDialog('isDeleteConVisible', driver.userId)"
+                    >
+                      <i class="mdi mdi-delete-forever"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -347,6 +358,20 @@ export default {
 
       this.isLoading = false;
     },
+    // View contributor detail
+    viewDetail(userId) {
+      this.$router.push({
+        name: "ContributorDetail",
+        params: { userId: userId },
+      });
+    },
+    // View contributor detail
+    updateContributor(userId) {
+      this.$router.push({
+        name: "UpdateContributor",
+        params: { userId: userId },
+      });
+    },
     // Init data for total vehicles slider
     async initTotalVehicleSlider() {
       this.minTotalVehicles = await ContributorRepository.getTotalVehiclesCount(
@@ -376,6 +401,12 @@ export default {
 </script>
 <style>
 .filter {
-  max-height: 550px !important;
+  min-height: 550px !important;
+}
+.btn-action .btn i {
+  font-size: 20px;
+}
+.label {
+  font-size: 13px;
 }
 </style>
