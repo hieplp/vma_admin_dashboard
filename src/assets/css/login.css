@@ -1,6 +1,9 @@
 .brand-logo {
-  text-align: center;
-  font-size: 72px;
+  justify-content: center;
+  text-align: center !important;
+}
+.brand-logo img {
+  margin: 0 auto;
 }
 
 .text-input {
@@ -12,4 +15,3 @@
   color: #047edf;
   font-weight: 600;
 }
-

@@ -24,7 +24,7 @@
           active: this.$route.name === 'Overview' ? true : false,
         }"
       >
-        <router-link to="/" class="nav-link">
+        <router-link to="/overview" class="nav-link">
           <i class="mdi mdi-television-guide menu-icon"></i>
           <span class="menu-title">Overview</span>
         </router-link>
@@ -69,36 +69,30 @@
           <span class="menu-title">Vehicles</span>
         </router-link>
       </li>
-      <!-- Driver registrations -->
       <li
         class="nav-item"
+        id="Contracts"
         v-bind:class="{
-          active: this.$route.name.includes('Registration') ? true : false,
+          active: this.$route.name === 'Contracts' ? true : false,
         }"
       >
-        <a
-          class="nav-link"
-          data-toggle="collapse"
-          @click="isRegistrationsVisible = !isRegistrationsVisible"
-          href="#"
-        >
-          <i class="mdi mdi-account-multiple-plus menu-icon"></i>
-          <span class="menu-title">Registrations</span>
-        </a>
-      </li>
-      <li class="nav-item" v-if="isRegistrationsVisible" id="Registrations">
-        <router-link to="/driver-registrations" class="nav-link sub-menu-title">
-          <i class="mdi mdi-account-outline mr-3" />
-          <span class="menu-title">Drivers</span>
+        <router-link to="/contracts" class="nav-link">
+          <i class="mdi mdi-flag-checkered menu-icon"></i>
+          <span class="menu-title">Contracts</span>
         </router-link>
       </li>
-      <li class="nav-item" v-if="isRegistrationsVisible">
-        <a class="nav-link sub-menu-title" href="#">
-          <i class="mdi mdi mdi-account-multiple-outline mr-3" />
-          <span class="menu-title">Contributors</span>
-        </a>
+      <li
+        class="nav-item"
+        id="Customers"
+        v-bind:class="{
+          active: this.$route.name === 'Customers' ? true : false,
+        }"
+      >
+        <router-link to="/customers" class="nav-link">
+          <i class="mdi mdi-human-male-female menu-icon"></i>
+          <span class="menu-title">Customers</span>
+        </router-link>
       </li>
-
       <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="mdi mdi-clipboard-alert menu-icon"></i>
@@ -124,10 +118,21 @@
 
 <script>
 export default {
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+    });
+  },
   data() {
     return {
       isRegistrationsVisible: false,
+      prevRoute: null,
     };
+  },
+  mounted() {
+    if (this.prevRoute !== null && this.prevRoute.name === "Login") {
+      window.location.reload();
+    }
   },
   methods: {
     setSideMenuActive() {

@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="container-scroller">
-    <div v-if="true">
+    <div v-if="isVisible">
       <TopMenu />
       <div
         class="container-fluid page-body-wrapper"
@@ -34,6 +34,43 @@ export default {
     TopMenu,
     SideMenu,
     Login,
+  },
+  watch: {
+    $route: function(from, to) {
+      if (to !== null && to.name === "Login") {
+        window.location.reload();
+        // this.checkAuthUser();
+      } else if (from !== null && from.name === "Login") {
+        this.checkAuthUser();
+      }
+    },
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      if (next) {
+        vm.nextRoute = next.name;
+      }
+    });
+  },
+  mounted() {
+    this.checkAuthUser();
+  },
+  data() {
+    return {
+      isVisible: false,
+      timeReload: 0,
+      nextRoute: null,
+    };
+  },
+  methods: {
+    checkAuthUser() {
+      let userId = localStorage.getItem("userId");
+      if (userId) {
+        this.isVisible = true;
+      } else {
+        this.isVisible = false;
+      }
+    },
   },
 };
 </script>
