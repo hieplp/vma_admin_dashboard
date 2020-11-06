@@ -124,7 +124,7 @@
               <i class="mdi mdi-cached mr-2 text-success"></i> Activity Log
             </a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="#">
+            <a class="dropdown-item" @click="signOut()">
               <i class="mdi mdi-logout mr-2 text-primary"></i> Signout
             </a>
           </div>
@@ -143,18 +143,26 @@
 </template>
 
 <script>
+
 export default {
   props: {},
   mounted() {},
-  methods: {},
+  methods: {
+    signOut() {
+      localStorage.removeItem("userId");
+      this.$router.push({
+        name: "Login",
+      });
+    },
+  },
 };
 </script>
-<style>
-.brand-logo{
+<style scoped>
+.brand-logo {
   height: 115% !important;
   width: 60% !important;
 }
-.brand-logo-mini{
-  width: 80% !important;  
+.brand-logo-mini {
+  width: 80% !important;
 }
 </style>

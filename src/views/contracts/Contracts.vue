@@ -18,7 +18,7 @@
         Delete Confirmation
       </div>
       <div class="content col-12 row justify-content-center">
-        <h4>Do you want to delete driver with id {{ this.deleteUserID }}?</h4>
+        <h4>Do you want to delete contract with id {{ this.deleteUserID }}?</h4>
       </div>
       <div class="actions row justify-content-center mt-5">
         <button
@@ -29,7 +29,7 @@
           <i class="checkmark icon"></i>
           Cancel
         </button>
-        <button type="button" class="ui red  button" @click="deleteDriver()">
+        <button type="button" class="ui red  button" @click="deleteContract()">
           <i class="trash alternate icon"></i>
           Delete
         </button>
@@ -39,7 +39,7 @@
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Delete Driver Fail!
+        Delete Contract Fail!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -61,14 +61,16 @@
         Delete successfully!
       </div>
       <div class="content col-12 row justify-content-center">
-        <h4>Driver with id {{ this.deleteUserID }} is deleted successfully.</h4>
+        <h4>
+          Contract with id {{ this.deleteUserID }} is deleted successfully.
+        </h4>
       </div>
       <div class="actions row justify-content-center mt-5">
         <button
           @click="
             () => {
               isSuccess = !isSuccess;
-              this.searchDrivers();
+              this.searchContracts();
             }
           "
           class="ui blue primary button"
@@ -81,16 +83,15 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/drivers" class="nav-link">Drivers</router-link>
+        <router-link to="/contracts" class="nav-link">Contracts</router-link>
       </h3>
       <div class="dropdown">
         <router-link
-          to="/create-driver"
+          to="/create-contract"
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
-          v-on:click="clickToViewFilter()"
         >
-          <i class="mdi mdi-account-plus btn-icon-prepend"></i>
+          <!-- <i class="mdi mdi-account-plus btn-icon-prepend"></i> -->
           Create
         </router-link>
         <button
@@ -103,7 +104,7 @@
       </div>
     </div>
     <div class="row">
-      <!-- Drivers table -->
+      <!-- Contracts table -->
       <div
         class="grid-margin stretch-card"
         v-bind:class="{
@@ -111,67 +112,72 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="driversList.length > 0">
+        <div class="card" v-if="contracts.length > 0">
           <div class="card-body">
-            <h4 class="card-title">Driver List</h4>
-            <p class="card-description">{{ this.totalDrivers }} total</p>
+            <h4 class="card-title">Contract List</h4>
+            <p class="card-description">{{ this.totalContracts }} total</p>
             <table class="table ">
               <thead>
                 <tr class="">
                   <th>NO.</th>
                   <th>ID</th>
-                  <th>NAME</th>
-                  <th>PHONE NUMBER</th>
-                  <th>VEHICLE ID</th>
+                  <!-- <th>DEPARTURE LOCATION</th>
+                  <th>DEPARTURE TIME</th>
+                  <th>DESTINATION LOCATION</th>
+                  <th>DESTINATION TIME</th> -->
+                  <th>DURATION FROM</th>
+                  <th>DURATION TO</th>
+                  <th>TOTAL PRICE</th>
                   <th>STATUS</th>
                   <th class="text-center">ACTION</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="(driver, index) in this.driversList"
-                  :key="driver.userId"
+                  v-for="(contract, index) in this.contracts"
+                  :key="contract.contractId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <td>{{ driver.userId }}</td>
-                  <td>{{ driver.fullName }}</td>
-                  <td>{{ driver.phoneNumber }}</td>
-                  <td>
-                    <p v-if="driver.vehicleId">
-                      {{ driver.vehicleId }}
-                    </p>
-                    <p v-else>N/A</p>
-                  </td>
+                  <td>{{ contract.contractId }}</td>
+                  <td>{{ contract.durationFrom }}</td>
+                  <td>{{ contract.durationTo }}</td>
+                  <td>{{ contract.totalPrice }}</td>
+                  <!-- <td>{{ contract.departureLocation }}</td>
+                  <td>{{ contract.departureTime }}</td>
+                  <td>{{ contract.destinationLocation }}</td>
+                  <td>{{ contract.destinationTime }}</td> -->
                   <td>
                     <label
                       class="badge"
                       v-bind:class="{
-                        'badge-info': driver.userStatusName === 'Active',
-                        'badge-danger': driver.userStatusName === 'Inactive',
-                        'badge-warning':
-                          driver.userStatusName === 'Pending Approval',
-                        'badge-dark': driver.userStatusName === 'Disabled',
+                        'badge-info': contract.contractStatus === 'FINISHED',
+                        'badge-danger':
+                          contract.contractStatus === 'UNFINISHED',
+                        'badge-dark': contract.contractStatus === 'CANCELLED',
                       }"
-                      >{{ driver.userStatusName }}</label
+                      >{{ contract.contractStatus }}</label
                     >
                   </td>
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(driver.userId)"
+                      @click="viewDetail(contract.contractId)"
                     >
                       <i class="mdi mdi-account-box-outline"></i>
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateDriver(driver.userId)"
+                      :disabled="contract.userStatusName === 'CANCELLED'"
+                      @click="updateContract(contract.contractId)"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
                     <button
                       class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="driver.userStatusName === 'Disabled'"
-                      @click="handleDialog('isDeleteConVisible', driver.userId)"
+                      :disabled="contract.userStatusName === 'CANCELLED'"
+                      @click="
+                        handleDialog('isDeleteConVisible', contract.userId)
+                      "
                     >
                       <i class="mdi mdi-delete-forever"></i>
                     </button>
@@ -180,10 +186,10 @@
               </tbody>
             </table>
           </div>
-          <div v-if="this.totalDrivers > 15">
+          <div v-if="this.totalContracts > 15">
             <paginate
               v-model="currentPage"
-              :page-count="Math.floor(this.totalDrivers / 15) + 1"
+              :page-count="Math.floor(this.totalContracts / 15) + 1"
               :page-range="3"
               :margin-pages="1"
               :click-handler="clickCallback"
@@ -213,24 +219,24 @@
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
             <div class="col-sm-12">
-              <!-- Search Driver ID -->
-              <label>Driver ID</label>
+              <!-- Search Contract ID -->
+              <label>Contract ID</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                placeholder="Driver ID"
-                v-model="searchDriverID"
+                placeholder="Contract ID"
+                v-model="searchContractID"
                 @keypress="isNumber($event)"
                 maxlength="12"
               />
             </div>
             <div class="col-12 mt-3">
-              <label>Driver Name</label>
+              <label>Contract Name</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                v-model="searchDriverName"
-                placeholder="Driver name"
+                v-model="searchContractName"
+                placeholder="Contract name"
               />
             </div>
             <!-- Phone number dropdown-->
@@ -245,7 +251,7 @@
                 maxlength="10"
               />
             </div>
-            <!-- Driver status dropdown -->
+            <!-- Contract status dropdown -->
             <div class="col-12 mt-3">
               <label>Status</label>
               <select
@@ -267,7 +273,7 @@
               <button
                 class="btn btn-outline-info w-100"
                 type="button"
-                v-on:click="searchDrivers()"
+                v-on:click="searchContracts()"
               >
                 Filter
               </button>
@@ -289,16 +295,16 @@
 </template>
 
 <script>
-import { isNumber } from "../assets/js/input.js";
+import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 
-const DriverRepository = RepositoryFactory.get("drivers");
-const UserStatusRepository = RepositoryFactory.get("userStatus");
+const ContractRepository = RepositoryFactory.get("contracts");
+// const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
-  name: "Drivers",
+  name: "Contracts",
   props: {},
   components: {
     Loading,
@@ -308,13 +314,12 @@ export default {
       isFilterVisible: false,
       isTableVisible: true,
       statusList: [],
-      driversList: [],
       searchPhoneNumber: "",
-      searchDriverID: "",
-      searchDriverName: "",
+      searchContractID: "",
+      searchContractName: "",
       searchStatusID: "",
-      isLoading: true,
-      totalDrivers: 0,
+      isLoading: false,
+      totalContracts: 0,
       page: 0,
       currentPage: 1,
       isDeleteConVisible: false,
@@ -322,65 +327,31 @@ export default {
       isSuccess: false,
       errMsg: "",
       deleteUserID: "",
+      contracts: [],
     };
   },
   async mounted() {
-    await this.initStatusList();
-    await this.initDriversList();
+    this.isLoading = true;
+    // await this.initStatusList();
+    await this.initContracts();
+    this.isLoading = false;
   },
   methods: {
-    isNumber(evt) {
-      isNumber(evt);
-    },
-    // pagination handle
-    async clickCallback(pageNum) {
-      this.isLoading = true;
-      this.currentPage = pageNum;
-      this.page = pageNum - 1;
-      this.initDriversList();
-      this.isLoading = false;
-    },
-    // Init data for Driver Status Dropdown
-    async initStatusList() {
-      // wait for api
-      this.statusList = await UserStatusRepository.get();
-      this.statusList.push({
-        userStatusId: "",
-        userStatusName: "None",
+    // Init
+    async initContracts() {
+      await ContractRepository.get().then((res) => {
+        this.contracts = res;
       });
     },
-    // Clear search item value
-    clearSearchValue() {
-      this.searchDriverID = "";
-      this.searchDriverName = "";
-      this.searchPhoneNumber = "";
-      this.searchStatusID = "";
+    // Update vehicle detail
+    updateContract(contractId) {
+      this.$router.push({
+        name: "UpdateContract",
+        params: { contractId: contractId },
+      });
     },
-    // Search driver
-    async searchDrivers() {
-      this.isLoading = true;
-      this.page = 0;
-      this.currentPage = 1;
-      await this.initDriversList();
-    },
-    // Init data for driver list
-    async initDriversList() {
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        1
-      );
-      this.totalDrivers = await DriverRepository.getTotalDriver(
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        1
-      );
-      this.isLoading = false;
+    isNumber(evt) {
+      isNumber(evt);
     },
     // Set filter to visible
     clickToViewFilter() {
@@ -395,44 +366,6 @@ export default {
           this.isFilterVisible = !this.isFilterVisible;
         }, 300);
       }
-    },
-    // View driver detail
-    viewDetail(userId) {
-      this.$router.push({
-        name: "DriverDetail",
-        params: { userId: userId },
-      });
-    },
-    // View driver detail
-    updateDriver(userId) {
-      this.$router.push({
-        name: "UpdateDriver",
-        params: { userId: userId },
-      });
-    },
-    // Delete driver
-    async deleteDriver() {
-      this.handleDialog("isDeleteConVisible", "");
-      this.isLoading = true;
-      await DriverRepository.delete(this.deleteUserID)
-        .then((res) => {
-          if (res) {
-            this.isSuccess = true;
-          }
-        })
-        .catch((err) => {
-          this.isError = !this.isError;
-          this.errMsg = err.message;
-          console.log(err);
-        });
-      this.isLoading = false;
-    },
-    // Close delete driver confimation dialog
-    handleDialog(dialogName, userId) {
-      if (userId.length !== 0) {
-        this.deleteUserID = userId;
-      }
-      this.$data[dialogName] = !this.$data[dialogName];
     },
   },
 };

@@ -15,21 +15,22 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Update Driver
+          Create Driver
         </span>
       </h3>
     </div>
+    <!-- Error modal -->
     <div
       class="ui basic cus-modal justify-content-center"
       v-if="isCreatedSuccessfully"
     >
       <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Update Driver Successfully!
+        <i class="user plus icon mb-3"></i>
+        Create Driver Successfully!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
-          Driver with name {{ this.driver.fullName }} is updated successfully!
+          Driver with name {{ this.driver.fullName }} is created successfully!
         </h4>
       </div>
       <div class="actions row justify-content-center mt-5">
@@ -43,7 +44,7 @@
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Update Driver Fail!
+        Create Driver Fail!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -54,34 +55,6 @@
         <button @click="isError = !isError" class="ui blue primary button">
           <i class="checkmark icon"></i>
           Ok
-        </button>
-      </div>
-    </div>
-
-    <!-- Update confirmation dialog -->
-    <div
-      class="ui basic cus-modal justify-content-center"
-      v-if="isUpdConVisible"
-    >
-      <div class="ui icon header col-12">
-        <i class="edit outline icon mb-3"></i>
-        Update Confirmation
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Do you want to update this driver?</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          type="button"
-          class="ui red button"
-          @click="isUpdConVisible = !isUpdConVisible"
-        >
-          <i class="x icon"></i>
-          Cancel
-        </button>
-        <button type="button" class="ui blue  button" @click="update()">
-          <i class="check icon"></i>
-          Update
         </button>
       </div>
     </div>
@@ -130,28 +103,17 @@
               <div class="row justify-content-center">
                 <label for="up-pro-pho" class="upload-pro">
                   <img
-                    :src="driver.imageLink"
+                    src="../../assets/images/unnamed.png"
                     class="ui medium circular image pro-img"
                     alt="image"
-                    v-if="
-                      profileImage === null &&
-                        driver.imageLink !== null &&
-                        driver.imageLink.length > 0
-                    "
+                    v-if="profileImagePrev == null"
                   />
                   <img
                     :src="profileImagePrev"
                     class="ui medium circular image pro-img"
                     alt="image"
-                    v-else-if="profileImage !== null"
-                  />
-                  <img
-                    src="../assets/images/unnamed.png"
-                    class="ui medium circular image pro-img"
-                    alt="image"
                     v-else
                   />
-
                   <div class="upload-pro-plus ">
                     <i class="mdi mdi-plus"></i>
                   </div>
@@ -410,7 +372,7 @@
                     v-for="(img, index) in indentifyImagePrev"
                     :key="index"
                   >
-                    <img :src="img.imageLink" class="ui large image" />
+                    <img :src="img" class="ui large image" />
                     <button
                       class="close-btn"
                       v-on:click="removeImage(index, 'indentifyImage')"
@@ -454,9 +416,11 @@
                   <label>Indentify ID</label>
                   <div class="ui corner labeled input">
                     <input
-                      v-model="indentifyInfor.userDocumentId"
+                      v-model="driver.userDocumentReqList[0].userDocumentId"
                       type="text"
-                      readonly
+                      name="Name"
+                      placeholder="Indentify ID"
+                      @keypress="isNumber($event)"
                       maxlength="12"
                     />
                     <div class="ui corner label">
@@ -477,11 +441,11 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
-                      v-model="indentifyInfor.registeredDate"
+                      v-model="driver.userDocumentReqList[0].registeredDate"
                       class="form-control"
                     />
                     <div class="ui corner label">
@@ -496,11 +460,11 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Location</label>
+                  <label>Registered Location</label>
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="indentifyInfor.registeredLocation"
+                      v-model="driver.userDocumentReqList[0].registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -521,7 +485,7 @@
                     class="ui pointing red basic label"
                     v-if="indentify.registeredLocationErr"
                   >
-                    Registered location is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -543,7 +507,7 @@
                     v-for="(img, index) in healthInsuranceImagePrev"
                     :key="index"
                   >
-                    <img :src="img.imageLink" class="ui large image" />
+                    <img :src="img" class="ui large image" />
                     <button
                       class="close-btn"
                       v-on:click="removeImage(index, 'healthInsuranceImage')"
@@ -591,8 +555,10 @@
                       type="text"
                       name="Name"
                       ref="healthInsurId"
-                      readonly
-                      v-model="healthInsuranceInfor.userDocumentId"
+                      placeholder="ID"
+                      maxlength="15"
+                      style="text-transform:uppercase"
+                      v-model="driver.userDocumentReqList[1].userDocumentId"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -612,12 +578,12 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
                       class="form-control"
-                      v-model="healthInsuranceInfor.registeredDate"
+                      v-model="driver.userDocumentReqList[1].registeredDate"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -631,12 +597,12 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Location</label>
+                  <label>Registered Location</label>
 
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="healthInsuranceInfor.registeredLocation"
+                      v-model="driver.userDocumentReqList[1].registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -657,7 +623,7 @@
                     class="ui pointing red basic label"
                     v-if="healthInsurance.registeredLocationErr"
                   >
-                    Registered location is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -679,7 +645,7 @@
                     v-for="(img, index) in drivingLicenseImagePrev"
                     :key="index"
                   >
-                    <img :src="img.imageLink" class="ui large image" />
+                    <img :src="img" class="ui large image" />
                     <button
                       class="close-btn"
                       v-on:click="removeImage(index, 'drivingLicenseImage')"
@@ -726,8 +692,10 @@
                     <input
                       type="text"
                       ref="drivLicenseID"
-                      readonly
-                      v-model="drivingLicenseInfor.userDocumentId"
+                      placeholder="Driving License ID"
+                      @keypress="isNumber($event)"
+                      maxlength="12"
+                      v-model="driver.userDocumentReqList[2].userDocumentId"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -780,12 +748,12 @@
 
               <div class="two fields">
                 <div class="field">
-                  <label>Register Date</label>
+                  <label>Registered Date</label>
                   <div class="ui corner labeled input">
                     <input
                       type="date"
                       class="form-control"
-                      v-model="drivingLicenseInfor.registeredDate"
+                      v-model="driver.userDocumentReqList[2].registeredDate"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -799,11 +767,11 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Register Location</label>
+                  <label>Registered Location</label>
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
-                      v-model="drivingLicenseInfor.registeredLocation"
+                      v-model="driver.userDocumentReqList[2].registeredLocation"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -824,7 +792,7 @@
                     class="ui pointing red basic label"
                     v-if="drivingLicense.registeredLocationErr"
                   >
-                    Registered location is required!
+                    Registered Location is required!
                   </div>
                 </div>
               </div>
@@ -850,9 +818,9 @@
                   <button
                     class="btn btn-gradient-info btn-fw ml-2"
                     type="button"
-                    v-on:click="openConfirmation()"
+                    v-on:click="create()"
                   >
-                    Update
+                    Create
                   </button>
                 </div>
               </div>
@@ -865,18 +833,16 @@
 </template>
 
 <script>
-import { isNumber } from "../assets/js/input.js";
+import { isNumber } from "../../assets/js/input.js";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
-// import SuccessModal from "../components/SuccessModal";
 // import citiesJson from "../assets/json/addresses/tinh_tp.json";
 
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 const DriverRepository = RepositoryFactory.get("drivers");
-
 export default {
-  name: "UpdateDriver",
+  name: "CreateDriver",
   components: {
     Loading,
   },
@@ -892,7 +858,38 @@ export default {
         imageLink: "",
         baseSalary: "",
         userStatusId: 2,
-        userDocumentReqList: [],
+        userDocumentReqList: [
+          // Indentify Card
+          {
+            userDocumentId: "",
+            userDocumentTypeId: "1",
+            registeredLocation: "",
+            registeredDate: "",
+            expiryDate: "",
+            otherInformation: "",
+            documentImagesReqList: [],
+          },
+          //  Health Insurance
+          {
+            userDocumentId: "",
+            userDocumentTypeId: "2",
+            registeredLocation: "",
+            registeredDate: "",
+            expiryDate: "",
+            otherInformation: "",
+            documentImagesReqList: [],
+          },
+          // Driving License
+          {
+            userDocumentId: "",
+            userDocumentTypeId: "3",
+            registeredLocation: "",
+            registeredDate: "",
+            expiryDate: "",
+            otherInformation: "",
+            documentImagesReqList: [],
+          },
+        ],
       },
       // Profile image
       profileImage: null,
@@ -903,15 +900,12 @@ export default {
       imageData: null,
       // Indentify image
       indentifyImage: [],
-      indentifyImageDel: [],
       indentifyImagePrev: [],
       // Health Insurance
       healthInsuranceImage: [],
-      healthInsuranceImageDel: [],
       healthInsuranceImagePrev: [],
       // Driving License
       drivingLicenseImage: [],
-      drivingLicenseImageDel: [],
       drivingLicenseImagePrev: [],
       // Basic Information Error
       isFullNameErr: false,
@@ -975,22 +969,15 @@ export default {
         name: "",
       },
       documentExpiryDate: [],
-
-      indentifyInfor: {},
-      healthInsuranceInfor: {},
-      drivingLicenseInfor: {},
-
-      isUpdConVisible: false,
     };
   },
   mounted() {
     this.cities = this.getJsonObjects("tinh_tp.json");
-    this.drivingLicenseTypes = require("../assets/json/indentify/type.json");
-    this.documentExpiryDate = require("../assets/json/expiryDate.json");
-
-    this.initDetailDriver();
+    this.drivingLicenseTypes = require("../../assets/json/indentify/type.json");
+    this.documentExpiryDate = require("../../assets/json/expiryDate.json");
 
     let today = new Date();
+    // Init max birthdate = current year - 18
     this.maxBirthDate =
       today.getFullYear() -
       18 +
@@ -1002,133 +989,17 @@ export default {
       today.getDate();
   },
   methods: {
-    initDetailDriver() {
-      this.isLoading = true;
-      DriverRepository.getDetailDriver(this.$route.params.userId).then(
-        (res) => {
-          this.driver = res;
-
-          let addressArr = this.driver.address.split(", ");
-
-          this.selectedCity = this.findItemFromJson(
-            this.cities,
-            addressArr[addressArr.length - 1],
-            "name_with_type"
-          );
-          this.handleDropdownChange(1);
-
-          this.selectedDistrict = this.findItemFromJson(
-            this.districts,
-            addressArr[addressArr.length - 2],
-            "name_with_type"
-          );
-
-          this.handleDropdownChange(2);
-          this.selectedWard = this.findItemFromJson(
-            this.wards,
-            addressArr[addressArr.length - 3],
-            "name_with_type"
-          );
-          this.driver.address = addressArr[0];
-          this.phoneInput();
-
-          let identityCard = this.findDocumentByName(
-            this.driver.userDocumentList,
-            1
-          );
-
-          let healthInsurance = this.findDocumentByName(
-            this.driver.userDocumentList,
-            2
-          );
-          let drivingLicense = this.findDocumentByName(
-            this.driver.userDocumentList,
-            3
-          );
-
-          this.indentifyInfor = this.copyProperties(
-            identityCard,
-            "documentImages"
-          );
-          this.healthInsuranceInfor = this.copyProperties(
-            healthInsurance,
-            "documentImages"
-          );
-          this.drivingLicenseInfor = this.copyProperties(
-            drivingLicense,
-            "documentImages"
-          );
-
-          this.selectedDrivingLicenseTypes = this.findItemFromJson(
-            this.drivingLicenseTypes,
-            drivingLicense.otherInformation,
-            "name"
-          );
-
-          // Init image for document
-          this.indentifyInfor.documentImagesReqList.forEach((img) => {
-            this.indentifyImagePrev.push(img);
-          });
-          this.healthInsuranceInfor.documentImagesReqList.forEach((img) => {
-            this.healthInsuranceImagePrev.push(img);
-          });
-          this.drivingLicenseInfor.documentImagesReqList.forEach((img) => {
-            this.drivingLicenseImagePrev.push(img);
-          });
-
-          this.isLoading = false;
-        }
-      );
-    },
-    // Find document
-    findDocumentByName(driverDocument, userDocumentTypeId) {
-      for (let doc of driverDocument) {
-        if (doc.userDocumentType.userDocumentTypeId === userDocumentTypeId) {
-          return doc;
-        }
-      }
-    },
-
-    copyProperties(arr, exKey) {
-      let keys = Object.keys(arr);
-      let img = {
-        expiryDate: "",
-        otherInformation: "",
-        registeredDate: "",
-        registeredLocation: "",
-        userDocumentId: "",
-        userDocumentTypeId: "",
-        documentImagesReqList: [],
-      };
-      for (let index = 0; index < keys.length; index++) {
-        if (keys[index] === exKey) {
-          img["documentImagesReqList"] = arr[keys[index]];
-        } else if (keys[index] !== "userDocumentType") {
-          img[keys[index]] = arr[keys[index]];
-        }
-      }
-      img["userDocumentTypeId"] = arr["userDocumentType"].userDocumentTypeId;
-      return img;
-    },
-    findItemFromJson(arr, findStr, typeName) {
-      let keys = Object.keys(arr);
-      for (let index = 0; index < keys.length; index++) {
-        let item = arr[keys[index]];
-        if (item[typeName] === findStr) {
-          return item;
-        }
-      }
-    },
     getExpiryDate(date, ex) {
       let dateArr = date.split("-");
       return Number(dateArr[0]) + ex + "-" + dateArr[1] + "-" + dateArr[2];
     },
 
     getJsonObjects(str) {
-      return require("../assets/json/addresses/" + str);
+      return require("../../assets/json/addresses/" + str);
     },
-
+    // Handle address dropdown
     handleDropdownChange(name) {
+      // If city is selected
       if (name === 1) {
         if (this.selectedCity.name !== "") {
           this.districts = this.getJsonObjects(
@@ -1140,6 +1011,7 @@ export default {
         this.selectedDistrict = { name: "" };
         this.selectedWard = { name: "" };
         this.wards = [];
+        // If district is selected
       } else if (name === 2) {
         if (this.selectedDistrict.name !== "") {
           this.wards = this.getJsonObjects(
@@ -1167,27 +1039,16 @@ export default {
       reader.readAsDataURL(image);
       reader.onload = (e) => {
         let arr = this.$data[imageType + "Prev"];
-        arr.push({
-          imageLink: e.target.result,
-        });
+        arr.push(e.target.result);
       };
       let arr = this.$data[imageType];
       arr.push(image);
-      console.log(arr);
     },
     // Remove image from list
     removeImage(index, imageType) {
+      let imgArr = this.$data[imageType];
       let imgPrevArr = this.$data[imageType + "Prev"];
-      // Check if image is new or old image
-      if (
-        imgPrevArr[index].imageLink.includes("firebasestorage.googleapis.com")
-      ) {
-        let delImgArr = this.$data[imageType + "Del"];
-        delImgArr.push(imgPrevArr[index]);
-      } else {
-        let imgArr = this.$data[imageType];
-        this.$delete(imgArr, index);
-      }
+      this.$delete(imgArr, index);
       this.$delete(imgPrevArr, index);
     },
     // Upload image to firebase
@@ -1243,11 +1104,7 @@ export default {
       this.isBirthDateErr = this.driver.dateOfBirth.length === 0;
       this.isSalaryErr = this.driver.baseSalary.length === 0;
       this.isUserImgErr =
-        (this.profileImage === null || this.profileImage === null) &&
-        (this.driver.imageLink === null ||
-          (this.driver.imageLink !== null &&
-            this.driver.imageLink.length == 0));
-
+        this.profileImage === null || this.profileImage === null;
       return (
         this.isFullNameErr ||
         this.isAddressErr ||
@@ -1263,21 +1120,22 @@ export default {
     // Check Document
     checkDocumentInfo() {
       // Check indentify card
-      let indentify = this.indentifyInfor;
+      let indentify = this.driver.userDocumentReqList[0];
       let indentifyID = indentify.userDocumentId;
       this.indentify.documentIdErr =
         indentifyID.length !== 9 && indentifyID.length !== 12;
       this.indentify.registeredLocationErr =
         indentify.registeredLocation.length === 0;
       this.indentify.registeredDateErr = indentify.registeredDate.length === 0;
-      this.indentify.imageErr = this.indentifyImagePrev.length < 2;
+      this.indentify.imageErr =
+        this.indentifyImage.length < 2 || this.indentifyImagePrev.length < 2;
       let isIndentifyValid =
         this.indentify.documentIdErr ||
         this.indentify.registeredLocationErr ||
         this.indentify.registeredDateErr ||
         this.indentify.imageErr;
       // Check health insurance
-      let healthInsurance = this.healthInsuranceInfor;
+      let healthInsurance = this.driver.userDocumentReqList[1];
       this.healthInsurance.documentIdErr =
         healthInsurance.userDocumentId.length !== 15;
       this.healthInsurance.registeredLocationErr =
@@ -1285,14 +1143,16 @@ export default {
       this.healthInsurance.registeredDateErr =
         healthInsurance.registeredDate.length === 0;
 
-      this.healthInsurance.imageErr = this.healthInsuranceImagePrev.length < 2;
+      this.healthInsurance.imageErr =
+        this.healthInsuranceImage.length < 2 ||
+        this.healthInsuranceImage.length < 2;
       let isHealthInsuranceValid =
         this.healthInsurance.documentIdErr ||
         this.healthInsurance.registeredLocationErr ||
         this.healthInsurance.registeredDateErr ||
         this.healthInsurance.imageEr;
       // Check driving license
-      let drivingLicense = this.drivingLicenseInfor;
+      let drivingLicense = this.driver.userDocumentReqList[2];
       this.drivingLicense.documentIdErr =
         drivingLicense.userDocumentId.length !== 12;
       this.drivingLicense.otherInfoErr =
@@ -1302,7 +1162,9 @@ export default {
       this.drivingLicense.registeredDateErr =
         drivingLicense.registeredDate.length === 0;
 
-      this.drivingLicense.imageErr = this.drivingLicenseImagePrev.length < 2;
+      this.drivingLicense.imageErr =
+        this.drivingLicenseImage.length < 2 ||
+        this.drivingLicenseImagePrev.length < 2;
       let isDrivingLicenseValid =
         this.drivingLicense.documentIdErr ||
         this.drivingLicense.otherInfoErr ||
@@ -1313,144 +1175,155 @@ export default {
         isIndentifyValid || isHealthInsuranceValid || isDrivingLicenseValid
       );
     },
-    // Open update confirmation dialog
-    openConfirmation() {
+    async create() {
       let isValid = this.checkDocumentInfo();
       if (!isValid) {
-        this.isUpdConVisible = true;
-      }
-    },
-    // Update
-    async update() {
-      this.isUpdConVisible = false;
-      this.isLoading = true;
-      let oldImageLink = null;
+        this.isLoading = true;
+        this.driver.userId = this.driver.userDocumentReqList[0].userDocumentId;
 
-      this.driver.userDocumentReqList = [
-        this.indentifyInfor,
-        this.healthInsuranceInfor,
-        this.drivingLicenseInfor,
-      ];
+        this.indentify.documentDupErr = false;
+        this.healthInsurance.documentDupErr = false;
+        this.drivingLicense.documentDupErr = false;
 
-      this.driver.userId = this.driver.userDocumentReqList[0].userDocumentId;
-
-      this.indentify.documentDupErr = false;
-      this.healthInsurance.documentDupErr = false;
-      this.drivingLicense.documentDupErr = false;
-
-      this.driver.userStatusId = this.driver.userStatus.userStatusId;
-
-      // Init document expiry date
-      this.driver.userDocumentReqList[0].expiryDate = this.getExpiryDate(
-        this.driver.userDocumentReqList[0].registeredDate,
-        this.documentExpiryDate.indentify
-      );
-      this.driver.userDocumentReqList[1].expiryDate = this.getExpiryDate(
-        this.driver.userDocumentReqList[1].registeredDate,
-        this.documentExpiryDate.indentify
-      );
-      this.driver.userDocumentReqList[2].expiryDate = this.getExpiryDate(
-        this.driver.userDocumentReqList[2].registeredDate,
-        this.selectedDrivingLicenseTypes.expiryDate
-      );
-      this.driver.userDocumentReqList[2].otherInformation = this.selectedDrivingLicenseTypes.name;
-
-      this.driver.address =
-        this.driver.address +
-        ", " +
-        this.selectedWard.name_with_type +
-        ", " +
-        this.selectedDistrict.name_with_type +
-        ", " +
-        this.selectedCity.name_with_type;
-
-      // Init image list for indentify card
-      if (this.profileImage) {
-        oldImageLink = this.driver.imageLink;
-        this.driver.imageLink = await this.uploadImageToFirebase(
-          this.profileImage,
-          "profile"
+        // Init document expiry date
+        this.driver.userDocumentReqList[0].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[0].registeredDate,
+          this.documentExpiryDate.indentify
         );
-      }
+        this.driver.userDocumentReqList[1].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[1].registeredDate,
+          this.documentExpiryDate.indentify
+        );
+        this.driver.userDocumentReqList[2].expiryDate = this.getExpiryDate(
+          this.driver.userDocumentReqList[2].registeredDate,
+          this.selectedDrivingLicenseTypes.expiryDate
+        );
+        this.driver.userDocumentReqList[2].otherInformation = this.selectedDrivingLicenseTypes.name;
 
-      this.driver.phoneNumber = this.driver.phoneNumber
-        .replace("(", "")
-        .replace(")", "")
-        .replace(" ", "")
-        .replace("-", "");
+        this.driver.address =
+          this.driver.address +
+          ", " +
+          this.selectedWard.name_with_type +
+          ", " +
+          this.selectedDistrict.name_with_type +
+          ", " +
+          this.selectedCity.name_with_type;
 
-      await this.getFirebaseLinks("indentify");
-      await this.getFirebaseLinks("healthInsurance");
-      await this.getFirebaseLinks("drivingLicense");
-      // console.log(JSON.stringify(this.driver));
+        // Init image list for indentify card
+        if (this.profileImage) {
+          this.driver.imageLink = await this.uploadImageToFirebase(
+            this.profileImage,
+            "profile"
+          );
+          this.profileImage = null;
+        }
 
-      await DriverRepository.update(this.driver)
-        .then(async (res) => {
-          if (res) {
-            if (oldImageLink !== null) {
-              let arrTemp = [
-                {
-                  imageLink: oldImageLink,
-                },
-              ];
-              await this.deleteFirebaseLink(arrTemp);
+        // Set phone number
+        this.driver.phoneNumber = this.driver.phoneNumber
+          .replace("(", "")
+          .replace(")", "")
+          .replace(" ", "")
+          .replace("-", "");
+
+        // Delete old firebase image link
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[0].documentImagesReqList
+        );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[1].documentImagesReqList
+        );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
+        await this.deleteFirebaseLink(
+          this.driver.userDocumentReqList[2].documentImagesReqList
+        );
+        this.driver.userDocumentReqList[0].documentImagesReqList = [];
+
+        // Upload images to firebase
+        await this.getFirebaseLinks("indentifyImage", 0);
+        await this.getFirebaseLinks("healthInsuranceImage", 1);
+        await this.getFirebaseLinks("drivingLicenseImage", 2);
+
+        // Call api to create new driver
+        await DriverRepository.create(this.driver)
+          .then((res) => {
+            if (res) {
+              this.isCreatedSuccessfully = true;
             }
-            await this.deleteFirebaseLink(this.indentifyImageDel);
-            await this.deleteFirebaseLink(this.healthInsuranceImageDel);
-            await this.deleteFirebaseLink(this.drivingLicenseImageDel);
-            console.log(oldImageLink);
-            console.log(this.indentifyImageDel);
-            this.isCreatedSuccessfully = true;
-          }
-          console.log(res);
-        })
-        .catch((ex) => {
-          if (ex.debugMessage) {
-            this.errMsg = ex.debugMessage;
-          }
-          this.isError = true;
-          console.error(ex);
-        });
-      this.isLoading = false;
+          })
+          .catch((ex) => {
+            if (
+              ex.debugMessage.includes(
+                "Cannot insert duplicate key in object 'dbo.user_document'"
+              )
+            ) {
+              if (
+                ex.debugMessage.includes(
+                  this.driver.userDocumentReqList[2].userDocumentId
+                )
+              ) {
+                this.errMsg = "Driving license id is duplicated!";
+                this.drivingLicense.documentDupErr = true;
+                this.$refs.drivLicenseID.focus();
+              }
+              if (
+                ex.debugMessage.includes(
+                  this.driver.userDocumentReqList[1].userDocumentId
+                )
+              ) {
+                this.errMsg = "Health insurance id is duplicated!";
+                this.healthInsurance.documentDupErr = true;
+                this.$refs.healthInsurId.focus();
+              }
+              if (
+                ex.debugMessage.includes(
+                  this.driver.userDocumentReqList[0].userDocumentId
+                )
+              ) {
+                this.errMsg = "Indentify ID is duplicated!";
+                this.indentify.documentDupErr = true;
+                this.$refs.indentifyID.focus();
+              }
+              this.isError = true;
+            } else if (
+              ex.debugMessage.includes(
+                "Cannot insert duplicate key in object 'dbo.user'"
+              )
+            ) {
+              this.isError = true;
+              this.errMsg = "Indentify ID is duplicated!";
+              this.indentify.documentDupErr = true;
+              this.$refs.indentifyID.focus();
+            }
+            console.error(ex);
+          });
+        this.isLoading = false;
+      }
     },
     // Get firebase links
-    async getFirebaseLinks(imgTypeName) {
-      let imgDataList = this.$data[imgTypeName + "Image"];
-      if (imgDataList.length > 0) {
-        let document = this.$data[imgTypeName + "Infor"];
-        let imgArr = document.documentImagesReqList;
-        let delImgArr = this.$data[imgTypeName + "ImageDel"];
-        let index = 0;
+    async getFirebaseLinks(imgTypeName, index) {
+      let imgDataList = this.$data[imgTypeName];
+      let imgArr = [];
+      let document = this.driver.userDocumentReqList[index];
+      if (imgDataList) {
         for (let img of imgDataList) {
           let url = await this.uploadImageToFirebase(img, imgTypeName);
           let imgObj = {
-            documentImageId: delImgArr[index].documentImageId,
+            documentId: document.userDocumentId,
+            documentImageId: 0,
             imageLink: url,
           };
-          console.log(imgArr.length);
-          for (let i = 0; i < imgArr.length; i++) {
-            let imgA = imgArr[i];
-            console.log(imgA.documentImageId);
-            console.log(delImgArr);
-            if (imgA.documentImageId === delImgArr[index].documentImageId) {
-              this.$delete(imgArr, index);
-            }
-          }
           imgArr.push(imgObj);
-          index++;
         }
-        // document.documentImagesReqList = imgArr;
-        this.$data[imgTypeName + "Image"] = [];
+        document.documentImagesReqList = imgArr;
       }
     },
     // Delete firebase imgs
     async deleteFirebaseLink(imgs) {
-      if (imgs) {
-        for (let img of imgs) {
-          await this.deleteImageFromFirebase(img.imageLink);
-        }
-        imgs = [];
+      for (let img of imgs) {
+        await this.deleteImageFromFirebase(img.imageLink);
       }
+      imgs = [];
     },
     changeTab() {
       let isValid = this.checkBasicInformation();
@@ -1481,6 +1354,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
+
 .field label {
   margin-top: 10px !important;
 }
@@ -1570,7 +1445,3 @@ export default {
   color: white;
 }
 </style>
-<style>
-@import "../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-</style>
-<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

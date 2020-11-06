@@ -4,11 +4,11 @@ const resource = "/drivers";
 
 export default {
   // Get driver list
-  async get(page, name, phoneNumber, userStatusId, userId, viewOption) {
+  async get(page, name, phoneNumber, userStatus, userId, viewOption) {
     let driverList = [];
     try {
       const res = await Repository.get(
-        `${resource}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}&viewOption=${viewOption}`
+        `${resource}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatus=${userStatus}&userId=${userId}&viewOption=${viewOption}`
       );
       if (res.data) {
         driverList = res.data.driverRes;
@@ -19,11 +19,11 @@ export default {
     return driverList;
   },
   // Get total drivers count
-  async getTotalDriver(name, phoneNumber, userStatusId, userId, viewOption) {
+  async getTotalDriver(name, phoneNumber, userStatus, userId, viewOption) {
     let count = 0;
     try {
       const res = await Repository.get(
-        `${resource}/count?name=${name}&phoneNumber=${phoneNumber}&userStatusId=${userStatusId}&userId=${userId}&viewOption=${viewOption}`
+        `${resource}/count?name=${name}&phoneNumber=${phoneNumber}&userStatus=${userStatus}&userId=${userId}&viewOption=${viewOption}`
       );
       if (res.data) {
         count = res.data;
@@ -53,6 +53,7 @@ export default {
           resolve(res);
         })
         .catch((err) => {
+          console.log(err);
           reject(err.response.data);
         });
     });

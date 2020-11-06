@@ -9,32 +9,24 @@
     ></loading>
 
     <!-- Delete confimation -->
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <Confirmation
+      icon="user times"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this vehicle?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
       v-if="isDeleteConVisible"
-    >
-      <div class="ui icon header col-12">
-        <i class="user times icon mb-3"></i>
-        Delete Confirmation
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Do you want to delete vehicle with id {{ this.deleteUserID }}?</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          type="button"
-          class="ui blue primary button"
-          @click="handleDialog('isDeleteConVisible', '')"
-        >
-          <i class="checkmark icon"></i>
-          Cancel
-        </button>
-        <button type="button" class="ui red  button" @click="deleteVehicle()">
-          <i class="trash alternate icon"></i>
-          Delete
-        </button>
-      </div>
-    </div>
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteVehicle"
+    />
     <!-- Error message -->
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
@@ -90,9 +82,8 @@
           to="/create-vehicle"
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
-          v-on:click="clickToViewFilter()"
         >
-          <i class="mdi mdi-account-plus btn-icon-prepend"></i>
+          <i class="mdi mdi-plus-box btn-icon-prepend"></i>
           Create
         </router-link>
         <button
@@ -123,6 +114,7 @@
                   <th>NO.</th>
                   <th>ID</th>
                   <th>MODEL</th>
+                  <th>SEAT</th>
                   <th>TYPE</th>
                   <th>STATUS</th>
                   <th>TOTAL DISTANCE</th>
@@ -135,22 +127,26 @@
                   :key="vehicle.vehicleId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
+                  <td>{{ vehicle.vehicleId }}</td>
                   <td>{{ vehicle.model }}</td>
-                  <td>{{ vehicle.vehicleTypeId }}</td>
-                  <td>{{ vehicle.vehicleStatusId }}</td>
+                  <td>{{ vehicle.seats }}</td>
+                  <td>{{ vehicle.vehicleTypeName }}</td>
 
                   <td>
-                    <!-- <label
+                    <label
                       class="badge"
                       v-bind:class="{
-                        'badge-info': vehicle.userStatusName === 'Active',
-                        'badge-danger': vehicle.userStatusName === 'Inactive',
+                        'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
+                        'badge-danger': vehicle.vehicleStatus === 'MAINTENANCE',
+                        'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
+                        'badge-success':
+                          vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
                         'badge-warning':
-                          vehicle.userStatusName === 'Pending Approval',
-                        'badge-dark': vehicle.userStatusName === 'Disabled',
+                          vehicle.vehicleStatus === 'PENDING_APPROVAL',
+                        'badge-dark': vehicle.vehicleStatus === 'DELETED',
                       }"
-                      >{{ vehicle.userStatusName }}</label
-                    > -->
+                      >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
+                    >
                   </td>
                   <td>{{ vehicle.vehicleDistance }}</td>
                   <td class="row justify-content-center btn-action">
@@ -163,20 +159,23 @@
                     > -->
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(vehicle.userId)"
+                      @click="viewDetail(vehicle.vehicleId)"
                     >
                       <i class="mdi mdi-account-box-outline"></i>
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateVehicle(vehicle.userId)"
+                      @click="updateVehicle(vehicle.vehicleId)"
+                      :disabled="vehicle.vehicleStatus === 'Disabled'"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
                     <button
                       class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="vehicle.userStatusName === 'Disabled'"
-                      @click="handleDialog('isDeleteConVisible', vehicle.userId)"
+                      :disabled="vehicle.vehicleStatus === 'Disabled'"
+                      @click="
+                        handleDialog('isDeleteConVisible', vehicle.vehicleId)
+                      "
                     >
                       <i class="mdi mdi-delete-forever"></i>
                     </button>
@@ -217,8 +216,8 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
+            <!-- Search Vehicle ID -->
             <div class="col-sm-12">
-              <!-- Search Vehicle ID -->
               <label>Vehicle ID</label>
               <input
                 type="text"
@@ -229,40 +228,94 @@
                 maxlength="12"
               />
             </div>
+            <!-- Model -->
             <div class="col-12 mt-3">
-              <label>Vehicle Name</label>
+              <label>Model</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                v-model="searchVehicleName"
-                placeholder="Vehicle name"
+                v-model="searchModel"
+                placeholder="Vehicle model"
               />
             </div>
+
+            <!-- Total vehicles-->
+            <div class="col-12 mt-4">
+              <label>Total Distance</label>
+              <div class="row">
+                <div class="col-5">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm"
+                    @keypress="isNumber($event)"
+                    v-model="vehicleMinDis"
+                  />
+                </div>
+                <div class="col-2">
+                  <h1>-</h1>
+                </div>
+                <div class="col-5">
+                  <input
+                    type="text"
+                    @keypress="isNumber($event)"
+                    class="form-control form-control-sm"
+                    v-model="vehicleMaxDis"
+                  />
+                </div>
+              </div>
+            </div>
+
             <!-- Phone number dropdown-->
             <div class="col-12 mt-3">
-              <label>Phone Number</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Phone Number"
-                v-model="searchPhoneNumber"
-                @keypress="isNumber($event)"
-                maxlength="10"
-              />
+              <label>Total Seats</label>
+              <select class="form-control form-control-sm" v-model="searchSeat">
+                <option :value="''">
+                  Select total seats
+                </option>
+                <option
+                  v-for="totalSeat in totalSeats"
+                  :key="totalSeat"
+                  :value="totalSeat"
+                  >{{ totalSeat }}</option
+                >
+              </select>
             </div>
             <!-- Vehicle status dropdown -->
             <div class="col-12 mt-3">
               <label>Status</label>
+
               <select
                 class="form-control form-control-sm"
                 name="status"
                 v-model="searchStatusID"
               >
+                <option :value="''">
+                  Select vehicle status
+                </option>
                 <option
                   v-for="status in this.statusList"
-                  :key="status.userStatusId"
-                  :value="status.userStatusId"
-                  >{{ status.userStatusName }}</option
+                  :key="status"
+                  :value="status"
+                  >{{ status.replaceAll("_", " ") }}</option
+                >
+              </select>
+            </div>
+            <!-- Vehicle status dropdown -->
+            <div class="col-12 mt-3">
+              <label>Vehicle Type</label>
+              <select
+                class="form-control form-control-sm"
+                name="status"
+                v-model="searchType"
+              >
+                <option :value="''">
+                  Select vehicle type
+                </option>
+                <option
+                  v-for="vehicleType in this.vehicleTypes"
+                  :key="vehicleType.vehicleTypeId"
+                  :value="vehicleType.vehicleTypeId"
+                  >{{ vehicleType.vehicleTypeName }}</option
                 >
               </select>
             </div>
@@ -294,30 +347,37 @@
 </template>
 
 <script>
-import { isNumber } from "../assets/js/input.js";
+import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
-
+import { RepositoryFactory } from "../../repositories/RepositoryFactory";
+import Confirmation from "../../components/Modal/Confirmation";
 const VehicleRepository = RepositoryFactory.get("vehicles");
-const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
   name: "Vehicles",
   props: {},
   components: {
     Loading,
+    Confirmation,
   },
   data() {
     return {
       isFilterVisible: false,
       isTableVisible: true,
       statusList: [],
+
       vehiclesList: [],
+      // Filter
       searchPhoneNumber: "",
       searchVehicleID: "",
-      searchVehicleName: "",
+      searchModel: "",
       searchStatusID: "",
+      searchSeat: "",
+      searchType: "",
+      vehicleMaxDis: "",
+      vehicleMinDis: "",
+
       isLoading: true,
       totalVehicles: 0,
       page: 0,
@@ -327,20 +387,20 @@ export default {
       isSuccess: false,
       errMsg: "",
       deleteUserID: "",
+      // Seat
+      totalSeats: [],
 
-      model: "",
-      ownerId: "",
-      vehicleId: "",
-      vehicleMinDis: "",
-      vehicleMaxDis: "",
-      vehicleStatus: "",
-      vehicleType: "",
       viewOption: 0,
+
+      vehicleTypes: [],
+      searchTotalDistance: ["", ""],
     };
   },
   async mounted() {
-    // await this.initStatusList();
+    await this.initStatusList();
     await this.initVehiclesList();
+    await this.initTypes();
+    this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
   },
   methods: {
     isNumber(evt) {
@@ -348,25 +408,18 @@ export default {
     },
     // pagination handle
     async clickCallback(page) {
-      this.isLoading = true;
       this.currentPage = page;
       this.page = page - 1;
       this.initVehiclesList();
-      this.isLoading = false;
     },
     // Init data for Vehicle Status Dropdown
     async initStatusList() {
-      // wait for api
-      this.statusList = await UserStatusRepository.get();
-      this.statusList.push({
-        userStatusId: "",
-        userStatusName: "None",
-      });
+      this.statusList = require("../../assets/json/vehicle/status.json");
     },
     // Clear search item value
     clearSearchValue() {
       this.searchVehicleID = "";
-      this.searchVehicleName = "";
+      this.searchModel = "";
       this.searchPhoneNumber = "";
       this.searchStatusID = "";
     },
@@ -379,17 +432,28 @@ export default {
     },
     // Init data for vehicle list
     async initVehiclesList() {
+      this.isLoading = true;
+
+      if (this.vehicleMinDis > this.vehicleMaxDis) {
+        let temp = this.vehicleMinDis;
+        this.vehicleMinDis = this.vehicleMaxDis;
+        this.vehicleMaxDis = temp;
+      }
+
+      this.viewOption = this.searchStatusID !== "" ? 1 : 0;
+
       this.vehiclesList = await VehicleRepository.get(
         this.page,
-        this.model,
-        this.ownerId,
-        this.vehicleId,
+        this.searchModel,
+        this.searchVehicleID,
         this.vehicleMinDis,
         this.vehicleMaxDis,
-        this.vehicleStatus,
-        this.vehicleType,
+        this.searchStatusID,
+        this.searchType,
+        this.searchSeat,
         this.viewOption
       );
+      //TODO:
       this.totalVehicles = await VehicleRepository.getTotalVehicle(
         this.model,
         this.ownerId,
@@ -401,6 +465,12 @@ export default {
         this.viewOption
       );
       this.isLoading = false;
+    },
+    // Init types
+    async initTypes() {
+      await VehicleRepository.getVehicleType().then((res) => {
+        this.vehicleTypes = res;
+      });
     },
     // Set filter to visible
     clickToViewFilter() {
@@ -417,17 +487,17 @@ export default {
       }
     },
     // View vehicle detail
-    viewDetail(userId) {
+    viewDetail(vehicleId) {
       this.$router.push({
         name: "VehicleDetail",
-        params: { userId: userId },
+        params: { vehicleId: vehicleId },
       });
     },
     // View vehicle detail
-    updateVehicle(userId) {
+    updateVehicle(vehicleId) {
       this.$router.push({
         name: "UpdateVehicle",
-        params: { userId: userId },
+        params: { vehicleId: vehicleId },
       });
     },
     // Delete vehicle
@@ -442,7 +512,7 @@ export default {
         })
         .catch((err) => {
           this.isError = !this.isError;
-          this.errMsg = err.message;
+          this.errMsg = err.debugMessage;
           console.log(err);
         });
       this.isLoading = false;
@@ -457,9 +527,9 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
-  max-height: 450px !important;
+  max-height: 650px !important;
 }
 .label {
   font-size: 13px;

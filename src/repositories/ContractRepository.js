@@ -1,6 +1,6 @@
 import Repository from "./Repository";
 
-const resource = "/users";
+const resource = "/contracts";
 
 export default {
   updateUserStatusByUserId(userId, statusId) {
@@ -14,14 +14,42 @@ export default {
         });
     });
   },
-  // Create user
-  create(user, roleId) {
+  // Create contract
+  create(contract) {
     return new Promise((resolve, reject) => {
-      Repository.post(`${resource}?roleId=${roleId}`, user)
+      Repository.post(resource, contract)
         .then((res) => {
           resolve(res);
         })
         .catch((err) => {
+          console.log(err);
+          reject(err.response.data);
+        });
+    });
+  },
+  // Get contract list
+  async get() {
+    return new Promise((resolve, reject) => {
+      Repository.get(resource)
+        .then((res) => {
+          resolve(res.data.contractList);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(err.response.data);
+        });
+    });
+  },
+  // Get vehicles list
+  async getDetail(contractId) {
+    return new Promise((resolve, reject) => {
+      console.log(`${resource}/${contractId}`);
+      Repository.get(`${resource}/${contractId}`)
+        .then((res) => {
+          resolve(res.data.contractDetail);
+        })
+        .catch((err) => {
+          console.log(err);
           reject(err.response.data);
         });
     });
