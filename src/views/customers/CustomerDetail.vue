@@ -15,37 +15,15 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Customer
+          {{ this.$route.params.customerId }}
         </span>
       </h3>
-    </div>
-    <!-- Error modal -->
-    <div
-      class="ui basic cus-modal justify-content-center"
-      v-if="isUpdatedSuccessfully"
-    >
-      <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
-        Create Customer Successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Customer with name {{ this.customer.customerName }} is created
-          successfully!
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <router-link to="/customers" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Continue
-        </router-link>
-      </div>
     </div>
 
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Create Customer Fail!
+        Something went wrong!!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -62,26 +40,20 @@
 
     <!-- User Information -->
     <div class="row">
-      <Customer
-        leftBtnTxt="Cancel"
-        rightBtnTxt="Create"
-        :handlePropRightBtn="create"
-        :handlePropLeftBtn="cancel"
-        ref="customer"
-      />
+      <Customer :customer="customer" v-if="isCustomerLoading" ref="customer" />
     </div>
   </div>
 </template>
 
 <script>
 import Loading from "vue-loading-overlay";
-import Customer from "../../components/Customer/Customer";
+import Customer from "../../components/Customer/CustomerDetail";
 
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 const CustomerRepository = RepositoryFactory.get("customers");
 
 export default {
-  name: "CreateCustomer",
+  name: "CustomerDetail",
   components: {
     Loading,
     Customer,
@@ -101,31 +73,28 @@ export default {
       isLoading: false,
       isCustomerLoading: false,
       isUpdatedSuccessfully: false,
+      isUpdConVisible: false,
       isError: false,
       errMsg: "",
     };
   },
-  async mounted() {},
+  async mounted() {
+    await this.initData();
+  },
   methods: {
-    // Cancel
-    cancel() {
-      this.$refs.customer.initData();
-    },
-    // Update customer
-    async create() {
+    // Init data when is update
+    async initData() {
       this.isLoading = true;
-      this.customer = this.$refs.customer.getData();
-      console.log(this.$refs.customer.getData());
-      await CustomerRepository.create(this.customer)
+      await CustomerRepository.getDetailCustomer(this.$route.params.customerId)
         .then((res) => {
-          if (res) {
-            this.isUpdatedSuccessfully = true;
-          }
+          this.customer = res;
+          this.isCustomerLoading = true;
         })
         .catch((ex) => {
           if (ex) {
             this.errMsg = ex.debugMessage;
           }
+          console.log(ex);
           this.isError = true;
         });
       this.isLoading = false;

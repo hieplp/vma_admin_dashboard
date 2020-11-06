@@ -161,7 +161,6 @@ export default {
     isNumberInp: Boolean,
     expiryMaxDate: Number,
     documentType: String,
-    isDuplicated: Boolean,
   },
   data() {
     return {
@@ -172,7 +171,7 @@ export default {
         registeredDate: "",
         expiryDate: "",
         otherInformation: "",
-        documentImagesReqList: [],
+        userDocumentImages: [],
       },
       // Error
       documentIdErr: false,
@@ -184,6 +183,7 @@ export default {
       imageErr: false,
       // Error message
       idErrMsg: "",
+      isDuplicated: false,
       // Image
       documentImage: [],
       documentImagePrev: [],
@@ -246,6 +246,7 @@ export default {
     },
     // Get data
     getData() {
+      this.document.userDocumentId = this.document.userDocumentId.toUpperCase();
       this.document.expiryDate = this.getExpiryDate(
         this.document.registeredDate,
         this.selectedDrivingLicenseClass.expiryDate
@@ -256,6 +257,10 @@ export default {
         document: this.document,
         images: this.documentImage,
       };
+    },
+    // Handle duplicate
+    handleDuplicateErr() {
+      this.isDuplicated = !this.isDuplicated;
     },
     // Get expiry date
     getExpiryDate(date, ex) {

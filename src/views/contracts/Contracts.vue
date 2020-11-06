@@ -61,7 +61,9 @@
         Delete successfully!
       </div>
       <div class="content col-12 row justify-content-center">
-        <h4>Contract with id {{ this.deleteUserID }} is deleted successfully.</h4>
+        <h4>
+          Contract with id {{ this.deleteUserID }} is deleted successfully.
+        </h4>
       </div>
       <div class="actions row justify-content-center mt-5">
         <button
@@ -119,10 +121,13 @@
                 <tr class="">
                   <th>NO.</th>
                   <th>ID</th>
-                  <th>DEPARTURE LOCATION</th>
+                  <!-- <th>DEPARTURE LOCATION</th>
                   <th>DEPARTURE TIME</th>
                   <th>DESTINATION LOCATION</th>
-                  <th>DESTINATION TIME</th>
+                  <th>DESTINATION TIME</th> -->
+                  <th>DURATION FROM</th>
+                  <th>DURATION TO</th>
+                  <th>TOTAL PRICE</th>
                   <th>STATUS</th>
                   <th class="text-center">ACTION</th>
                 </tr>
@@ -134,39 +139,42 @@
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
                   <td>{{ contract.contractId }}</td>
-                  <td>{{ contract.departureLocation }}</td>
+                  <td>{{ contract.durationFrom }}</td>
+                  <td>{{ contract.durationTo }}</td>
+                  <td>{{ contract.totalPrice }}</td>
+                  <!-- <td>{{ contract.departureLocation }}</td>
                   <td>{{ contract.departureTime }}</td>
                   <td>{{ contract.destinationLocation }}</td>
-                  <td>{{ contract.destinationTime }}</td>
+                  <td>{{ contract.destinationTime }}</td> -->
                   <td>
                     <label
                       class="badge"
                       v-bind:class="{
-                        'badge-info': contract.contractStatus === 'Active',
-                        'badge-danger': contract.contractStatus === 'Inactive',
-                        'badge-warning':
-                          contract.contractStatus === 'Pending Approval',
-                        'badge-dark': contract.contractStatus === 'Disabled',
+                        'badge-info': contract.contractStatus === 'FINISHED',
+                        'badge-danger':
+                          contract.contractStatus === 'UNFINISHED',
+                        'badge-dark': contract.contractStatus === 'CANCELLED',
                       }"
-                      >{{ contract.contractStatus}}</label
+                      >{{ contract.contractStatus }}</label
                     >
                   </td>
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(contract.userId)"
+                      @click="viewDetail(contract.contractId)"
                     >
                       <i class="mdi mdi-account-box-outline"></i>
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateContract(contract.userId)"
+                      :disabled="contract.userStatusName === 'CANCELLED'"
+                      @click="updateContract(contract.contractId)"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
                     <button
                       class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="contract.userStatusName === 'Disabled'"
+                      :disabled="contract.userStatusName === 'CANCELLED'"
                       @click="
                         handleDialog('isDeleteConVisible', contract.userId)
                       "
@@ -290,9 +298,9 @@
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-// import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 
-// const ContractRepository = RepositoryFactory.get("contracts");
+const ContractRepository = RepositoryFactory.get("contracts");
 // const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
@@ -323,21 +331,25 @@ export default {
     };
   },
   async mounted() {
+    this.isLoading = true;
     // await this.initStatusList();
-    // await this.initContractsList();
-    this.contracts = [
-      {
-        contractId: "123",
-        departureLocation: "123",
-        departureTime: "123",
-        destinationLocation: "123",
-        destinationTime: "123",
-        totalPrice: 20000,
-        contractStatus: "Active",
-      },
-    ];
+    await this.initContracts();
+    this.isLoading = false;
   },
   methods: {
+    // Init
+    async initContracts() {
+      await ContractRepository.get().then((res) => {
+        this.contracts = res;
+      });
+    },
+    // Update vehicle detail
+    updateContract(contractId) {
+      this.$router.push({
+        name: "UpdateContract",
+        params: { contractId: contractId },
+      });
+    },
     isNumber(evt) {
       isNumber(evt);
     },

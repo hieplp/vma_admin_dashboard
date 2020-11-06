@@ -9,32 +9,24 @@
     ></loading>
 
     <!-- Delete confimation -->
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <Confirmation
+      icon="user times"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this driver?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
       v-if="isDeleteConVisible"
-    >
-      <div class="ui icon header col-12">
-        <i class="user times icon mb-3"></i>
-        Delete Confirmation
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Do you want to delete driver with id {{ this.deleteUserID }}?</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          type="button"
-          class="ui blue primary button"
-          @click="handleDialog('isDeleteConVisible', '')"
-        >
-          <i class="checkmark icon"></i>
-          Cancel
-        </button>
-        <button type="button" class="ui red  button" @click="deleteDriver()">
-          <i class="trash alternate icon"></i>
-          Delete
-        </button>
-      </div>
-    </div>
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteDriver"
+    />
     <!-- Error message -->
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
@@ -119,7 +111,7 @@
               <thead>
                 <tr class="">
                   <th>NO.</th>
-                  <th>ID</th>
+                  <!-- <th>ID</th> -->
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
                   <th>VEHICLE ID</th>
@@ -133,7 +125,7 @@
                   :key="driver.userId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <td>{{ driver.userId }}</td>
+                  <!-- <td>{{ driver.userId }}</td> -->
                   <td>{{ driver.fullName }}</td>
                   <td>{{ driver.phoneNumber }}</td>
                   <td>
@@ -146,14 +138,13 @@
                     <label
                       class="badge"
                       v-bind:class="{
-                        'badge-info': driver.userStatusName === 'Active',
-                        'badge-danger': driver.userStatusName === 'Inactive',
-                        'badge-warning':
-                          driver.userStatusName === 'Pending Approval',
-                        'badge-dark': driver.userStatusName === 'Disabled',
+                        'badge-info': driver.userStatus === 'ACTIVE',
+                        'badge-danger': driver.userStatus === 'INACTIVE',
+                        'badge-dark': driver.userStatus === 'DISABLE',
                       }"
-                      >{{ driver.userStatusName }}</label
                     >
+                      {{ driver.userStatus }}
+                    </label>
                   </td>
                   <td class="row justify-content-center btn-action">
                     <button
@@ -170,7 +161,7 @@
                     </button>
                     <button
                       class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="driver.userStatusName === 'Disabled'"
+                      :disabled="driver.userStatus === 'DISABLE'"
                       @click="handleDialog('isDeleteConVisible', driver.userId)"
                     >
                       <i class="mdi mdi-delete-forever"></i>
@@ -212,8 +203,9 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
+            <!-- Search Driver ID -->
+            <!-- 
             <div class="col-sm-12">
-              <!-- Search Driver ID -->
               <label>Driver ID</label>
               <input
                 type="text"
@@ -223,8 +215,8 @@
                 @keypress="isNumber($event)"
                 maxlength="12"
               />
-            </div>
-            <div class="col-12 mt-3">
+            </div> -->
+            <div class="col-12 mt-4">
               <label>Driver Name</label>
               <input
                 type="text"
@@ -234,7 +226,7 @@
               />
             </div>
             <!-- Phone number dropdown-->
-            <div class="col-12 mt-3">
+            <div class="col-12 mt-4">
               <label>Phone Number</label>
               <input
                 type="text"
@@ -246,24 +238,25 @@
               />
             </div>
             <!-- Driver status dropdown -->
-            <div class="col-12 mt-3">
+            <div class="col-12 mt-4">
               <label>Status</label>
               <select
                 class="form-control form-control-sm"
                 name="status"
                 v-model="searchStatusID"
               >
+                <option value="" selected>NONE</option>
                 <option
                   v-for="status in this.statusList"
-                  :key="status.userStatusId"
-                  :value="status.userStatusId"
-                  >{{ status.userStatusName }}</option
+                  :key="status"
+                  :value="status"
+                  >{{ status }}</option
                 >
               </select>
             </div>
 
             <br />
-            <div class="col-12 mt-3">
+            <div class="col-12 mt-4">
               <button
                 class="btn btn-outline-info w-100"
                 type="button"
@@ -289,19 +282,21 @@
 </template>
 
 <script>
-import { isNumber } from "../assets/js/input.js";
+import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../repositories/RepositoryFactory";
+import Confirmation from "../../components/Modal/Confirmation";
+import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 
 const DriverRepository = RepositoryFactory.get("drivers");
-const UserStatusRepository = RepositoryFactory.get("userStatus");
+const UserRepository = RepositoryFactory.get("users");
 
 export default {
   name: "Drivers",
   props: {},
   components: {
     Loading,
+    Confirmation,
   },
   data() {
     return {
@@ -334,20 +329,13 @@ export default {
     },
     // pagination handle
     async clickCallback(pageNum) {
-      this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
       this.initDriversList();
-      this.isLoading = false;
     },
     // Init data for Driver Status Dropdown
     async initStatusList() {
-      // wait for api
-      this.statusList = await UserStatusRepository.get();
-      this.statusList.push({
-        userStatusId: "",
-        userStatusName: "None",
-      });
+      this.statusList = require("../../assets/json/user/driverStatus.json");
     },
     // Clear search item value
     clearSearchValue() {
@@ -358,13 +346,14 @@ export default {
     },
     // Search driver
     async searchDrivers() {
-      this.isLoading = true;
       this.page = 0;
       this.currentPage = 1;
       await this.initDriversList();
     },
     // Init data for driver list
     async initDriversList() {
+      this.isLoading = true;
+
       this.driversList = await DriverRepository.get(
         this.page,
         this.searchDriverName,
@@ -414,7 +403,7 @@ export default {
     async deleteDriver() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
-      await DriverRepository.delete(this.deleteUserID)
+      await UserRepository.delete(this.deleteUserID)
         .then((res) => {
           if (res) {
             this.isSuccess = true;

@@ -9,32 +9,24 @@
     ></loading>
 
     <!-- Delete confimation -->
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <Confirmation
+      icon="user times"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this customer?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
       v-if="isDeleteConVisible"
-    >
-      <div class="ui icon header col-12">
-        <i class="user times icon mb-3"></i>
-        Delete Confirmation
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Do you want to delete customer with id {{ this.deleteUserID }}?</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          type="button"
-          class="ui blue primary button"
-          @click="handleDialog('isDeleteConVisible', '')"
-        >
-          <i class="checkmark icon"></i>
-          Cancel
-        </button>
-        <button type="button" class="ui red  button" @click="deleteCustomer()">
-          <i class="trash alternate icon"></i>
-          Delete
-        </button>
-      </div>
-    </div>
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteCustomer"
+    />
     <!-- Error message -->
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
@@ -120,10 +112,10 @@
               <thead>
                 <tr class="">
                   <th>NO.</th>
-                  <th>ID</th>
+                  <!-- <th>ID</th> -->
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
-                  <th>ADDRESS</th>
+                  <!-- <th class="text-center">ADDRESS</th> -->
                   <th>EMAIL</th>
                   <th class="text-center">ACTION</th>
                 </tr>
@@ -134,28 +126,29 @@
                   :key="customer.customerId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <td>{{ customer.customerId }}</td>
+                  <!-- <td>{{ customer.customerId }}</td> -->
                   <td>{{ customer.customerName }}</td>
                   <td>{{ customer.phoneNumber }}</td>
-                  <td>{{ customer.address}}</td>
-                  <td>{{ customer.email}}</td>
+                  <!-- <td style="max-width: 230px;">{{ customer.address }}</td> -->
+                  <td>{{ customer.email }}</td>
 
                   <td class="row justify-content-center btn-action">
                     <button
-                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(customer.userId)"
+                      class="btn btn-gradient-info btn-rounded btn-icon mr-1 mt-1"
+                      @click="viewDetail(customer.customerId)"
                     >
                       <i class="mdi mdi-account-box-outline"></i>
                     </button>
                     <button
-                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateCustomer(customer.userId)"
+                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1 mt-1"
+                      @click="updateCustomer(customer.customerId)"
+                      :disabled="isDeleteLoading"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
                     <button
-                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="customer.userStatusName === 'Disabled'"
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1 mt-1"
+                      :disabled="isDeleteLoading"
                       @click="
                         handleDialog('isDeleteConVisible', customer.customerId)
                       "
@@ -199,19 +192,16 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
-            <div class="col-sm-12">
-              <!-- Search Customer ID -->
-              <label>Customer ID</label>
+            <!-- <div class="col-sm-12">
+              <label>Address</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
                 placeholder="Customer ID"
-                v-model="searchCustomerID"
-                @keypress="isNumber($event)"
-                maxlength="12"
+                v-model="searchAddress"
               />
-            </div>
-            <div class="col-12 mt-3">
+            </div> -->
+            <div class="col-12 mt-5">
               <label>Customer Name</label>
               <input
                 type="text"
@@ -220,8 +210,8 @@
                 placeholder="Customer name"
               />
             </div>
-            <!-- Phone number dropdown-->
-            <div class="col-12 mt-3">
+            <!-- Phone number-->
+            <div class="col-12 mt-4">
               <label>Phone Number</label>
               <input
                 type="text"
@@ -232,20 +222,28 @@
                 maxlength="10"
               />
             </div>
+            <!-- Email -->
+            <div class="col-12 mt-4">
+              <label>Email</label>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Email"
+                v-model="searchEmail"
+                @keypress="isNumber($event)"
+                maxlength="10"
+              />
+            </div>
             <!-- Customer status dropdown -->
-            <div class="col-12 mt-3">
+            <div class="col-12 mt-4">
               <label>Status</label>
               <select
                 class="form-control form-control-sm"
                 name="status"
                 v-model="searchStatusID"
               >
-                <option
-                  v-for="status in this.statusList"
-                  :key="status.userStatusId"
-                  :value="status.userStatusId"
-                  >{{ status.userStatusName }}</option
-                >
+                <option value="" selected>AVAILABLE</option>
+                <option value="1" selected>DELETED</option>
               </select>
             </div>
 
@@ -280,15 +278,16 @@ import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
+import Confirmation from "../../components/Modal/Confirmation";
 
 const CustomerRepository = RepositoryFactory.get("customers");
-const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
   name: "Customers",
   props: {},
   components: {
     Loading,
+    Confirmation,
   },
   data() {
     return {
@@ -297,8 +296,9 @@ export default {
       statusList: [],
       customers: [],
       searchPhoneNumber: "",
-      searchCustomerID: "",
+      searchAddress: "",
       searchCustomerName: "",
+      searchEmail: "",
       searchStatusID: "",
       isLoading: false,
       totalCustomers: 0,
@@ -309,18 +309,11 @@ export default {
       isSuccess: false,
       errMsg: "",
       deleteUserID: "",
+      isDeleteLoading: false,
     };
   },
   async mounted() {
-    this.customers = [
-      {
-        customerId: "123",
-        customerName: "123",
-        address: "123",
-        phoneNumber: "0312312",
-        email: "12312312",
-      },
-    ];
+    await this.initCustomersList();
   },
   methods: {
     isNumber(evt) {
@@ -331,48 +324,42 @@ export default {
       this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.initCustomersList();
+      await this.initCustomersList();
       this.isLoading = false;
     },
-    // Init data for Customer Status Dropdown
-    async initStatusList() {
-      // wait for api
-      this.statusList = await UserStatusRepository.get();
-      this.statusList.push({
-        userStatusId: "",
-        userStatusName: "None",
-      });
-    },
+
     // Clear search item value
     clearSearchValue() {
-      this.searchCustomerID = "";
+      this.searchAddress = "";
       this.searchCustomerName = "";
       this.searchPhoneNumber = "";
+      this.searchEmail = "";
       this.searchStatusID = "";
     },
     // Search customer
     async searchCustomers() {
-      this.isLoading = true;
       this.page = 0;
       this.currentPage = 1;
       await this.initCustomersList();
     },
     // Init data for customer list
     async initCustomersList() {
+      this.isLoading = true;
+      this.isDeleteLoading = this.searchStatusID === "1";
       this.customers = await CustomerRepository.get(
-        this.page,
+        this.searchAddress,
         this.searchCustomerName,
+        this.searchEmail,
+        this.page,
         this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchCustomerID,
-        1
+        this.searchStatusID
       );
       this.totalCustomers = await CustomerRepository.getTotalCustomer(
+        this.searchAddress,
         this.searchCustomerName,
+        this.searchEmail,
         this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchCustomerID,
-        1
+        this.searchStatusID
       );
       this.isLoading = false;
     },
@@ -391,17 +378,17 @@ export default {
       }
     },
     // View customer detail
-    viewDetail(userId) {
+    viewDetail(customerId) {
       this.$router.push({
         name: "CustomerDetail",
-        params: { userId: userId },
+        params: { customerId: customerId },
       });
     },
-    // View customer detail
-    updateCustomer(userId) {
+    // Update customer detail
+    updateCustomer(customerId) {
       this.$router.push({
         name: "UpdateCustomer",
-        params: { userId: userId },
+        params: { customerId: customerId },
       });
     },
     // Delete customer
@@ -433,7 +420,7 @@ export default {
 </script>
 <style>
 .filter {
-  max-height: 450px !important;
+  max-height: 250px !important;
 }
 .label {
   font-size: 13px;
@@ -459,6 +446,9 @@ export default {
 .cus-modal .header {
   color: white;
   font-size: 35px !important;
+}
+td {
+  white-space: initial !important;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

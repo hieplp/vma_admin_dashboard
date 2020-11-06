@@ -73,7 +73,7 @@
         class="nav-item"
         id="Contracts"
         v-bind:class="{
-          active: this.$route.name === 'Contracts' ? true : false,
+          active: this.$route.name.includes('Contract') ? true : false,
         }"
       >
         <router-link to="/contracts" class="nav-link">
@@ -85,7 +85,7 @@
         class="nav-item"
         id="Customers"
         v-bind:class="{
-          active: this.$route.name === 'Customers' ? true : false,
+          active: this.$route.name.includes('Customer') ? true : false,
         }"
       >
         <router-link to="/customers" class="nav-link">

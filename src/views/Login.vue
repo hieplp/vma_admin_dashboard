@@ -168,7 +168,7 @@ export default {
     },
     // Send phone number to firebase
     async sendPhoneNumToFirebase() {
-       localStorage.setItem("userId","hiep");
+      localStorage.setItem("userId", "hiep");
       this.$router.push({
         name: "Overview",
       });

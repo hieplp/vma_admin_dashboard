@@ -43,6 +43,7 @@ new Vue({
       // messagingSenderId: "667875013519",
       // appId: "1:667875013519:web:3adcf4a59ed5b2122451fa",
       // measurementId: "G-YS7GFVN9WJ",
+
       apiKey: "AIzaSyAjxIE1tf-CwMwoINlKCDUEDfwlyQWc8F8",
       authDomain: "vma-fa20se28.firebaseapp.com",
       databaseURL: "https://vma-fa20se28.firebaseio.com",

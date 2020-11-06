@@ -3,25 +3,39 @@
     <div class="card">
       <div class="card-body">
         <div class="ui form">
-          <h4 class="ui dividing header">BASIC INFORMATION</h4>
+          <h4 class="ui dividing header">
+            BASIC INFORMATION
+          </h4>
 
           <div class="field">
             <label>Profile image</label>
           </div>
+
           <div class="row justify-content-center">
             <label for="up-pro-pho" class="upload-pro">
               <img
-                src="../../assets/images/unnamed.png"
+                :src="driver.imageLink"
                 class="ui medium circular image pro-img"
                 alt="image"
-                v-if="profileImagePrev == null"
+                v-if="
+                  profileImage === null &&
+                    driver.imageLink !== null &&
+                    driver.imageLink.length > 0
+                "
               />
               <img
                 :src="profileImagePrev"
                 class="ui medium circular image pro-img"
                 alt="image"
+                v-else-if="profileImage !== null"
+              />
+              <img
+                src="../../assets/images/unnamed.png"
+                class="ui medium circular image pro-img"
+                alt="image"
                 v-else
               />
+
               <div class="upload-pro-plus ">
                 <i class="mdi mdi-plus"></i>
               </div>
@@ -39,7 +53,6 @@
               User image is required!
             </div>
           </div>
-
           <div class="two fields mt-4">
             <!-- Full name -->
             <div class="field">
@@ -99,7 +112,7 @@
                 <input
                   type="date"
                   v-model="driver.dateOfBirth"
-                  :max="maxBirthDate"
+                  max="2002-10-31"
                   class="form-control"
                 />
                 <div class="ui corner label">
@@ -110,21 +123,61 @@
                 Birthdate is required!
               </div>
             </div>
+
+            <!-- Base Salary -->
+            <div class="field" v-if="isUpdate && !isContributor">
+              <label>Base Salary</label>
+              <div class="ui corner labeled input">
+                <input
+                  type="text"
+                  v-model="driver.baseSalary"
+                  placeholder="Basic Salary"
+                  @keypress="isNumber($event)"
+                />
+                <div class="ui corner label">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div class="ui pointing red basic label" v-if="isSalaryErr">
+                Base salary is required!
+              </div>
+            </div>
+
+            <!-- Password if used for contributor-->
+            <div class="field" v-if="isContributor && !isUpdate">
+              <label>Password</label>
+              <div class="ui corner icon input">
+                <input
+                  type="password"
+                  v-model="driver.password"
+                  placeholder="Password (6 characters minimum)"
+                  ref="password"
+                />
+                <i
+                  class=" circular eye link icon cus-icon"
+                  v-bind:class="{ slash: !isSeePassword }"
+                  @click="seePassword"
+                ></i>
+                <div class="ui corner label">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div class="ui pointing red basic label" v-if="isPasswordErr">
+                Password is required at least 6 chars!
+              </div>
+            </div>
           </div>
 
-          <div class="two fields">
+          <div class="two fields" v-if="!isUpdate && !isContributor">
             <!-- Base Salary -->
             <div class="field ">
               <label>Base Salary</label>
               <div class="ui corner labeled input">
                 <input
                   type="text"
-                  name="Salary"
                   v-model="driver.baseSalary"
                   placeholder="Basic Salary"
                   @keypress="isNumber($event)"
-                  min="1"
-                  step="any"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -146,7 +199,7 @@
                 />
                 <i
                   class=" circular eye link icon cus-icon"
-                  v-bind:class="{ slash: isSeePassword }"
+                  v-bind:class="{ slash: !isSeePassword }"
                   @click="seePassword"
                 ></i>
                 <div class="ui corner label">
@@ -267,7 +320,26 @@
 
           <!-- Button group -->
           <div class="row justify-content-center mt-5">
+            <!-- If update user is call -->
+            <div class="col-4" v-if="isUpdate">
+              <button
+                class="btn btn-gradient-danger btn-fw"
+                type="button"
+                @click="initData()"
+              >
+                Cancel
+              </button>
+              <button
+                class="btn btn-gradient-info btn-fw ml-2"
+                type="button"
+                v-on:click="update()"
+              >
+                Update
+              </button>
+            </div>
+            <!-- If not -->
             <button
+              v-else
               class="btn btn-gradient-info btn-fw ml-2"
               type="button"
               v-on:click="changeTab()"
@@ -287,6 +359,8 @@ import { isNumber } from "../../assets/js/input.js";
 export default {
   props: {
     propDriver: Object,
+    isUpdate: Boolean,
+    isContributor: Boolean,
   },
   data() {
     return {
@@ -299,7 +373,7 @@ export default {
         dateOfBirth: "",
         imageLink: "",
         baseSalary: "",
-        userDocumentReqList: [],
+        userDocumentList: [],
         password: "",
       },
       // address
@@ -338,17 +412,14 @@ export default {
   },
   mounted() {
     this.cities = this.getJsonObjects("tinh_tp.json");
-    let today = new Date();
+    //If there is a driver data
+    if (this.propDriver) {
+      this.initData();
+    }
     // Init max birthdate = current year - 18
-    this.maxBirthDate =
-      today.getFullYear() -
-      18 +
-      "-" +
-      (today.getMonth() > 10 ? "" : "0") +
-      today.getMonth() +
-      "-" +
-      (today.getDate() > 10 ? "" : "0") +
-      today.getDate();
+    let today = new Date().toISOString();
+    let year = today.split("-")[0] - 18;
+    this.maxBirthDate = today.replace(today.split("-")[0], year);
   },
   methods: {
     // Upload profile img
@@ -375,10 +446,20 @@ export default {
           .replace(" ", "")
           .replace("-", "").length !== 10;
       this.isBirthDateErr = this.driver.dateOfBirth.length === 0;
-      this.isSalaryErr = this.driver.baseSalary.length === 0;
-      this.isPasswordErr = this.driver.password.length < 6;
+      if (!this.isContributor) {
+        this.isSalaryErr = this.driver.baseSalary.length === 0;
+      }
+      if (!this.isUpdate) {
+        this.isPasswordErr = this.driver.password.length < 6;
+      }
+      // this.isUserImgErr =
+      //   this.profileImage === null || this.profileImage === null;
       this.isUserImgErr =
-        this.profileImage === null || this.profileImage === null;
+        (this.profileImage === null || this.profileImage === null) &&
+        (this.driver.imageLink === null ||
+          (this.driver.imageLink !== null &&
+            this.driver.imageLink.length == 0));
+
       return (
         this.isFullNameErr ||
         this.isAddressErr ||
@@ -388,8 +469,15 @@ export default {
         this.isWardErr ||
         this.isDistrictErr ||
         this.isCityErr ||
-        this.isUserImgErr
+        this.isUserImgErr ||
+        this.isPasswordErr
       );
+    },
+    update() {
+      let isValid = this.checkBasicInformation();
+      if (!isValid) {
+        this.$parent.openConfirmation("BASIC_INFOR");
+      }
     },
     getJsonObjects(str) {
       return require("../../assets/json/addresses/" + str);
@@ -419,28 +507,67 @@ export default {
         }
       }
     },
+    // Init data when is update
+    initData() {
+      this.driver = Object.assign({}, this.propDriver);
+      let addressArr = this.driver.address.split(", ");
+      this.selectedCity = this.findItemFromJson(
+        this.cities,
+        addressArr[addressArr.length - 1],
+        "name_with_type"
+      );
+      this.handleDropdownChange(1);
+
+      this.selectedDistrict = this.findItemFromJson(
+        this.districts,
+        addressArr[addressArr.length - 2],
+        "name_with_type"
+      );
+
+      this.handleDropdownChange(2);
+      this.selectedWard = this.findItemFromJson(
+        this.wards,
+        addressArr[addressArr.length - 3],
+        "name_with_type"
+      );
+      this.driver.address = addressArr[0];
+      this.phoneInput();
+    },
+    // Find address
+    findItemFromJson(arr, findStr, typeName) {
+      let keys = Object.keys(arr);
+      for (let index = 0; index < keys.length; index++) {
+        let item = arr[keys[index]];
+        if (item[typeName] === findStr) {
+          return item;
+        }
+      }
+    },
+    // Change tab
     changeTab() {
       this.$parent.changeTab();
     },
     // Get data
     getData() {
+      let driver = Object.assign({}, this.driver);
       // format phone number
-      this.driver.phoneNumber = this.driver.phoneNumber
+      driver.phoneNumber = driver.phoneNumber
         .replace("(", "")
         .replace(")", "")
         .replace(" ", "")
         .replace("-", "");
       // format address
-      this.driver.address =
-        this.driver.address +
+      driver.address =
+        driver.address +
         ", " +
         this.selectedWard.name_with_type +
         ", " +
         this.selectedDistrict.name_with_type +
         ", " +
         this.selectedCity.name_with_type;
+      console.log(driver);
       return {
-        driver: this.driver,
+        driver: driver,
         image: this.profileImage,
       };
     },
@@ -516,5 +643,11 @@ export default {
 }
 .ui.icon.input:hover {
   cursor: pointer;
+}
+
+.edit-btn {
+  position: absolute;
+  right: 1%;
+  top: 1%;
 }
 </style>

@@ -15,7 +15,11 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Customer
+          Update Customer
+        </span>
+        <span class="text-secondary">/</span>
+        <span>
+          {{ this.$route.params.customerId }}
         </span>
       </h3>
     </div>
@@ -25,12 +29,12 @@
       v-if="isUpdatedSuccessfully"
     >
       <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
-        Create Customer Successfully!
+        <i class="check circle outline icon mb-3"></i>
+        Update Customer Successfully!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
-          Customer with name {{ this.customer.customerName }} is created
+          Customer with name {{ this.customer.customerName }} is updated
           successfully!
         </h4>
       </div>
@@ -42,10 +46,29 @@
       </div>
     </div>
 
+    <Confirmation
+      icon="edit outline"
+      title="Update Confirmation"
+      subTitle="Do you want to update this customer?"
+      rightBtnTitle="Update"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isUpdConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isUpdConVisible = !this.isUpdConVisible;
+        }
+      "
+      :handleRightBtn="update"
+    />
+
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Create Customer Fail!
+        Update Customer Fail!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -63,9 +86,15 @@
     <!-- User Information -->
     <div class="row">
       <Customer
+        :propCustomer="customer"
+        v-if="isCustomerLoading"
         leftBtnTxt="Cancel"
-        rightBtnTxt="Create"
-        :handlePropRightBtn="create"
+        rightBtnTxt="Update"
+        :handlePropRightBtn="
+          () => {
+            this.isUpdConVisible = !this.isUpdConVisible;
+          }
+        "
         :handlePropLeftBtn="cancel"
         ref="customer"
       />
@@ -76,15 +105,17 @@
 <script>
 import Loading from "vue-loading-overlay";
 import Customer from "../../components/Customer/Customer";
+import Confirmation from "../../components/Modal/Confirmation";
 
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 const CustomerRepository = RepositoryFactory.get("customers");
 
 export default {
-  name: "CreateCustomer",
+  name: "UpdateCustomer",
   components: {
     Loading,
     Customer,
+    Confirmation,
   },
   data() {
     return {
@@ -101,22 +132,43 @@ export default {
       isLoading: false,
       isCustomerLoading: false,
       isUpdatedSuccessfully: false,
+      isUpdConVisible: false,
       isError: false,
       errMsg: "",
     };
   },
-  async mounted() {},
+  async mounted() {
+    await this.initData();
+  },
   methods: {
+    // Init data when is update
+    async initData() {
+      this.isLoading = true;
+      await CustomerRepository.getDetailCustomer(this.$route.params.customerId)
+        .then((res) => {
+          this.customer = res;
+          this.isCustomerLoading = true;
+        })
+        .catch((ex) => {
+          if (ex) {
+            this.errMsg = ex.debugMessage;
+          }
+          console.log(ex);
+          this.isError = true;
+        });
+      this.isLoading = false;
+    },
     // Cancel
     cancel() {
       this.$refs.customer.initData();
     },
     // Update customer
-    async create() {
+    async update() {
+      this.isUpdConVisible = !this.isUpdConVisible;
       this.isLoading = true;
       this.customer = this.$refs.customer.getData();
       console.log(this.$refs.customer.getData());
-      await CustomerRepository.create(this.customer)
+      await CustomerRepository.update(this.customer)
         .then((res) => {
           if (res) {
             this.isUpdatedSuccessfully = true;

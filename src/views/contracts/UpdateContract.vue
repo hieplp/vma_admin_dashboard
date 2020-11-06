@@ -30,7 +30,8 @@
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
-          Contrac is created successfully!
+          Contract with name {{ this.contract.departureLocation }} is created
+          successfully!
         </h4>
       </div>
       <div class="actions row justify-content-center mt-5">
@@ -264,16 +265,22 @@
     <Address
       title="SIGNED LOCATION"
       :visible="isUserInfoVisible"
+      :propAddress="contract.signedLocation"
+      v-if="isAddressLoading"
       ref="signedLocation"
     />
     <Address
       title="DEPARTURE LOCATION"
       :visible="isUserInfoVisible"
+      :propAddress="contract.departureLocation"
+      v-if="isAddressLoading"
       ref="departureLocation"
     />
     <Address
       title="DESTINATION LOCATION"
       :visible="isUserInfoVisible"
+      :propAddress="contract.destinationLocation"
+      v-if="isAddressLoading"
       ref="destinationLocation"
     />
     <div class="row" v-if="isUserInfoVisible">
@@ -367,6 +374,8 @@ export default {
       // Profile image
       isUserInfoVisible: true,
 
+      isAddressLoading: false,
+
       // Basic Information Error
       ownerErr: false,
       departureTimeErr: false,
@@ -411,20 +420,25 @@ export default {
       },
     };
   },
-  mounted() {
-    let today = new Date();
-    // Init max birthdate = current year - 18
-    this.maxBirthDate =
-      today.getFullYear() -
-      18 +
-      "-" +
-      (today.getMonth() > 10 ? "" : "0") +
-      today.getMonth() +
-      "-" +
-      (today.getDate() > 10 ? "" : "0") +
-      today.getDate();
+  async mounted() {
+    await this.initContract();
   },
   methods: {
+    // Init contract
+    async initContract() {
+      await ContractRepository.getDetail(this.$route.params.contractId).then(
+        (res) => {
+          this.contract = this.copyProperties(res, this.contract);
+          this.initOwner(res.contractOwner);
+          this.isAddressLoading = true;
+        }
+      );
+    },
+    // Init owner
+    initOwner(contractOwner) {
+      this.owner.userId = contractOwner.userId;
+      this.owner.fullName = contractOwner.userName;
+    },
     getExpiryDate(date, ex) {
       let dateArr = date.split("-");
       return Number(dateArr[0]) + ex + "-" + dateArr[1] + "-" + dateArr[2];
@@ -432,6 +446,14 @@ export default {
 
     getDepartureLocation(address) {
       console.log(address);
+    },
+    copyProperties(src, to) {
+      let toKeys = Object.keys(to);
+
+      for (let index = 0; index < toKeys.length; index++) {
+        to[toKeys[index]] = src[toKeys[index]];
+      }
+      return to;
     },
 
     // Cheack basic information
@@ -458,6 +480,7 @@ export default {
       );
     },
     async create() {
+      console.log(this.contract.departureTime);
       let isValid = this.checkBasicInformation();
       if (!isValid) {
         this.isLoading = true;
@@ -505,7 +528,6 @@ export default {
     // Get vehicle owner
     getVehicleOwner() {
       this.owner = this.$refs.ownerModal.getSelectedCustomer();
-      console.log(this.owner);
       this.handleVehicleOwnerModal();
     },
     isNumber(evt) {

@@ -2,6 +2,12 @@
   <div class="col-lg-12 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
+        <button
+          class="ui icon right floated button edit-btn"
+          @click="handleUpdBtnVisible()"
+        >
+          <i class="edit icon"></i>
+        </button>
         <div class="ui form">
           <h4 class="ui dividing header">{{ this.title.toUpperCase() }}</h4>
           <div class="field justify-content-center">
@@ -12,8 +18,12 @@
                 v-for="(img, index) in documentImagePrev"
                 :key="index"
               >
-                <img :src="img" class="ui large image" />
-                <button class="close-btn" v-on:click="removeImage(index)">
+                <img :src="img.imageLink" class="ui large image" />
+                <button
+                  class="close-btn"
+                  v-on:click="removeImage(index)"
+                  :disabled="!isUpdBtnVisibile"
+                >
                   <i class="mdi mdi-close-circle"></i>
                 </button>
               </div>
@@ -26,8 +36,8 @@
                 class="btn btn-icon-text cus-disable"
                 v-bind:class="{
                   'btn-gradient-info':
-                    documentImage !== null &&
-                    documentImage.length < this.maxImage,
+                    documentImagePrev !== null &&
+                    documentImagePrev.length < this.maxImage,
                 }"
                 :for="documentType"
               >
@@ -40,8 +50,8 @@
                 accept="image/*"
                 @change="uploadImage($event)"
                 :disabled="
-                  documentImage !== null &&
-                    documentImage.length === this.maxImage
+                  documentImagePrev !== null &&
+                    documentImagePrev.length === this.maxImage
                 "
               />
             </div>
@@ -58,6 +68,7 @@
                   @keypress="isNumber($event)"
                   style="text-transform:uppercase"
                   v-model="document.userDocumentId"
+                  readonly
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -77,6 +88,7 @@
                   type="date"
                   class="form-control"
                   v-model="document.registeredDate"
+                  :readonly="!isUpdBtnVisibile"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -93,6 +105,7 @@
                 <select
                   class="ui dropdown cus-select"
                   v-model="document.registeredLocation"
+                  :disabled="!isUpdBtnVisibile"
                 >
                   <option :value="''">
                     Cities/Provinces
@@ -117,6 +130,26 @@
               </div>
             </div>
           </div>
+
+          <!-- If update document is call -->
+          <div class="row justify-content-center mt-5" v-if="isUpdBtnVisibile">
+            <div class="col-4">
+              <button
+                class="btn btn-gradient-danger btn-fw"
+                type="button"
+                @click="initData()"
+              >
+                Cancel
+              </button>
+              <button
+                class="btn btn-gradient-info btn-fw ml-2"
+                type="button"
+                v-on:click="update()"
+              >
+                Update
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -124,9 +157,10 @@
 </template>
 
 <script>
-import { isNumber } from "../../assets/js/input.js";
+import { isNumber } from "../../../assets/js/input.js";
 
 export default {
+  components: {},
   props: {
     title: String,
     maxImage: Number,
@@ -134,6 +168,8 @@ export default {
     isNumberInp: Boolean,
     expiryMaxDate: Number,
     documentType: String,
+    isDuplicated: Boolean,
+    propDocument: Object,
   },
   data() {
     return {
@@ -153,24 +189,42 @@ export default {
       registeredDateErr: false,
       expiryDateErr: false,
       imageErr: false,
-      isDuplicated: false,
       // Error message
       idErrMsg: "",
       // Image
       documentImage: [],
       documentImagePrev: [],
+      documentImageDel: [],
       cities: [],
       idMaxRange: 0,
+      // Update button visible
+      isUpdBtnVisibile: false,
     };
   },
   mounted() {
-    this.cities = require("../../assets/json/addresses/tinh_tp.json");
+    this.cities = require("../../../assets/json/addresses/tinh_tp.json");
+    this.initData();
     this.idMaxRange = this.idMaxLength[this.idMaxLength.length - 1];
     // Init error message for id
     this.initIDErrMsg();
     this.document.userDocumentType = this.documentType;
   },
   methods: {
+    // Init document data
+    initData() {
+      this.documentImageDel = [];
+      this.documentImage = [];
+      this.documentImagePrev = [];
+      this.document = Object.assign({}, this.propDocument);
+      this.document.userDocumentImages.forEach((img) => {
+        this.documentImagePrev.push(img);
+      });
+    },
+    // Handle edit show button
+    handleUpdBtnVisible() {
+      this.isUpdBtnVisibile = !this.isUpdBtnVisibile;
+      this.document = Object.assign({}, this.propDocument);
+    },
     // Init error message for id
     initIDErrMsg() {
       let isNumber = this.isNumberInp ? "numbers" : "chars";
@@ -188,14 +242,25 @@ export default {
       const reader = new FileReader();
       reader.readAsDataURL(image);
       reader.onload = (e) => {
-        this.documentImagePrev.push(e.target.result);
+        this.documentImagePrev.push({
+          imageLink: e.target.result,
+        });
       };
       this.documentImage.push(image);
     },
     // Remove image from list
     removeImage(index) {
+      // Check if image is new or old image
+      if (
+        this.documentImagePrev[index].imageLink.includes(
+          "firebasestorage.googleapis.com"
+        )
+      ) {
+        this.documentImageDel.push(this.documentImagePrev[index]);
+      } else {
+        this.$delete(this.documentImage, index);
+      }
       this.$delete(this.documentImagePrev, index);
-      this.$delete(this.documentImage, index);
     },
     // Check valid
     check() {
@@ -205,7 +270,6 @@ export default {
       for (const idLength in this.idMaxLength) {
         if (documentID.length === this.idMaxLength[idLength]) {
           this.documentIdErr = false;
-          console.log(123);
           break;
         }
       }
@@ -213,9 +277,7 @@ export default {
       this.registeredLocationErr =
         this.document.registeredLocation.length === 0;
       this.registeredDateErr = this.document.registeredDate.length === 0;
-      this.imageErr =
-        this.documentImage.length < this.maxImage ||
-        this.documentImagePrev.length < this.maxImage;
+      this.imageErr = this.documentImagePrev.length < this.maxImage;
 
       return (
         this.documentIdErr ||
@@ -224,9 +286,15 @@ export default {
         this.imageErr
       );
     },
+    // Update
+    update() {
+      let isValid = this.check();
+      if (!isValid) {
+        this.$parent.openConfirmation(this.document.userDocumentType);
+      }
+    },
     // Get data
     getData() {
-      this.document.userDocumentId = this.document.userDocumentId.toUpperCase();
       this.document.expiryDate = this.getExpiryDate(
         this.document.registeredDate,
         this.expiryMaxDate
@@ -234,11 +302,8 @@ export default {
       return {
         document: this.document,
         images: this.documentImage,
+        delImage: this.documentImageDel,
       };
-    },
-    // Handle duplicate
-    handleDuplicateErr(isErr) {
-      this.isDuplicated = isErr;
     },
     // Get expiry date
     getExpiryDate(date, ex) {
@@ -280,5 +345,10 @@ export default {
   opacity: 0;
   position: absolute;
   z-index: -1;
+}
+.edit-btn {
+  position: absolute;
+  right: 1% !important;
+  top: 2% !important;
 }
 </style>

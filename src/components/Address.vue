@@ -127,6 +127,7 @@ export default {
   props: {
     title: String,
     visible: Boolean,
+    propAddress: String,
   },
   data() {
     return {
@@ -152,8 +153,46 @@ export default {
   },
   mounted() {
     this.cities = this.getJsonObjects("tinh_tp.json");
+    if (this.propAddress) {
+      this.initData();
+    }
   },
   methods: {
+    initData() {
+      let addressArr = this.propAddress.split(", ");
+      this.selectedCity = this.findItemFromJson(
+        this.cities,
+        addressArr[addressArr.length - 1],
+        "name_with_type"
+      );
+      console.log(this.selectedCity);
+      this.handleDropdownChange(1);
+
+      this.selectedDistrict = this.findItemFromJson(
+        this.districts,
+        addressArr[addressArr.length - 2],
+        "name_with_type"
+      );
+
+      this.handleDropdownChange(2);
+      this.selectedWard = this.findItemFromJson(
+        this.wards,
+        addressArr[addressArr.length - 3],
+        "name_with_type"
+      );
+      this.address = addressArr[0];
+    },
+    // Find address
+    findItemFromJson(arr, findStr, typeName) {
+      console.log(findStr);
+      let keys = Object.keys(arr);
+      for (let index = 0; index < keys.length; index++) {
+        let item = arr[keys[index]];
+        if (item[typeName] === findStr) {
+          return item;
+        }
+      }
+    },
     getJsonObjects(str) {
       return require("../assets/json/addresses/" + str);
     },
@@ -195,16 +234,17 @@ export default {
       );
     },
     getAdress() {
-      if (!this.checkValid) {
+      let isValid = this.checkValid();
+      if (!isValid) {
         let address =
           this.address +
           ", " +
-          this.selectedWard.name +
+          this.selectedWard.name_with_type +
           ", " +
-          this.selectedDistrict.name +
+          this.selectedDistrict.name_with_type +
           ", " +
-          this.selectedCity.name;
-        this.$emit("address", address);
+          this.selectedCity.name_with_type;
+        return address;
       }
     },
   },

@@ -53,7 +53,8 @@ export default {
     });
   },
   mounted() {
-    this.checkAuthUser();
+    this.isVisible = true;
+    // this.checkAuthUser();
   },
   data() {
     return {
