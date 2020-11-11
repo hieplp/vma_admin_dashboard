@@ -22,7 +22,19 @@ export default {
           resolve(res);
         })
         .catch((err) => {
-          console.log(err);
+          reject(err.response.data);
+        });
+    });
+  },
+  // Update contract
+  update(contract) {
+    console.log(contract);
+    return new Promise((resolve, reject) => {
+      Repository.patch(resource, contract)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
           reject(err.response.data);
         });
     });
@@ -40,10 +52,9 @@ export default {
         });
     });
   },
-  // Get vehicles list
+  // Get contracts list
   async getDetail(contractId) {
     return new Promise((resolve, reject) => {
-      console.log(`${resource}/${contractId}`);
       Repository.get(`${resource}/${contractId}`)
         .then((res) => {
           resolve(res.data.contractDetail);
@@ -54,18 +65,7 @@ export default {
         });
     });
   },
-  // Update user
-  update(user) {
-    return new Promise((resolve, reject) => {
-      Repository.put(resource, user)
-        .then((res) => {
-          resolve(res);
-        })
-        .catch((err) => {
-          reject(err.response.data);
-        });
-    });
-  },
+
   // Delete user
   delete(userId) {
     return new Promise((resolve, reject) => {

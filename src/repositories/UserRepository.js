@@ -50,4 +50,46 @@ export default {
         });
     });
   },
+  // get users dont have roleId
+  getUserByRole(page, name, phoneNumber, userStatus, userId, roleId) {
+    return new Promise((resolve, reject) => {
+      Repository.get(
+        `${resource}/roles/${roleId}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatus=${userStatus}&userId=${userId}`
+      )
+        .then((res) => {
+          resolve(res.data.userRes);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // get users count dont have roleId
+  getUserCountByRole(name, phoneNumber, userStatus, userId, roleId) {
+    return new Promise((resolve, reject) => {
+      Repository.get(
+        `${resource}/roles/${roleId}/count?name=${name}&phoneNumber=${phoneNumber}&userStatus=${userStatus}&userId=${userId}`
+      )
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // get users count dont have roleId
+  addNewRoleForUser(userId, roleId) {
+    return new Promise((resolve, reject) => {
+      console.log(`${resource}/${userId}/roles?roleId=${roleId}`);
+      Repository.patch(`${resource}/${userId}/roles?roleId=${roleId}`)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(err.response.data);
+        });
+    });
+  },
 };

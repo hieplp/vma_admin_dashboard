@@ -59,223 +59,8 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui two steps">
-              <button
-                class="step"
-                v-on:click="changeTab()"
-                v-bind:class="{ active: isUserInfoVisible }"
-              >
-                <i class="flag checkered icon"></i>
-                <div class="content">
-                  <div class="title">CONTRACT INFORMATION</div>
-                </div>
-              </button>
-              <button
-                class="step"
-                v-on:click="changeTab()"
-                v-bind:class="{ active: !isUserInfoVisible }"
-              >
-                <i class="bus icon"></i>
-                <div class="content">
-                  <div class="title">VEHICLE</div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ContractInformation :isCreate="true" />
 
-    <CustomersModal
-      v-show="isOwnerModalVisible"
-      :cancelFunction="handleVehicleOwnerModal"
-      :doneFunction="getVehicleOwner"
-      :userId="owner.userId"
-      ref="ownerModal"
-    />
-
-    <div class="row" v-if="isUserInfoVisible">
-      <!-- BASIC INFORMAION -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <h4 class="ui dividing header">BASIC INFORMAION</h4>
-
-              <div class="two fields">
-                <!-- Duration From -->
-                <div class="field">
-                  <label>Duration From</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.durationFrom"
-                      placeholder="Duration From"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="durationFromErr"
-                  >
-                    Duration from is required!
-                  </div>
-                </div>
-                <!-- Duration To-->
-                <div class="field">
-                  <label>Duration To</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.durationTo"
-                      placeholder="Duration To"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="durationToErr">
-                    Duration to is required!
-                  </div>
-                </div>
-                <!-- Signed Date-->
-                <div class="field">
-                  <label>Signed Date</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.signedDate"
-                      placeholder="Signed Date"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="signedDateErr">
-                    Signed date is required!
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <!-- Total Price -->
-                <div class="field">
-                  <label>Total Price</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      v-model="contract.totalPrice"
-                      placeholder="Total Price"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="totalPriceErr">
-                    Total price is required!
-                  </div>
-                </div>
-                <!-- Owner-->
-                <div class="field">
-                  <label>Owner</label>
-                  <div class="ui action input">
-                    <input
-                      v-model="owner.fullName"
-                      type="text"
-                      readonly
-                      placeholder="Pick an owner"
-                    />
-                    <button
-                      class="ui right labeled icon button"
-                      @click="handleVehicleOwnerModal"
-                    >
-                      <i class="users icon"></i>
-                      Pick
-                    </button>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="ownerErr">
-                    Owner is required!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- DEPARTURE/DESTINATION TIME -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <h4 class="ui dividing header">DEPARTURE/DESTINATION TIME</h4>
-              <div class="two fields">
-                <!-- Departure Time -->
-                <div class="field">
-                  <label>Departure Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      v-model="contract.departureTime"
-                      placeholder="Departure Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="departureTimeErr"
-                  >
-                    Departure time is required!
-                  </div>
-                </div>
-                <!-- Destination Time-->
-                <div class="field ">
-                  <label>Destination Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      name="Salary"
-                      v-model="contract.destinationTime"
-                      placeholder=" Destination Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="destinationTimeErr"
-                  >
-                    Destination Time is required!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <Address
-      title="SIGNED LOCATION"
-      :visible="isUserInfoVisible"
-      ref="signedLocation"
-    />
-    <Address
-      title="DEPARTURE LOCATION"
-      :visible="isUserInfoVisible"
-      ref="departureLocation"
-    />
-    <Address
-      title="DESTINATION LOCATION"
-      :visible="isUserInfoVisible"
-      ref="destinationLocation"
-    />
     <div class="row" v-if="isUserInfoVisible">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
@@ -336,8 +121,7 @@ import { isNumber } from "../../assets/js/input.js";
 // import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
-import Address from "../../components/Address";
-import CustomersModal from "../../components/Modal/CustomersModal";
+import ContractInformation from "../../components/Contract/ContractInformation";
 
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 const ContractRepository = RepositoryFactory.get("contracts");
@@ -346,8 +130,7 @@ export default {
   name: "CreateContract",
   components: {
     Loading,
-    Address,
-    CustomersModal,
+    ContractInformation,
   },
   data() {
     return {

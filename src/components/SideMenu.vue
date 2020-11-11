@@ -1,17 +1,15 @@
 <template>
-  <!-- partial:../../partials/_sidebar.html -->
   <nav class="sidebar sidebar-offcanvas" id="sidebar">
-    <ul class="nav nav-item custom-nav" id="sidebarNav">
+    <ul class="nav nav-item custom-nav scroll" id="sidebarNav">
       <li class="nav-item nav-profile">
         <a href="#" class="nav-link">
           <div class="nav-profile-image">
-            <img src="../assets/images/faces/face1.jpg" alt="profile" />
+            <img :src="imageLink" alt="profile" />
             <!-- <span class="login-status online"></span> -->
             <!--change to offline or busy as needed-->
           </div>
           <div class="nav-profile-text d-flex flex-column">
-            <span class="font-weight-bold mb-2">David Grey. H</span>
-            <span class="text-secondary text-small">Project Manager</span>
+            <span class="font-weight-bold">{{ this.userName }}</span>
           </div>
         </a>
       </li>
@@ -21,7 +19,7 @@
         class="nav-item"
         id="Overview"
         v-bind:class="{
-          active: this.$route.name === 'Overview' ? true : false,
+          active: this.$route.name.includes('Overview') ? true : false,
         }"
       >
         <router-link to="/overview" class="nav-link">
@@ -29,6 +27,7 @@
           <span class="menu-title">Overview</span>
         </router-link>
       </li>
+
       <li
         class="nav-item"
         id="Drivers"
@@ -61,7 +60,11 @@
         class="nav-item"
         id="Vehicles"
         v-bind:class="{
-          active: this.$route.name.includes('Vehicle') ? true : false,
+          active:
+            this.$route.name.includes('Vehicle') &&
+            !this.$route.name.includes('Request')
+              ? true
+              : false,
         }"
       >
         <router-link to="/vehicles" class="nav-link">
@@ -91,6 +94,41 @@
         <router-link to="/customers" class="nav-link">
           <i class="mdi mdi-human-male-female menu-icon"></i>
           <span class="menu-title">Customers</span>
+        </router-link>
+      </li>
+      <!-- Requests -->
+      <li
+        class="nav-item"
+        v-bind:class="{
+          active: this.$route.name.includes('Request') ? true : false,
+        }"
+      >
+        <a
+          class="nav-link"
+          data-toggle="collapse"
+          @click="isRegistrationsVisible = !isRegistrationsVisible"
+          href="#"
+        >
+          <i class="mdi mdi-file-chart menu-icon"></i>
+          <span class="menu-title">Request</span>
+        </a>
+      </li>
+      <li class="nav-item" v-if="isRegistrationsVisible" id="Registrations">
+        <router-link
+          to="/requests/documents/vehicles"
+          class="nav-link sub-menu-title"
+        >
+          <i class="mdi mdi-car menu-icon mr-3" />
+          <span class="menu-title">Vehicle Documents</span>
+        </router-link>
+      </li>
+      <li class="nav-item" v-if="isRegistrationsVisible">
+        <router-link
+          to="/requests/documents/users"
+          class="nav-link sub-menu-title"
+        >
+          <i class="mdi mdi-account-multiple-outline mr-3" />
+          <span class="menu-title">User Documents</span>
         </router-link>
       </li>
       <li class="nav-item">
@@ -127,23 +165,41 @@ export default {
     return {
       isRegistrationsVisible: false,
       prevRoute: null,
+      userName: "",
+      imageLink: "",
     };
   },
   mounted() {
     if (this.prevRoute !== null && this.prevRoute.name === "Login") {
       window.location.reload();
     }
+    this.initAuthUser();
   },
   methods: {
     setSideMenuActive() {
       document.getElementById(this.$route.name).className += " active";
     },
+    // Init data for user
+    initAuthUser() {
+      let user = JSON.parse(localStorage.getItem("userId"));
+      console.log(user);
+      this.userName = user.displayName;
+      this.imageLink = user.photoURL;
+    },
   },
 };
 </script>
 <style>
+.scroll {
+  white-space: nowrap;
+  overflow-y: auto !important;
+  max-height: 100vh;
+}
 .nav-link:hover {
   cursor: pointer;
+}
+.sub-menu-title:hover > i {
+  color: #047edf !important;
 }
 .sub-menu-title i {
   font-size: 20px !important;
@@ -151,10 +207,13 @@ export default {
 }
 .sub-menu-title {
   margin-left: 25px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .sub-menu-title span {
   font-size: 16px !important;
+}
+.nav-profile-text {
+  font-size: 15px;
 }
 </style>

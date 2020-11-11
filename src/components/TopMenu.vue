@@ -109,11 +109,11 @@
             aria-expanded="false"
           >
             <div class="nav-profile-img">
-              <img src="../assets/images/faces/face1.jpg" alt="image" />
+              <img :src="imageLink" alt="image" />
               <span class="availability-status online"></span>
             </div>
             <div class="nav-profile-text">
-              <p class="mb-1 text-black">David Greymaax</p>
+              <p class="mb-1 text-black">{{ this.userName }}</p>
             </div>
           </a>
           <div
@@ -143,16 +143,31 @@
 </template>
 
 <script>
-
 export default {
   props: {},
-  mounted() {},
+  mounted() {
+    this.initAuthUser();
+  },
+  data() {
+    return {
+      userName: "",
+      imageLink: "",
+    };
+  },
   methods: {
+    // Sign out
     signOut() {
       localStorage.removeItem("userId");
       this.$router.push({
         name: "Login",
       });
+    },
+    // Init data for user
+    initAuthUser() {
+      let user = JSON.parse(localStorage.getItem("userId"));
+      console.log(user);
+      this.userName = user.displayName;
+      this.imageLink = user.photoURL;
     },
   },
 };

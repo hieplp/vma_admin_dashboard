@@ -104,7 +104,6 @@
                   type="text"
                   placeholder="Model"
                   v-model="vehicle.model"
-                  maxlength="14"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -188,21 +187,15 @@
             <div class="field ">
               <label>Total Seats</label>
               <div class="ui corner labeled input">
-                <select
-                  class="ui fluid dropdown cus-select"
+                <input
+                  type="text"
                   v-model="vehicle.seats"
-                >
-                  <option :value="''">
-                    Select total seats
-                  </option>
-                  <option
-                    v-for="totalSeat in totalSeats"
-                    :key="totalSeat"
-                    :value="totalSeat"
-                    >{{ totalSeat }}</option
-                  >
-                </select>
-                <div class="ui corner left label">
+                  placeholder="Total Seat"
+                  maxlength="4"
+                  @keypress="isNumber($event)"
+                />
+
+                <div class="ui corner label">
                   <i class="asterisk icon"></i>
                 </div>
               </div>
@@ -341,8 +334,8 @@ export default {
         imageLink: "",
         model: "",
         origin: "",
-        ownerId: "",
-        roleId: "",
+        ownerId: null,
+        roleId: "0",
         seats: "",
         vehicleDocuments: [],
         vehicleId: "",
@@ -523,7 +516,13 @@ export default {
       vehicle.brandId = this.brand.brandId;
       vehicle.origin = this.origin.name;
       // vehicle.vehicleTypeId = this.vehicleType.vehicleTypeId;
-      vehicle.ownerId = this.owner.userId;
+      if (this.owner.userId.length > 0) {
+        vehicle.ownerId = this.owner.userId;
+      } else {
+        let user = JSON.parse(localStorage.getItem("userId"));
+        console.log(user);
+        vehicle.ownerId = user.uid;
+      }
 
       return {
         vehicle: vehicle,

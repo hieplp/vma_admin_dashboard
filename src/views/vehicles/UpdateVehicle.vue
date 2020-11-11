@@ -38,48 +38,48 @@
       "
       :handleRightBtn="handleUpdateCon"
     />
-    <div
-      class="ui basic cus-modal justify-content-center"
+
+    <!-- Error message -->
+    <MessageModal
+      title="Update Vehicle Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Update Vehicle Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Vehicle with id ${this.vehicle.vehicleId} is updated successfully！`
+      "
+      :proFunc="
+        () => {
+          this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
+        }
+      "
       v-if="isCreatedSuccessfully"
-    >
-      <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Update Vehicle Successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Vehicle with id {{ this.vehicle.vehicleId }} is updated successfully!
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          @click="isCreatedSuccessfully = !isCreatedSuccessfully"
-          class="ui blue primary button"
-        >
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
-
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Update Vehicle Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
-
+    />
+    <!-- Delete confimation -->
+    <Confirmation
+      icon="trash alternate"
+      title="Delete Document Confirmation"
+      subTitle="Do you want to delete this document?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
+      v-if="isDeleteConVisible"
+      :handleLeftBtn="handleDeleteConfirmation"
+      :handleRightBtn="deleteDocument"
+    />
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
@@ -136,6 +136,8 @@
                 :multiple="true"
                 :taggable="true"
                 :searchable="false"
+                @select="handleInsertDoc"
+                @remove="handleRemoveDocument"
               >
               </multiselect>
             </div>
@@ -155,7 +157,16 @@
         otherInformationTitle="License Plate"
         ref="regisInfor"
         :propDocument="regisInfor"
-        v-if="regisInfor !== null && isDocumentLoading"
+        :proIsInsert="isInsertRegistration"
+        :handleDelBtnVisible="
+          () => {
+            this.handleRemoveDocument('VEHICLE_REGISTRATION_CERTIFICATE');
+          }
+        "
+        :insertFunc="createDocument"
+        v-if="
+          (regisInfor !== null && isDocumentLoading) || isInsertRegistration
+        "
       />
 
       <!-- Civil liability insurace certificate -->
@@ -171,7 +182,17 @@
         :documentType="'CIVIL_LIABILITY_INSURANCE_CERTIFICATE'"
         otherInformationTitle="License Plate"
         ref="civilInsurance"
-        v-if="civilInsuranceInfor !== null && isDocumentLoading"
+        :proIsInsert="isInsertInsurance"
+        :handleDelBtnVisible="
+          () => {
+            this.handleRemoveDocument('CIVIL_LIABILITY_INSURANCE_CERTIFICATE');
+          }
+        "
+        :insertFunc="createDocument"
+        v-if="
+          (civilInsuranceInfor !== null && isDocumentLoading) ||
+            isInsertInsurance
+        "
       />
     </div>
   </div>
@@ -182,6 +203,7 @@ import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
 import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 import Multiselect from "vue-multiselect";
 import VehicleInformation from "../../components/Vehicle/VehicleInformation";
 import VehicleDocument from "../../components/Vehicle/UpdateVehicleDocument";
@@ -199,6 +221,7 @@ export default {
     Multiselect,
     VehicleInformation,
     VehicleDocument,
+    MessageModal,
   },
   data() {
     return {
@@ -233,6 +256,10 @@ export default {
       isUpdConVisible: false,
       isVehicleComLoading: false,
       isDocumentLoading: false,
+      isDeleteConVisible: false,
+
+      isInsertRegistration: false,
+      isInsertInsurance: false,
 
       // Confirmation type
       confType: 0,
@@ -245,7 +272,7 @@ export default {
   async mounted() {
     this.isLoading = true;
 
-    this.docOptions = require("../../assets/json/document/userDocument.json");
+    this.docOptions = require("../../assets/json/vehicle/documentTypes.json");
     await this.initVehicle();
     await this.initDocuments();
 
@@ -265,9 +292,11 @@ export default {
     findDocumentByName(vehicleDocument, vehicleDocumentType) {
       for (let doc of vehicleDocument) {
         if (doc.vehicleDocumentType === vehicleDocumentType) {
+          this.documentValue.push(vehicleDocumentType);
           return doc;
         }
       }
+      return null;
     },
     // Init documents information
     async initDocuments() {
@@ -275,6 +304,21 @@ export default {
         (res) => {
           this.documents = res;
         }
+      );
+    },
+    // Init data for document
+    async initDataDocument() {
+      this.documentValue = [];
+      let documents = await VehicleDocRepos.getDocuments(
+        this.$route.params.vehicleId
+      );
+      this.regisInfor = this.findDocumentByName(
+        documents,
+        "VEHICLE_REGISTRATION_CERTIFICATE"
+      );
+      this.civilInsuranceInfor = this.findDocumentByName(
+        documents,
+        "CIVIL_LIABILITY_INSURANCE_CERTIFICATE"
       );
     },
     // Update basic information
@@ -321,7 +365,134 @@ export default {
         });
       this.isLoading = false;
     },
-
+    // ------- Start of create and delete document
+    // Delete document
+    async deleteDocument() {
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+      if (this.deletedDocumentId) {
+        this.isLoading = true;
+        await VehicleDocRepos.delete(this.deletedDocumentId)
+          .then(async (res) => {
+            if (res) {
+              this.handleDeleteSuccess();
+              this.isCreatedSuccessfully = true;
+            }
+          })
+          .catch((ex) => {
+            if (ex.debugMessage) {
+              this.errMsg = ex.debugMessage;
+            }
+            this.isError = true;
+            console.error(ex);
+          });
+        this.isLoading = false;
+      } else {
+        this.handleDeleteSuccess();
+      }
+    },
+    handleDeleteSuccess() {
+      switch (this.deletedDocumentType) {
+        case "VEHICLE_REGISTRATION_CERTIFICATE":
+          this.regisInfor = null;
+          this.isInsertRegistration = false;
+          break;
+        case "CIVIL_LIABILITY_INSURANCE_CERTIFICATE":
+          this.civilInsuranceInfor = null;
+          this.isInsertInsurance = false;
+          break;
+      }
+      this.$delete(
+        this.documentValue,
+        this.findDocIndex(this.deletedDocumentType)
+      );
+    },
+    // Find index in multi select
+    findDocIndex(str) {
+      for (let index = 0; index < this.documentValue.length; index++) {
+        if (this.documentValue[index] === str) {
+          return index;
+        }
+      }
+      return -1;
+    },
+    // Handle cancel delete document confirmation dialog
+    handleDeleteConfirmation() {
+      if (
+        this.deletedDocumentType &&
+        this.findDocIndex(this.deletedDocumentType) === -1
+      ) {
+        this.documentValue.push(this.deletedDocumentType);
+        this.deletedDocumentType = "";
+      }
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+    },
+    // Handle remove document in multi select
+    handleRemoveDocument(removedOption) {
+      let selectedDoc = "";
+      switch (removedOption) {
+        case "VEHICLE_REGISTRATION_CERTIFICATE":
+          selectedDoc = "regisInfor";
+          this.deletedDocumentType = "VEHICLE_REGISTRATION_CERTIFICATE";
+          break;
+        case "CIVIL_LIABILITY_INSURANCE_CERTIFICATE":
+          selectedDoc = "civilInsuranceInfor";
+          this.deletedDocumentType = "CIVIL_LIABILITY_INSURANCE_CERTIFICATE";
+          break;
+      }
+      if (this.$data[selectedDoc]) {
+        this.deletedDocumentId = this.$data[selectedDoc].vehicleDocumentId;
+      }
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+    },
+    // handle insert document in multi select
+    handleInsertDoc(selectedOption) {
+      switch (selectedOption) {
+        case "VEHICLE_REGISTRATION_CERTIFICATE":
+          this.deletedDocumentType = "VEHICLE_REGISTRATION_CERTIFICATE";
+          this.isInsertRegistration = true;
+          break;
+        case "CIVIL_LIABILITY_INSURANCE_CERTIFICATE":
+          this.deletedDocumentType = "CIVIL_LIABILITY_INSURANCE_CERTIFICATE";
+          this.isInsertInsurance = true;
+          break;
+      }
+    },
+    // handle create new document
+    async createDocument(documentRes) {
+      this.isLoading = true;
+      let docImage = documentRes.images;
+      let document = documentRes.document;
+      document.imageLinks = await this.getNewFirebaseLinks(
+        docImage,
+        document.vehicleDocumentType
+      );
+      await VehicleDocRepos.create(this.vehicle.vehicleId, document, 0)
+        .then(async (res) => {
+          if (res) {
+            await this.initDataDocument();
+            switch (this.deletedDocumentType) {
+              case "VEHICLE_REGISTRATION_CERTIFICATE":
+                this.$refs.regisInfor.updateDocument(this.regisInfor);
+                break;
+              case "CIVIL_LIABILITY_INSURANCE_CERTIFICATE":
+                this.$refs.civilInsurance.updateDocument(
+                  this.civilInsuranceInfor
+                );
+                break;
+            }
+            this.isCreatedSuccessfully = true;
+          }
+        })
+        .catch((ex) => {
+          if (ex.debugMessage) {
+            this.errMsg = ex.debugMessage;
+          }
+          this.isError = true;
+          console.error(ex);
+        });
+      this.isLoading = false;
+    },
+    // ------- End of create and delete document
     // Upload image to firebase
     uploadImageToFirebase(imageData, imgTypeName) {
       return new Promise((resolve) => {
@@ -347,6 +518,17 @@ export default {
           }
         );
       });
+    },
+    // Get firebase links
+    async getNewFirebaseLinks(imgDataList, imgTypeName) {
+      let imgArr = [];
+      if (imgDataList) {
+        for (let img of imgDataList) {
+          let url = await this.uploadImageToFirebase(img, imgTypeName);
+          imgArr.push(url);
+        }
+      }
+      return imgArr;
     },
     deleteImageFromFirebase(img) {
       return new Promise((resolve) => {
@@ -465,10 +647,7 @@ export default {
             this.documents,
             "CIVIL_LIABILITY_INSURANCE_CERTIFICATE"
           );
-          // this.drivingLicenseInfor = this.findDocumentByName(
-          //   this.vehicle.userDocumentList,
-          //   "DRIVING_LICENSE"
-          // );
+          console.log(this.civilInsuranceInfor === null);
           this.isDocumentLoading = true;
         }
       }

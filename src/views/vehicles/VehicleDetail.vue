@@ -56,7 +56,7 @@
       </div>
     </div>
     <!-- Vehicle Information -->
-    <div class="card" v-if="isVehiclenfoVisible">
+    <div class="card" v-if="isVehiclenfoVisible && isVehiclenfoLoading">
       <div class="card-body">
         <div class="ui form">
           <h4 class="ui dividing header">
@@ -242,7 +242,7 @@
         </div>
       </div>
     </div>
-    <!-- User document -->
+    <!-- Vehicle document -->
     <div class="row" v-else>
       <div
         class="col-lg-12 grid-margin stretch-card"
@@ -321,6 +321,7 @@ export default {
       profileImage: null,
       profileImagePrev: null,
       isVehiclenfoVisible: true,
+      isVehiclenfoLoading: false,
       isLoading: false,
       media: [
         {
@@ -349,6 +350,7 @@ export default {
         this.$route.params.vehicleId
       ).then((res) => {
         this.vehicle = res;
+        this.isVehiclenfoLoading = true;
       });
     },
     // Init documents information

@@ -6,6 +6,7 @@ import CreateDriver from "../views/drivers/CreateDriver.vue";
 import UpdateDriver from "../views/drivers/UpdateDriver.vue";
 import DriverDetail from "../views/drivers/DriverDetail.vue";
 import Drivers from "../views/drivers/Drivers.vue";
+import PromoteDrivers from "../views/drivers/PromoteDrivers.vue";
 // Contributors
 import Contributors from "../views/contributors/Contributors.vue";
 import CreateContributor from "../views/contributors/CreateContributor.vue";
@@ -29,6 +30,18 @@ import Vehicles from "../views/vehicles/Vehicles.vue";
 import CreateVehicle from "../views/vehicles/CreateVehicle.vue";
 import VehicleDetail from "../views/vehicles/VehicleDetail.vue";
 import UpdateVehicle from "../views/vehicles/UpdateVehicle.vue";
+// Contributor vehicles
+import ContributedVehicles from "../views/vehicles/contributor/Vehicles.vue";
+
+// Assign vehicles
+import AssignedVehicles from "../views/vehicles/assgin/AssignedVehicles.vue";
+
+// Document vehicle requests
+import VehicleDocumentRequests from "../views/requests/VehicleDocumentRequests.vue";
+import VehicleDocumentRequestDetail from "../views/requests/VehicleDocumentRequestDetail.vue";
+// Document user requests
+import UserDocumentRequests from "../views/requests/UserDocumentRequests.vue";
+import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail.vue";
 
 import Login from "../views/Login.vue";
 
@@ -37,7 +50,7 @@ Vue.use(VueRouter);
 const routes = [
   {
     path: "/",
-    name: "Default",
+    name: "DefaultOverview",
     component: Overview,
   },
   {
@@ -55,6 +68,7 @@ const routes = [
   //   name: "Login",
   //   component: Login,
   // },
+
   // Driver
   {
     path: "/drivers",
@@ -75,6 +89,11 @@ const routes = [
     path: "/update-driver/:userId",
     name: "UpdateDriver",
     component: UpdateDriver,
+  },
+  {
+    path: "/promote-drivers/:roleId",
+    name: "PromoteDrivers",
+    component: PromoteDrivers,
   },
   // Contributors
   {
@@ -160,6 +179,40 @@ const routes = [
     path: "/update-vehicle/:vehicleId",
     name: "UpdateVehicle",
     component: UpdateVehicle,
+  },
+  // Contributor vehicle list
+  {
+    path: "/vehicles/contributor",
+    name: "ContributedVehicles",
+    component: ContributedVehicles,
+  },
+  // Assign vehicle
+  {
+    path: "/assign-vehicles",
+    name: "AssignedVehicles",
+    component: AssignedVehicles,
+  },
+  // vehicle document request
+  {
+    path: "/requests/documents/vehicles",
+    name: "VehicleDocumentRequests",
+    component: VehicleDocumentRequests,
+  },
+  {
+    path: "/requests/documents/vehicles/:requestId",
+    name: "VehicleDocumentRequestDetail",
+    component: VehicleDocumentRequestDetail,
+  },
+  // User document request
+  {
+    path: "/requests/documents/users",
+    name: "UserDocumentRequests",
+    component: UserDocumentRequests,
+  },
+  {
+    path: "/requests/documents/users/:requestId",
+    name: "UseDocumentRequestDetail",
+    component: UseDocumentRequestDetail,
   },
 ];
 

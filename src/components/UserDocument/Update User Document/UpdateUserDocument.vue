@@ -5,8 +5,16 @@
         <button
           class="ui icon right floated button edit-btn"
           @click="handleUpdBtnVisible()"
+          v-if="!isInsert"
         >
           <i class="edit icon"></i>
+        </button>
+        <button
+          class="ui icon right floated button"
+          :class="isInsert ? 'edit-btn' : 'del-btn'"
+          @click="handleDelBtnVisible()"
+        >
+          <i class="trash alternate icon"></i>
         </button>
         <div class="ui form">
           <h4 class="ui dividing header">{{ this.title.toUpperCase() }}</h4>
@@ -22,7 +30,7 @@
                 <button
                   class="close-btn"
                   v-on:click="removeImage(index)"
-                  :disabled="!isUpdBtnVisibile"
+                  :disabled="!isUpdBtnVisibile && !isInsert"
                 >
                   <i class="mdi mdi-close-circle"></i>
                 </button>
@@ -68,7 +76,7 @@
                   @keypress="isNumber($event)"
                   style="text-transform:uppercase"
                   v-model="document.userDocumentId"
-                  readonly
+                  :readonly="!isInsert"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -88,7 +96,7 @@
                   type="date"
                   class="form-control"
                   v-model="document.registeredDate"
-                  :readonly="!isUpdBtnVisibile"
+                  :readonly="!isUpdBtnVisibile && !isInsert"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -105,7 +113,7 @@
                 <select
                   class="ui dropdown cus-select"
                   v-model="document.registeredLocation"
-                  :disabled="!isUpdBtnVisibile"
+                  :disabled="!isUpdBtnVisibile && !isInsert"
                 >
                   <option :value="''">
                     Cities/Provinces
@@ -150,6 +158,24 @@
               </button>
             </div>
           </div>
+          <div class="row justify-content-center mt-5" v-if="isInsert">
+            <div class="col-4">
+              <button
+                class="btn btn-gradient-danger btn-fw"
+                type="button"
+                @click="clear()"
+              >
+                Clear
+              </button>
+              <button
+                class="btn btn-gradient-info btn-fw ml-2"
+                type="button"
+                @click="create()"
+              >
+                Create
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -170,6 +196,11 @@ export default {
     documentType: String,
     isDuplicated: Boolean,
     propDocument: Object,
+    handleDelBtnVisible: Function,
+    // Insert document
+    proIsInsert: Boolean,
+    insertFunc: Function,
+    cancelFunc: Function,
   },
   data() {
     return {
@@ -199,11 +230,15 @@ export default {
       idMaxRange: 0,
       // Update button visible
       isUpdBtnVisibile: false,
+      isInsert: false,
     };
   },
   mounted() {
+    this.isInsert = this.proIsInsert;
     this.cities = require("../../../assets/json/addresses/tinh_tp.json");
-    this.initData();
+    if (!this.isInsert) {
+      this.initData(this.propDocument);
+    }
     this.idMaxRange = this.idMaxLength[this.idMaxLength.length - 1];
     // Init error message for id
     this.initIDErrMsg();
@@ -211,11 +246,11 @@ export default {
   },
   methods: {
     // Init document data
-    initData() {
+    initData(document) {
       this.documentImageDel = [];
       this.documentImage = [];
       this.documentImagePrev = [];
-      this.document = Object.assign({}, this.propDocument);
+      this.document = Object.assign({}, document);
       this.document.userDocumentImages.forEach((img) => {
         this.documentImagePrev.push(img);
       });
@@ -293,6 +328,39 @@ export default {
         this.$parent.openConfirmation(this.document.userDocumentType);
       }
     },
+    // Handle duplicate
+    handleDuplicateErr(isErr) {
+      this.isDuplicated = isErr;
+    },
+    // Clear input
+    clear() {
+      this.document = {
+        userDocumentId: "",
+        userDocumentType: "",
+        registeredLocation: "",
+        registeredDate: "",
+        expiryDate: "",
+        otherInformation: "",
+        userDocumentImages: [],
+      };
+    },
+    // Update is insert
+    updateIsInsert() {
+      this.isInsert = !this.isInsert;
+    },
+    // Update is insert
+    updateDocument(document) {
+      this.isInsert = !this.isInsert;
+      this.initData(document);
+    },
+    // Create
+    create() {
+      let isValid = this.check();
+      if (!isValid) {
+        let docRes = this.getData();
+        this.insertFunc(docRes);
+      }
+    },
     // Get data
     getData() {
       this.document.expiryDate = this.getExpiryDate(
@@ -349,6 +417,11 @@ export default {
 .edit-btn {
   position: absolute;
   right: 1% !important;
+  top: 2% !important;
+}
+.del-btn {
+  position: absolute;
+  right: 5% !important;
   top: 2% !important;
 }
 </style>

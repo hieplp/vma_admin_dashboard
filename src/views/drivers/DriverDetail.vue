@@ -8,10 +8,55 @@
       :color="'#2e5bff'"
     ></loading>
 
+    <!-- Wirthdraw confimation -->
+    <Confirmation
+      icon="bus"
+      title="Vehicle Withdraw Confirmation"
+      subTitle="Do you want to withdraw the vehicle from this driver?"
+      rightBtnTitle="Withdraw"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
+      :handleLeftBtn="
+        () => {
+          this.isWithdrawVisible = !this.isWithdrawVisible;
+        }
+      "
+      :handleRightBtn="handleWithdrawVehicle"
+      v-if="isWithdrawVisible"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Withdraw Vehicle Successfully!"
+      icon="check circle"
+      :subTitle="`Withdraw vehicle successfully`"
+      :proFunc="
+        () => {
+          this.isSuccess = !this.isSuccess;
+        }
+      "
+      v-if="isSuccess"
+    />
+    <!-- Error message -->
+    <MessageModal
+      title="Withdraw Vehicle Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+
     <div class="page-header">
       <h3 class="page-title test">
         <a @click="$router.go(-1)" href="javascript:void(0)">
-          {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }}
+          <!-- {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }} -->
+          Drivers
         </a>
         <span class="text-secondary">/</span>
         <span>
@@ -76,7 +121,7 @@
                     src="../../assets/images/unnamed.png"
                     class="ui medium circular image pro-img"
                     alt="image"
-                    v-else-if="profileImagePrev == null"
+                    v-else
                   />
                 </div>
               </div>
@@ -115,15 +160,35 @@
                 <div class="field">
                   <label>Vehicle ID</label>
                   <div class="ui action input">
-                    <input
-                      type="text"
-                      :value="driver.vehicleId ? driver.vehicleId : 'N/A'"
-                      readonly
-                    />
-                    <button class="ui right labeled icon button">
-                      <i class="truck icon"></i>
-                      Assign
-                    </button>
+                    <template v-if="driver.vehicleId">
+                      <input
+                        type="text"
+                        :value="driver.vehicleId ? driver.vehicleId : 'N/A'"
+                        readonly
+                      />
+                      <button
+                        class="ui right labeled red icon button"
+                        @click="
+                          () => {
+                            this.isWithdrawVisible = !this.isWithdrawVisible;
+                          }
+                        "
+                      >
+                        <i class="truck icon"></i>
+                        Wirthdraw
+                      </button>
+                    </template>
+                    <template v-else>
+                      <input type="text" value="N/A" readonly />
+                      <button
+                        class="ui right labeled blue icon button"
+                        :disabled="driver.userStatus === 'DISABLE'"
+                        @click="handAssignVehicle"
+                      >
+                        <i class="truck icon"></i>
+                        Assign
+                      </button>
+                    </template>
                   </div>
                 </div>
               </div>
@@ -229,10 +294,12 @@ import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
-
+import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 import UserDocument from "../../components/UserDocument/ReadOnlyDocument";
 
 const DriverRepository = RepositoryFactory.get("drivers");
+const AssignVehicleRepository = RepositoryFactory.get("assignVehicle");
 
 export default {
   name: "DriverDetail",
@@ -240,6 +307,8 @@ export default {
     Loading,
     LightBox,
     UserDocument,
+    Confirmation,
+    MessageModal,
   },
   data() {
     return {
@@ -255,11 +324,13 @@ export default {
         userStatusId: 2,
         userDocumentReqList: [],
       },
-      // Profile image
-      profileImage: null,
-      profileImagePrev: null,
       isUserInfoVisible: true,
       isLoading: false,
+      // Modal
+      isWithdrawVisible: false,
+      isSuccess: false,
+      errMsg: "",
+      isError: "",
       media: [
         {
           thumb: "",
@@ -271,6 +342,7 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
+      3;
       vm.prevRoute = from;
     });
   },
@@ -278,6 +350,7 @@ export default {
     await this.initDetailDriver();
   },
   methods: {
+    // Init driver's information
     async initDetailDriver() {
       this.isLoading = true;
       await DriverRepository.getDetailDriver(this.$route.params.userId).then(
@@ -285,6 +358,35 @@ export default {
           this.driver = res;
         }
       );
+      this.isLoading = false;
+    },
+    // Handle assgin vehicle
+    handAssignVehicle() {
+      this.$router.push({
+        name: "AssignedVehicles",
+        params: {
+          driver: {
+            userId: this.driver.userId,
+            fullName: this.driver.fullName,
+          },
+        },
+      });
+    },
+    // handle withdraw vehicle
+    async handleWithdrawVehicle() {
+      this.isWithdrawVisible = !this.isWithdrawVisible;
+      this.isLoading = true;
+      await AssignVehicleRepository.withdrawVehicle(this.driver.vehicleId)
+        .then((res) => {
+          if (res) {
+            this.isSuccess = !this.isSuccess;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.message;
+          console.log(err);
+        });
       this.isLoading = false;
     },
     changeTab() {
@@ -328,8 +430,12 @@ export default {
   font-size: 13px;
 }
 
-.ui.right.labeled {
+.ui.right.labeled.blue {
   background-color: #3497e9;
+  color: rgb(255, 255, 255);
+}
+.ui.right.labeled.red {
+  background-color: #eb362a;
   color: rgb(255, 255, 255);
 }
 .upload-pro img {

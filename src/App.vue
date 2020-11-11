@@ -39,7 +39,7 @@ export default {
     $route: function(from, to) {
       if (to !== null && to.name === "Login") {
         window.location.reload();
-        // this.checkAuthUser();
+        this.checkAuthUser();
       } else if (from !== null && from.name === "Login") {
         this.checkAuthUser();
       }
@@ -54,7 +54,7 @@ export default {
   },
   mounted() {
     this.isVisible = true;
-    // this.checkAuthUser();
+    this.checkAuthUser();
   },
   data() {
     return {
@@ -65,8 +65,8 @@ export default {
   },
   methods: {
     checkAuthUser() {
-      let userId = localStorage.getItem("userId");
-      if (userId) {
+      let user = JSON.parse(localStorage.getItem("userId"));
+      if (user) {
         this.isVisible = true;
       } else {
         this.isVisible = false;

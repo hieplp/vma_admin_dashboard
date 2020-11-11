@@ -146,7 +146,7 @@
                 </div>
                 <!-- Total Vehicle -->
                 <div class="field">
-                  <label>Total Vehicle</label>
+                  <label>Total Vehicles</label>
                   <div class="ui action input">
                     <input
                       type="text"
@@ -157,7 +157,17 @@
                       "
                       readonly
                     />
-                    <button class="ui right labeled icon button">
+                    <button
+                      class="ui right labeled icon button"
+                      @click="
+                        () => {
+                          this.$router.push({
+                            name: 'Vehicles',
+                            params: { ownerId: contributor.userId },
+                          });
+                        }
+                      "
+                    >
                       <i class="truck icon"></i>
                       View All
                     </button>

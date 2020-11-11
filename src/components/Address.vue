@@ -1,6 +1,6 @@
 <template>
   <!-- DEPARTURE LOCATION AND TIME -->
-  <div class="row" v-if="visible">
+  <div class="row">
     <div class="col-lg-12 grid-margin stretch-card">
       <div class="card">
         <div class="card-body">
@@ -165,7 +165,6 @@ export default {
         addressArr[addressArr.length - 1],
         "name_with_type"
       );
-      console.log(this.selectedCity);
       this.handleDropdownChange(1);
 
       this.selectedDistrict = this.findItemFromJson(
@@ -184,7 +183,6 @@ export default {
     },
     // Find address
     findItemFromJson(arr, findStr, typeName) {
-      console.log(findStr);
       let keys = Object.keys(arr);
       for (let index = 0; index < keys.length; index++) {
         let item = arr[keys[index]];

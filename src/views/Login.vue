@@ -133,7 +133,7 @@ export default {
         size: "invisible",
         callback: function() {
           // reCAPTCHA solved, allow signInWithPhoneNumber.
-          // seft.sendPhoneNumToFirebase();
+          this.sendPhoneNumToFirebase();
         },
       }
     );
@@ -146,15 +146,14 @@ export default {
     // Handle otp complete input
     async handleOnComplete(value) {
       this.isLoading = true;
-
       let confirmationResult = window.confirmationResult;
       await confirmationResult
         .confirm(value)
         .then((result) => {
           var user = result.user;
-          console.log(user);
+          console.log("handleOnComplete -> user", user);
           if (result.user) {
-            localStorage.setItem("userId", result.user.uid);
+            localStorage.setItem("userId", JSON.stringify(result.user));
             this.$router.push({
               name: "Overview",
             });
@@ -168,40 +167,36 @@ export default {
     },
     // Send phone number to firebase
     async sendPhoneNumToFirebase() {
-      localStorage.setItem("userId", "hiep");
-      this.$router.push({
-        name: "Overview",
-      });
+      // localStorage.setItem("userId", "hiep");
+      // this.$router.push({
+      //   name: "Overview",
+      // });
       // window.location.reload();
-
       // // Set phone number
-      // let phoneNumber =
-      //   "+84" +
-      //   this.phoneNumber
-      //     .replace("(", "")
-      //     .replace(")", "")
-      //     .replace(" ", "")
-      //     .replace("-", "")
-      //     .substring(1);
-
-      // this.isPhoneErrVisible = phoneNumber.length !== 12;
-
-      // if (!this.isPhoneErrVisible) {
-      //   this.isLoading = true;
-      //   console.log(phoneNumber);
-      //   let appVerifier = window.recaptchaVerifier;
-      //   await firebase
-      //     .auth()
-      //     .signInWithPhoneNumber(phoneNumber, appVerifier)
-      //     .then((confirmationResult) => {
-      //       window.confirmationResult = confirmationResult;
-      //       this.isOtpVisible = true;
-      //     })
-      //     .catch((err) => {
-      //       console.log(err);
-      //     });
-      //   this.isLoading = false;
-      // }
+      let phoneNumber =
+        "+84" +
+        this.phoneNumber
+          .replace("(", "")
+          .replace(")", "")
+          .replace(" ", "")
+          .replace("-", "")
+          .substring(1);
+      this.isPhoneErrVisible = phoneNumber.length !== 12;
+      if (!this.isPhoneErrVisible) {
+        this.isLoading = true;
+        let appVerifier = window.recaptchaVerifier;
+        await firebase
+          .auth()
+          .signInWithPhoneNumber(phoneNumber, appVerifier)
+          .then((confirmationResult) => {
+            window.confirmationResult = confirmationResult;
+            this.isOtpVisible = true;
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        this.isLoading = false;
+      }
     },
     // Check Phone input
     phoneInput() {

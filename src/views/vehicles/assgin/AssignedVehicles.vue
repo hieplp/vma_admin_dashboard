@@ -10,27 +10,28 @@
 
     <!-- Delete confimation -->
     <Confirmation
-      icon="trash alternate"
-      title="Delete Confirmation"
-      subTitle="Do you want to delete this vehicle?"
-      rightBtnTitle="Delete"
-      rightBtnIcon="trash alternate"
-      rightBtnColor="red"
+      icon="bus"
+      title="Assign Vehicle Confirmation"
+      :subTitle="
+        `Do you want to assign ${this.driver.fullName} to vehicle with id: ${this.selectedVehicleId}?`
+      "
+      rightBtnTitle="Assign"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
       leftBtnTitle="Cancel"
       leftBtnIcon="x"
-      leftBtnColor="blue"
-      v-if="isDeleteConVisible"
+      leftBtnColor="red"
+      v-if="isConVisible"
       :handleLeftBtn="
         () => {
-          this.isDeleteConVisible = !this.isDeleteConVisible;
+          this.isConVisible = !this.isConVisible;
         }
       "
-      :handleRightBtn="deleteVehicle"
+      :handleRightBtn="assignVehicle"
     />
-
     <!-- Error message -->
     <MessageModal
-      title="Delete Vehicle Fail!"
+      title="Assign Vehicle Fail!"
       icon="frown outline "
       :subTitle="errMsg"
       :proFunc="
@@ -42,15 +43,15 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Delete Driver Successfully!"
+      title="Delete Vehicle Successfully!"
       icon="check circle"
       :subTitle="
-        `Vehicle with id ${this.deleteVehicleId} is deleted successfully.`
+        `Vehicle with id ${this.selectedVehicleId} is assigned successfully！`
       "
       :proFunc="
         () => {
           this.isSuccess = !this.isSuccess;
-          this.searchVehicles();
+          this.$router.go(-1);
         }
       "
       v-if="isSuccess"
@@ -58,17 +59,11 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/vehicles" class="nav-link">Vehicles</router-link>
+        <router-link to="/vehicles" class="nav-link"
+          >Assign Vehicles</router-link
+        >
       </h3>
       <div class="dropdown">
-        <router-link
-          to="/create-vehicle"
-          class="btn btn-gradient-info btn-icon-text mr-2"
-          type="button"
-        >
-          <i class="mdi mdi-plus-box btn-icon-prepend"></i>
-          Create
-        </router-link>
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"
@@ -136,7 +131,7 @@
                     <!-- <router-link
                       :to="{
                         name: 'VehicleDetail',
-                        params: { userId: vehicle.userId },
+                        params: { vehicleId: vehicle.vehicleId },
                       }"
                       >Manage</router-link
                     > -->
@@ -147,20 +142,10 @@
                       <i class="mdi mdi-train"></i>
                     </button>
                     <button
-                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateVehicle(vehicle.vehicleId)"
-                      :disabled="vehicle.vehicleStatus === 'Disabled'"
+                      class="btn btn-gradient-success btn-rounded btn-icon mr-1"
+                      @click="handleDialog('isConVisible', vehicle.vehicleId)"
                     >
-                      <i class="mdi mdi-grease-pencil"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="vehicle.vehicleStatus === 'Disabled'"
-                      @click="
-                        handleDialog('isDeleteConVisible', vehicle.vehicleId)
-                      "
-                    >
-                      <i class="mdi mdi-delete-forever"></i>
+                      <i class="mdi mdi-check"></i>
                     </button>
                   </td>
                 </tr>
@@ -277,27 +262,7 @@
                 </div>
               </div>
             </div>
-            <!-- Vehicle status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Status</label>
-
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="searchStatusID"
-              >
-                <option :value="''">
-                  Select vehicle status
-                </option>
-                <option
-                  v-for="status in this.statusList"
-                  :key="status"
-                  :value="status"
-                  >{{ status.replaceAll("_", " ") }}</option
-                >
-              </select>
-            </div>
-            <!-- Vehicle status dropdown -->
+            <!-- Vehicle Type dropdown -->
             <div class="col-12 mt-3">
               <label>Vehicle Type</label>
               <select
@@ -344,19 +309,19 @@
 </template>
 
 <script>
-import { isNumber } from "../../assets/js/input.js";
+import { isNumber } from "../../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-import Confirmation from "../../components/Modal/Confirmation";
-import MessageModal from "../../components/Modal/MessageModal";
+import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
+import Confirmation from "../../../components/Modal/Confirmation";
+import MessageModal from "../../../components/Modal/MessageModal";
+
 const VehicleRepository = RepositoryFactory.get("vehicles");
+const VehicleAssignmentRepository = RepositoryFactory.get("assignVehicle");
 
 export default {
-  name: "Vehicles",
-  props: {
-    handleDelBtnVisible: Function,
-  },
+  name: "AssignedVehicles",
+  props: {},
   components: {
     Loading,
     Confirmation,
@@ -370,43 +335,43 @@ export default {
 
       vehiclesList: [],
       // Filter
-      searchPhoneNumber: "",
       searchVehicleID: "",
       searchModel: "",
-      searchStatusID: "",
+      searchStatusID: "AVAILABLE_NO_DRIVER",
+      vehicleMaxSeat: "",
+      vehicleMinSeat: "",
       searchType: "",
       vehicleMaxDis: "",
       vehicleMinDis: "",
-      vehicleMaxSeat: "",
-      vehicleMinSeat: "",
-      ownerId: "",
 
       isLoading: true,
       totalVehicles: 0,
       page: 0,
       currentPage: 1,
-      isDeleteConVisible: false,
+      isConVisible: false,
       isError: false,
       isSuccess: false,
       errMsg: "",
-      deleteVehicleId: "",
+      selectedVehicleId: "",
       // Seat
       totalSeats: [],
 
-      viewOption: 0,
+      viewOption: 1,
 
       vehicleTypes: [],
       searchTotalDistance: ["", ""],
+
+      driver: {
+        userId: "",
+        fullName: "",
+      },
     };
   },
   async mounted() {
-    if (this.$route.params.ownerId) {
-      this.ownerId = this.$route.params.ownerId;
-    }
-    await this.initStatusList();
+    await this.intiDriver();
     await this.initVehiclesList();
     await this.initTypes();
-    this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
+    this.totalSeats = require("../../../assets/json/vehicle/totalSeat.json");
   },
   methods: {
     isNumber(evt) {
@@ -418,18 +383,22 @@ export default {
       this.page = page - 1;
       this.initVehiclesList();
     },
-    // Init data for Vehicle Status Dropdown
-    async initStatusList() {
-      this.statusList = require("../../assets/json/vehicle/status.json");
+    // Init data for driver
+    async intiDriver() {
+      if (this.$route.params.driver) {
+        localStorage.setItem(
+          "assignDriver",
+          JSON.stringify(this.$route.params.driver)
+        );
+      }
+      if (localStorage.getItem("assignDriver")) {
+        this.driver = JSON.parse(localStorage.getItem("assignDriver"));
+      }
     },
     // Clear search item value
     clearSearchValue() {
       this.searchVehicleID = "";
       this.searchModel = "";
-      this.searchPhoneNumber = "";
-      this.searchStatusID = "";
-      this.vehicleMinSeat = "";
-      this.vehicleMaxSeat = "";
       this.searchType = "";
       this.vehicleMinDis = "";
       this.vehicleMaxDis = "";
@@ -444,7 +413,6 @@ export default {
     // Init data for vehicle list
     async initVehiclesList() {
       this.isLoading = true;
-
       if (
         this.vehicleMinDis.length > 0 &&
         this.vehicleMaxDis.length > 0 &&
@@ -478,7 +446,7 @@ export default {
         this.vehicleMinSeat,
         this.vehicleMaxSeat,
         this.viewOption,
-        this.ownerId
+        ""
       );
       this.totalVehicles = await VehicleRepository.getTotalVehicle(
         this.searchModel,
@@ -490,7 +458,7 @@ export default {
         this.vehicleMinSeat,
         this.vehicleMaxSeat,
         this.viewOption,
-        this.ownerId
+        ""
       );
       this.isLoading = false;
     },
@@ -521,18 +489,14 @@ export default {
         params: { vehicleId: vehicleId },
       });
     },
-    // View vehicle detail
-    updateVehicle(vehicleId) {
-      this.$router.push({
-        name: "UpdateVehicle",
-        params: { vehicleId: vehicleId },
-      });
-    },
-    // Delete vehicle
-    async deleteVehicle() {
-      this.handleDialog("isDeleteConVisible", "");
+    // Assign vehicle
+    async assignVehicle() {
+      this.handleDialog("isConVisible", "");
       this.isLoading = true;
-      await VehicleRepository.delete(this.deleteVehicleId)
+      await VehicleAssignmentRepository.assignVehicle(
+        this.selectedVehicleId,
+        this.driver.userId
+      )
         .then((res) => {
           if (res) {
             this.isSuccess = true;
@@ -546,9 +510,9 @@ export default {
       this.isLoading = false;
     },
     // Close delete vehicle confimation dialog
-    handleDialog(dialogName, userId) {
-      if (userId.length !== 0) {
-        this.deleteVehicleId = userId;
+    handleDialog(dialogName, vehicleId) {
+      if (vehicleId.length !== 0) {
+        this.selectedVehicleId = vehicleId;
       }
       this.$data[dialogName] = !this.$data[dialogName];
     },
@@ -557,7 +521,7 @@ export default {
 </script>
 <style scoped>
 .filter {
-  max-height: 750px !important;
+  max-height: 650px !important;
 }
 .label {
   font-size: 13px;
@@ -583,12 +547,6 @@ export default {
 .cus-modal .header {
   color: white;
   font-size: 35px !important;
-}
-/* .form-control {
-  border-color: rgb(187, 181, 181) !important;
-} */
-
-.icon.bus.ui {
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

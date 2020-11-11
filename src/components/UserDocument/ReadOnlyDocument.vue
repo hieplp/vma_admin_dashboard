@@ -88,6 +88,9 @@ export default {
   data() {
     return {};
   },
+  mounted() {
+    console.log(this.document.userDocumentType);
+  },
   methods: {
     openGallery(index) {
       let media = [];

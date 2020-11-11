@@ -306,6 +306,7 @@ export default {
     // Init data document
     async initDataDocument(documentTypeId, documentRef) {
       if (this.checkDocumentSelected(documentTypeId)) {
+        this.$refs[documentRef].handleDuplicateErr(false);
         let document = this.$refs[documentRef].getData();
         this.driver.userDocumentList[this.index] = document.document;
         // Delete old firebase image link
@@ -409,7 +410,6 @@ export default {
                 )
               ) {
                 this.errMsg = "Identity ID is duplicated!";
-                // this.$refs.identityCard.focus();
                 this.$refs.identityCard.handleDuplicateErr(true);
               }
               this.isError = true;
@@ -434,7 +434,6 @@ export default {
     },
     // Get firebase links
     async getFirebaseLinks(imgDataList, imgTypeName) {
-      // let imgDataList = this.$data[imgTypeName];
       let imgArr = [];
       if (imgDataList) {
         for (let img of imgDataList) {

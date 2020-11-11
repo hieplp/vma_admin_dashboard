@@ -28,63 +28,55 @@
       :handleRightBtn="deleteDriver"
     />
     <!-- Error message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Delete Driver Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
-
+    <MessageModal
+      title="Delete Driver Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="handleErrorModal"
+      v-if="isError"
+    />
     <!-- Success message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
-      <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Delete successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Driver with id {{ this.deleteUserID }} is deleted successfully.</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          @click="
-            () => {
-              isSuccess = !isSuccess;
-              this.searchDrivers();
-            }
-          "
-          class="ui blue primary button"
-        >
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    <MessageModal
+      title="Delete Driver Successfully!"
+      icon="check circle"
+      :subTitle="`Driver with id ${this.deleteUserID} is deleted successfully.`"
+      :proFunc="handleSuccessModal"
+      v-if="isSuccess"
+    />
 
     <div class="page-header">
       <h3 class="page-title">
         <router-link to="/drivers" class="nav-link">Drivers</router-link>
       </h3>
       <div class="dropdown">
-        <router-link
-          to="/create-driver"
-          class="btn btn-gradient-info btn-icon-text mr-2"
+        <!-- Create new driver -->
+        <button
+          class="btn btn-gradient-info btn-icon-text mr-2 dropdown-toggle"
           type="button"
-          v-on:click="clickToViewFilter()"
+          data-toggle="dropdown"
         >
           <i class="mdi mdi-account-plus btn-icon-prepend"></i>
           Create
-        </router-link>
+        </button>
+        <ul class="dropdown-menu ">
+          <button
+            @click="
+              () => {
+                this.$router.push({
+                  name: 'CreateDriver',
+                });
+              }
+            "
+            class="mb-1"
+          >
+            New
+          </button>
+          <li class="divider"></li>
+          <button class="mt-1" @click="viewPromoteContributor">
+            From contributor
+          </button>
+        </ul>
+        <!-- Filter group -->
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"
@@ -94,6 +86,7 @@
         </button>
       </div>
     </div>
+
     <div class="row">
       <!-- Drivers table -->
       <div
@@ -286,6 +279,7 @@ import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 
 const DriverRepository = RepositoryFactory.get("drivers");
@@ -297,6 +291,7 @@ export default {
   components: {
     Loading,
     Confirmation,
+    MessageModal,
   },
   data() {
     return {
@@ -385,6 +380,13 @@ export default {
         }, 300);
       }
     },
+    // go to promote user lis
+    viewPromoteContributor() {
+      this.$router.push({
+        name: "PromoteDrivers",
+        params: { roleId: "2" },
+      });
+    },
     // View driver detail
     viewDetail(userId) {
       this.$router.push({
@@ -411,10 +413,18 @@ export default {
         })
         .catch((err) => {
           this.isError = !this.isError;
-          this.errMsg = err.message;
-          console.log(err);
+          this.errMsg = err.debugMessage;
         });
       this.isLoading = false;
+    },
+    // Close Error Modal
+    handleErrorModal() {
+      this.isError = !this.isError;
+    },
+    // Close Error Modal
+    handleSuccessModal() {
+      this.isSuccess = !this.isSuccess;
+      this.searchDrivers();
     },
     // Close delete driver confimation dialog
     handleDialog(dialogName, userId) {
@@ -435,25 +445,6 @@ export default {
 }
 .form-control {
   font-size: 13px;
-}
-.btn-action .btn i {
-  font-size: 20px;
-}
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

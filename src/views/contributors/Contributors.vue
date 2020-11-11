@@ -15,14 +15,33 @@
         >
       </h3>
       <div class="dropdown">
-        <router-link
+        <button
           to="/create-contributor"
-          class="btn btn-gradient-info btn-icon-text mr-2"
+          class="btn btn-gradient-info btn-icon-text mr-2 dropdown-toggle"
           type="button"
+          data-toggle="dropdown"
         >
           <i class="mdi mdi-account-plus btn-icon-prepend"></i>
           Create
-        </router-link>
+        </button>
+        <ul class="dropdown-menu ">
+          <button
+            @click="
+              () => {
+                this.$router.push({
+                  name: 'CreateContributor',
+                });
+              }
+            "
+            class="mb-1"
+          >
+            New
+          </button>
+          <li class="divider"></li>
+          <button class="mt-1" @click="viewPromoteDriver">
+            From driver
+          </button>
+        </ul>
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"
@@ -432,6 +451,13 @@ export default {
       );
 
       this.isLoading = false;
+    },
+    // go to promote user lis
+    viewPromoteDriver() {
+      this.$router.push({
+        name: "PromoteDrivers",
+        params: { roleId: "3" },
+      });
     },
     // View contributor detail
     viewDetail(userId) {

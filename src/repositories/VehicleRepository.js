@@ -36,17 +36,18 @@ export default {
     vehicleMaxDis,
     vehicleStatus,
     vehicleType,
-    seat,
-    viewOption
+    vehicleMinSeat,
+    vehicleMaxSeat,
+    viewOption,
+    ownerId
   ) {
     let vehicleList = [];
     try {
       const res = await Repository.get(
-        `${resource}?model=${model}&pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${seat}&seatsMin=${seat}&viewOption=${viewOption}`
+        `${resource}?model=${model}&pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&viewOption=${viewOption}&ownerId=${ownerId}`
       );
       if (res.data) {
         vehicleList = res.data.vehicleList;
-        console.log(res.data);
       }
     } catch (ex) {
       console.log(ex);
@@ -61,13 +62,15 @@ export default {
     vehicleMaxDis,
     vehicleStatus,
     vehicleType,
-    seat,
-    viewOption
+    vehicleMinSeat,
+    vehicleMaxSeat,
+    viewOption,
+    ownerId
   ) {
     let count = 0;
     try {
       const res = await Repository.get(
-        `${resource}/count?model=${model}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${seat}&seatsMin=${seat}&viewOption=${viewOption}`
+        `${resource}/count?model=${model}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&viewOption=${viewOption}&ownerId=${ownerId}`
       );
       if (res.data) {
         count = res.data;
@@ -103,7 +106,6 @@ export default {
         });
     });
   },
-
   // Create vehicle
   update(vehicle) {
     return new Promise((resolve, reject) => {
@@ -118,9 +120,9 @@ export default {
     });
   },
   // Delete driver
-  delete(userId) {
+  delete(vehicleId) {
     return new Promise((resolve, reject) => {
-      Repository.delete(`${resource}?userId=${userId}`)
+      Repository.delete(`${resource}?vehicleId=${vehicleId}`)
         .then((res) => {
           resolve(res);
         })

@@ -15,6 +15,37 @@ export default {
         });
     });
   },
+  // Update document
+  delete(vehicleDocId) {
+    return new Promise((resolve, reject) => {
+      Repository.delete(`${resource}?vehicleDocId=${vehicleDocId}`)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // Create document
+  create(vehicleId, vehicleDocumentReq, roleId) {
+    let request = {
+      roleId: roleId,
+      vehicleDocumentReq: vehicleDocumentReq,
+      vehicleId: vehicleId,
+    };
+    console.log(request);
+    return new Promise((resolve, reject) => {
+      Repository.post(`${resource}`, request)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(err.response.data);
+        });
+    });
+  },
   // Get documents
   async getDocuments(vehicleId) {
     return new Promise((resolve, reject) => {

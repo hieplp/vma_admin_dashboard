@@ -38,47 +38,47 @@
       "
       :handleRightBtn="handleUpdateCon"
     />
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <!-- Error message -->
+    <MessageModal
+      title="Update Driver Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Update Driver Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Driver with name ${this.driver.fullName} is updated successfully！`
+      "
+      :proFunc="
+        () => {
+          this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
+        }
+      "
       v-if="isCreatedSuccessfully"
-    >
-      <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Update Driver Successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Driver with name {{ this.driver.fullName }} is updated successfully!
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          @click="isCreatedSuccessfully = !isCreatedSuccessfully"
-          class="ui blue primary button"
-        >
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
-
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Update Driver Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    />
+    <!-- Delete confimation -->
+    <Confirmation
+      icon="trash alternate"
+      title="Delete Document Confirmation"
+      subTitle="Do you want to delete this document?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
+      v-if="isDeleteConVisible"
+      :handleLeftBtn="handleDeleteConfirmation"
+      :handleRightBtn="deleteDocument"
+    />
 
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
@@ -136,6 +136,8 @@
                 :multiple="true"
                 :taggable="true"
                 :searchable="false"
+                @select="handleInsertDoc"
+                @remove="handleRemoveDocument"
               >
               </multiselect>
             </div>
@@ -152,8 +154,15 @@
         :expiryMaxDate="10"
         :documentType="'IDENTITY_CARD'"
         :propDocument="indentifyInfor"
+        :proIsInsert="isInsertIdentity"
+        :handleDelBtnVisible="
+          () => {
+            this.handleRemoveDocument('IDENTITY_CARD');
+          }
+        "
+        :insertFunc="createDocument"
         ref="identityCard"
-        v-if="this.isDocumentLoading && this.indentifyInfor"
+        v-if="(isDocumentLoading && indentifyInfor) || isInsertIdentity"
       />
       <!-- Health Insurance -->
       <UpdateUserDocument
@@ -164,8 +173,18 @@
         :expiryMaxDate="1"
         :documentType="'HEALTH_INSURANCE'"
         :propDocument="healthInsuranceInfor"
+        :proIsInsert="isInsertHealth"
         ref="healthInsurance"
-        v-if="this.isDocumentLoading && this.healthInsuranceInfor"
+        :handleDelBtnVisible="
+          () => {
+            this.handleRemoveDocument('HEALTH_INSURANCE');
+          }
+        "
+        :insertFunc="createDocument"
+        v-if="
+          (this.isDocumentLoading && this.healthInsuranceInfor) ||
+            isInsertHealth
+        "
       />
       <!-- Health Insurance -->
       <UpdateDrivingLicenseDocument
@@ -173,8 +192,18 @@
         :isNumberInp="true"
         :documentType="'DRIVING_LICENSE'"
         :propDocument="drivingLicenseInfor"
+        :proIsInsert="isInsertDriving"
         ref="drivingLicense"
-        v-if="this.isDocumentLoading && this.drivingLicenseInfor"
+        :handleDelBtnVisible="
+          () => {
+            this.handleRemoveDocument('DRIVING_LICENSE');
+          }
+        "
+        :insertFunc="createDocument"
+        v-if="
+          (this.isDocumentLoading && this.drivingLicenseInfor) ||
+            isInsertDriving
+        "
       />
     </div>
   </div>
@@ -186,6 +215,7 @@ import Loading from "vue-loading-overlay";
 import moment from "moment";
 import UserInformation from "../../components/User/UserInformation";
 import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 import Multiselect from "vue-multiselect";
 import UpdateUserDocument from "../../components/UserDocument/Update User Document/UpdateUserDocument";
 import UpdateDrivingLicenseDocument from "../../components/UserDocument/Update User Document/UpdateDrivingLicenseDocument";
@@ -204,6 +234,7 @@ export default {
     Multiselect,
     UpdateUserDocument,
     UpdateDrivingLicenseDocument,
+    MessageModal,
   },
   data() {
     return {
@@ -236,11 +267,21 @@ export default {
       drivingLicenseInfor: null,
 
       isUpdConVisible: false,
+      isDeleteConVisible: false,
       isUserComLoading: false,
       isDocumentLoading: false,
 
       // Confirmation type
       confType: 0,
+
+      // Delete document
+      deletedDocumentId: "",
+      deletedDocumentType: "",
+
+      // Insert new document
+      isInsertIdentity: false,
+      isInsertHealth: false,
+      isInsertDriving: false,
 
       // Document
       docOptions: [],
@@ -248,27 +289,30 @@ export default {
     };
   },
   async mounted() {
+    this.isLoading = true;
     await this.initDetailDriver();
     this.docOptions = require("../../assets/json/document/userDocument.json");
+    this.isLoading = false;
   },
   methods: {
+    // Init driver's detailed information
     async initDetailDriver() {
-      this.isLoading = true;
-      DriverRepository.getDetailDriver(this.$route.params.userId).then(
+      await DriverRepository.getDetailDriver(this.$route.params.userId).then(
         (res) => {
           this.driver = res;
           this.isUserComLoading = true;
         }
       );
-      this.isLoading = false;
     },
     // Find document
     findDocumentByName(driverDocument, userDocumentType) {
       for (let doc of driverDocument) {
         if (doc.userDocumentType === userDocumentType) {
+          this.documentValue.push(userDocumentType);
           return doc;
         }
       }
+      return null;
     },
     // Update basic information
     async updateBasicInformation() {
@@ -315,7 +359,212 @@ export default {
         });
       this.isLoading = false;
     },
+    // Init data for document
+    async initDataDocument() {
+      this.documentValue = [];
+      let documents = await DocumentRepository.get(this.driver.userId, 0);
+      this.indentifyInfor = this.findDocumentByName(documents, "IDENTITY_CARD");
 
+      this.healthInsuranceInfor = this.findDocumentByName(
+        documents,
+        "HEALTH_INSURANCE"
+      );
+      this.drivingLicenseInfor = this.findDocumentByName(
+        documents,
+        "DRIVING_LICENSE"
+      );
+    },
+    // ------- Start of create and delete document
+    // Delete document
+    async deleteDocument() {
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+      if (this.deletedDocumentId) {
+        this.isLoading = true;
+        await DocumentRepository.delete(this.deletedDocumentId)
+          .then(async (res) => {
+            if (res) {
+              this.handleDeleteSuccess();
+              this.isCreatedSuccessfully = true;
+            }
+          })
+          .catch((ex) => {
+            if (ex.debugMessage) {
+              this.errMsg = ex.debugMessage;
+            }
+            this.isError = true;
+            console.error(ex);
+          });
+        this.isLoading = false;
+      } else {
+        this.handleDeleteSuccess();
+      }
+    },
+    handleDeleteSuccess() {
+      switch (this.deletedDocumentType) {
+        case "IDENTITY_CARD":
+          this.indentifyInfor = null;
+          this.isInsertIdentity = false;
+          break;
+        case "HEALTH_INSURANCE":
+          this.healthInsuranceInfor = null;
+          this.isInsertHealth = false;
+          break;
+        case "DRIVING_LICENSE":
+          this.drivingLicenseInfor = null;
+          this.isInsertDriving = false;
+          break;
+      }
+      this.$delete(
+        this.documentValue,
+        this.findDocIndex(this.deletedDocumentType)
+      );
+    },
+    // Find index in multi select
+    findDocIndex(str) {
+      for (let index = 0; index < this.documentValue.length; index++) {
+        if (this.documentValue[index] === str) {
+          return index;
+        }
+      }
+      return -1;
+    },
+    // Handle cancel delete document confirmation dialog
+    handleDeleteConfirmation() {
+      if (
+        this.deletedDocumentType &&
+        this.findDocIndex(this.deletedDocumentType) === -1
+      ) {
+        this.documentValue.push(this.deletedDocumentType);
+        this.deletedDocumentType = "";
+      }
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+    },
+    // Handle remove document in multi select
+    handleRemoveDocument(removedOption) {
+      let selectedDoc = "";
+      switch (removedOption) {
+        case "IDENTITY_CARD":
+          selectedDoc = "indentifyInfor";
+          this.deletedDocumentType = "IDENTITY_CARD";
+          break;
+        case "HEALTH_INSURANCE":
+          selectedDoc = "healthInsuranceInfor";
+          this.deletedDocumentType = "HEALTH_INSURANCE";
+          break;
+        case "DRIVING_LICENSE":
+          selectedDoc = "drivingLicenseInfor";
+          this.deletedDocumentType = "DRIVING_LICENSE";
+          break;
+      }
+      if (this.$data[selectedDoc]) {
+        this.deletedDocumentId = this.$data[selectedDoc].userDocumentId;
+      }
+      this.isDeleteConVisible = !this.isDeleteConVisible;
+    },
+    // handle insert document in multi select
+    handleInsertDoc(selectedOption) {
+      switch (selectedOption) {
+        case "IDENTITY_CARD":
+          this.deletedDocumentType = "IDENTITY_CARD";
+          this.isInsertIdentity = true;
+          break;
+        case "HEALTH_INSURANCE":
+          this.deletedDocumentType = "HEALTH_INSURANCE";
+          this.isInsertHealth = true;
+          break;
+        case "DRIVING_LICENSE":
+          this.deletedDocumentType = "DRIVING_LICENSE";
+          this.isInsertDriving = true;
+          break;
+      }
+    },
+    // handle create new document
+    async createDocument(documentRes) {
+      this.isLoading = true;
+      let docImage = documentRes.images;
+      let document = documentRes.document;
+      document.userDocumentImages = await this.getNewFirebaseLinks(
+        docImage,
+        document.userDocumentType
+      );
+      await DocumentRepository.create(document, this.driver.userId)
+        .then(async (res) => {
+          if (res) {
+            await this.initDataDocument();
+            switch (this.deletedDocumentType) {
+              case "IDENTITY_CARD":
+                // this.$refs.identityCard.updateIsInsert();
+                this.$refs.identityCard.updateDocument(this.indentifyInfor);
+                break;
+              case "HEALTH_INSURANCE":
+                // this.$refs.healthInsurance.updateIsInsert();
+                this.$refs.healthInsurance.updateDocument(
+                  this.healthInsuranceInfor
+                );
+                break;
+              case "DRIVING_LICENSE":
+                // this.$refs.drivingLicense.updateIsInsert();
+                this.$refs.drivingLicense.updateDocument(
+                  this.drivingLicenseInfor
+                );
+                break;
+            }
+            this.isCreatedSuccessfully = true;
+          }
+        })
+        .catch((ex) => {
+          if (
+            ex.debugMessage.includes(
+              "Cannot insert duplicate key in object 'dbo.user_document'"
+            )
+          ) {
+            if (
+              this.driver.userDocumentList[2] &&
+              ex.debugMessage.includes(
+                this.driver.userDocumentList[2].userDocumentId
+              )
+            ) {
+              this.errMsg = "Driving license id is duplicated!";
+              // this.$refs.drivingLicense.focus();
+              this.$refs.drivingLicense.handleDuplicateErr(true);
+            }
+            if (
+              this.driver.userDocumentList[1] &&
+              ex.debugMessage.includes(
+                this.driver.userDocumentList[1].userDocumentId
+              )
+            ) {
+              this.errMsg = "Health insurance id is duplicated!";
+              // this.$refs.healthInsurance.focus();
+              this.$refs.healthInsurance.handleDuplicateErr(true);
+            }
+            if (
+              this.driver.userDocumentList[0] &&
+              ex.debugMessage.includes(
+                this.driver.userDocumentList[0].userDocumentId
+              )
+            ) {
+              this.errMsg = "Identity ID is duplicated!";
+              this.$refs.identityCard.handleDuplicateErr(true);
+            }
+            this.isError = true;
+          } else if (
+            ex.debugMessage.includes(
+              "Cannot insert duplicate key in object 'dbo.user'"
+            )
+          ) {
+            this.isError = true;
+            this.errMsg = "Identity ID is duplicated!";
+            this.$refs.identityCard.handleDuplicateErr(true);
+          } else {
+            this.isError = true;
+            this.errMsg = ex.debugMessage;
+          }
+          console.error(ex);
+        });
+      this.isLoading = false;
+    },
+    // ------- End of create and delete document
     // Upload image to firebase
     uploadImageToFirebase(imageData, imgTypeName) {
       return new Promise((resolve) => {
@@ -388,8 +637,6 @@ export default {
         document.userDocumentImages,
         documentType
       );
-      console.log(document);
-      console.log(delImgs);
       await DocumentRepository.update(document, this.driver.userId)
         .then(async (res) => {
           if (res) {
@@ -435,6 +682,21 @@ export default {
         }
       }
       return oldImg;
+    },
+    // Get firebase links
+    async getNewFirebaseLinks(imgDataList, imgTypeName) {
+      let imgArr = [];
+      if (imgDataList) {
+        for (let img of imgDataList) {
+          let url = await this.uploadImageToFirebase(img, imgTypeName);
+          let imgObj = {
+            userDocumentImageId: 0,
+            imageLink: url,
+          };
+          imgArr.push(imgObj);
+        }
+      }
+      return imgArr;
     },
     // Delete firebase imgs
     async deleteFirebaseLink(imgs) {

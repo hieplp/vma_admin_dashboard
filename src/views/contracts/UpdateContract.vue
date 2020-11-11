@@ -15,50 +15,55 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Contract
+          Update Contract
         </span>
       </h3>
     </div>
-    <!-- Error modal -->
-    <div
-      class="ui basic cus-modal justify-content-center"
-      v-if="isCreatedSuccessfully"
-    >
-      <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
-        Create Contract Successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Contract with name {{ this.contract.departureLocation }} is created
-          successfully!
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <router-link to="/contracts" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Continue
-        </router-link>
-      </div>
-    </div>
-
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Create Contract Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    <!-- Update Confirmation -->
+    <Confirmation
+      icon="edit outline"
+      title="Update Confirmation"
+      subTitle="Do you want to update this contract?"
+      rightBtnTitle="Update"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isUpdConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isUpdConVisible = !this.isUpdConVisible;
+        }
+      "
+      :handleRightBtn="update"
+    />
+    <!-- Error message -->
+    <MessageModal
+      title="Update Contract Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Update Contract Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Contract with id ${this.propContract.contractId} is updated successfully！`
+      "
+      :proFunc="
+        () => {
+          this.isUpdatedSuccessfully = !this.isUpdatedSuccessfully;
+        }
+      "
+      v-if="isUpdatedSuccessfully"
+    />
 
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
@@ -91,199 +96,13 @@
       </div>
     </div>
 
-    <CustomersModal
-      v-show="isOwnerModalVisible"
-      :cancelFunction="handleVehicleOwnerModal"
-      :doneFunction="getVehicleOwner"
-      :userId="owner.userId"
-      ref="ownerModal"
+    <ContractInformation
+      ref="contractInfo"
+      :propContract="propContract"
+      v-if="propContract"
     />
 
-    <div class="row" v-if="isUserInfoVisible">
-      <!-- BASIC INFORMAION -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <h4 class="ui dividing header">BASIC INFORMAION</h4>
-
-              <div class="two fields">
-                <!-- Duration From -->
-                <div class="field">
-                  <label>Duration From</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.durationFrom"
-                      placeholder="Duration From"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="durationFromErr"
-                  >
-                    Duration from is required!
-                  </div>
-                </div>
-                <!-- Duration To-->
-                <div class="field">
-                  <label>Duration To</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.durationTo"
-                      placeholder="Duration To"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="durationToErr">
-                    Duration to is required!
-                  </div>
-                </div>
-                <!-- Signed Date-->
-                <div class="field">
-                  <label>Signed Date</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="date"
-                      v-model="contract.signedDate"
-                      placeholder="Signed Date"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="signedDateErr">
-                    Signed date is required!
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <!-- Total Price -->
-                <div class="field">
-                  <label>Total Price</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      v-model="contract.totalPrice"
-                      placeholder="Total Price"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="totalPriceErr">
-                    Total price is required!
-                  </div>
-                </div>
-                <!-- Owner-->
-                <div class="field">
-                  <label>Owner</label>
-                  <div class="ui action input">
-                    <input
-                      v-model="owner.fullName"
-                      type="text"
-                      readonly
-                      placeholder="Pick an owner"
-                    />
-                    <button
-                      class="ui right labeled icon button"
-                      @click="handleVehicleOwnerModal"
-                    >
-                      <i class="users icon"></i>
-                      Pick
-                    </button>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="ownerErr">
-                    Owner is required!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- DEPARTURE/DESTINATION TIME -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <h4 class="ui dividing header">DEPARTURE/DESTINATION TIME</h4>
-              <div class="two fields">
-                <!-- Departure Time -->
-                <div class="field">
-                  <label>Departure Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      v-model="contract.departureTime"
-                      placeholder="Departure Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="departureTimeErr"
-                  >
-                    Departure time is required!
-                  </div>
-                </div>
-                <!-- Destination Time-->
-                <div class="field ">
-                  <label>Destination Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      name="Salary"
-                      v-model="contract.destinationTime"
-                      placeholder=" Destination Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="destinationTimeErr"
-                  >
-                    Destination Time is required!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <Address
-      title="SIGNED LOCATION"
-      :visible="isUserInfoVisible"
-      :propAddress="contract.signedLocation"
-      v-if="isAddressLoading"
-      ref="signedLocation"
-    />
-    <Address
-      title="DEPARTURE LOCATION"
-      :visible="isUserInfoVisible"
-      :propAddress="contract.departureLocation"
-      v-if="isAddressLoading"
-      ref="departureLocation"
-    />
-    <Address
-      title="DESTINATION LOCATION"
-      :visible="isUserInfoVisible"
-      :propAddress="contract.destinationLocation"
-      v-if="isAddressLoading"
-      ref="destinationLocation"
-    />
-    <div class="row" v-if="isUserInfoVisible">
+    <div class="row" v-if="propContract">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
@@ -291,11 +110,22 @@
               <!-- Button group -->
               <div class="row justify-content-center">
                 <button
+                  class="btn btn-gradient-danger btn-fw ml-2"
+                  type="button"
+                  @click="cancel"
+                >
+                  Cancel
+                </button>
+                <button
                   class="btn btn-gradient-info btn-fw ml-2"
                   type="button"
-                  v-on:click="create()"
+                  @click="
+                    () => {
+                      this.isUpdConVisible = !this.isUpdConVisible;
+                    }
+                  "
                 >
-                  Create
+                  Update
                 </button>
               </div>
             </div>
@@ -317,16 +147,16 @@
                   <button
                     class="btn btn-gradient-danger btn-fw"
                     type="button"
-                    v-on:click="changeTab()"
+                    @click="cancel"
                   >
                     Back
                   </button>
                   <button
                     class="btn btn-gradient-info btn-fw ml-2"
                     type="button"
-                    v-on:click="create()"
+                    v-on:click="() => {}"
                   >
-                    Create
+                    Update
                   </button>
                 </div>
               </div>
@@ -342,35 +172,25 @@
 import { isNumber } from "../../assets/js/input.js";
 // import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
-import moment from "moment";
-import Address from "../../components/Address";
-import CustomersModal from "../../components/Modal/CustomersModal";
-
+import ContractInformation from "../../components/Contract/ContractInformation";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
+import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 const ContractRepository = RepositoryFactory.get("contracts");
 
 export default {
-  name: "CreateContract",
+  name: "UpdateContract",
   components: {
     Loading,
-    Address,
-    CustomersModal,
+    ContractInformation,
+    Confirmation,
+    MessageModal,
   },
   data() {
     return {
-      contract: {
-        contractOwnerId: "",
-        departureLocation: "",
-        departureTime: "",
-        destinationLocation: "",
-        destinationTime: "",
-        durationFrom: "",
-        durationTo: "",
-        otherInformation: "",
-        signedDate: "",
-        signedLocation: "",
-        totalPrice: "",
-      },
+      contract: null,
+      propContract: null,
+
       // Profile image
       isUserInfoVisible: true,
 
@@ -386,29 +206,12 @@ export default {
       signedDateErr: false,
       totalPriceErr: false,
 
-      maxBirthDate: "",
       isLoading: false,
-      isCreatedSuccessfully: false,
+      isUpdatedSuccessfully: false,
+      isUpdConVisible: false,
       isError: false,
       errMsg: "",
 
-      // address
-      cities: [],
-      selectedCity: {
-        name: "",
-      },
-      districts: [],
-      selectedDistrict: {
-        name: "",
-      },
-      wards: [],
-      selectedWard: {
-        name: "",
-      },
-      drivingLicenseTypes: [],
-      selectedDrivingLicenseTypes: {
-        name: "",
-      },
       documentExpiryDate: [],
 
       // Vehicle Owner
@@ -421,86 +224,30 @@ export default {
     };
   },
   async mounted() {
+    this.isLoading = true;
     await this.initContract();
+    this.isLoading = false;
   },
   methods: {
     // Init contract
     async initContract() {
       await ContractRepository.getDetail(this.$route.params.contractId).then(
         (res) => {
-          this.contract = this.copyProperties(res, this.contract);
-          this.initOwner(res.contractOwner);
-          this.isAddressLoading = true;
+          this.propContract = res;
         }
       );
     },
-    // Init owner
-    initOwner(contractOwner) {
-      this.owner.userId = contractOwner.userId;
-      this.owner.fullName = contractOwner.userName;
-    },
-    getExpiryDate(date, ex) {
-      let dateArr = date.split("-");
-      return Number(dateArr[0]) + ex + "-" + dateArr[1] + "-" + dateArr[2];
-    },
-
-    getDepartureLocation(address) {
-      console.log(address);
-    },
-    copyProperties(src, to) {
-      let toKeys = Object.keys(to);
-
-      for (let index = 0; index < toKeys.length; index++) {
-        to[toKeys[index]] = src[toKeys[index]];
-      }
-      return to;
-    },
-
-    // Cheack basic information
-    checkBasicInformation() {
-      this.durationFromErr = this.contract.durationFrom.length === 0;
-      this.durationToErr = this.contract.durationTo.length === 0;
-      this.signedDateErr = this.contract.signedDate.length === 0;
-      this.totalPriceErr = this.contract.totalPrice.length === 0;
-      this.departureTimeErr = this.contract.departureTime.length === 0;
-      this.destinationTimeErr = this.contract.destinationTime.length === 0;
-      let signedLocationErr = this.$refs.signedLocation.checkValid();
-      let departureLocationErr = this.$refs.departureLocation.checkValid();
-      let destinationLocationErr = this.$refs.destinationLocation.checkValid();
-      return (
-        this.durationFromErr ||
-        this.durationToErr ||
-        this.signedDateErr ||
-        this.totalPriceErr ||
-        this.departureTimeErr ||
-        this.destinationTimeErr ||
-        signedLocationErr ||
-        departureLocationErr ||
-        destinationLocationErr
-      );
-    },
-    async create() {
-      console.log(this.contract.departureTime);
-      let isValid = this.checkBasicInformation();
+    // Update contract
+    async update() {
+      this.isUpdConVisible = false;
+      let isValid = this.$refs.contractInfo.checkBasicInformation();
       if (!isValid) {
         this.isLoading = true;
-        // Format date
-        this.contract.departureTime = moment(
-          this.contract.departureTime
-        ).format("YYYY-MM-DD HH:mm:ss");
-        this.contract.destinationTime = moment(
-          this.contract.destinationTime
-        ).format("YYYY-MM-DD HH:mm:ss");
-
-        this.contract.signedLocation = this.$refs.signedLocation.getAdress();
-        this.contract.departureLocation = this.$refs.departureLocation.getAdress();
-        this.contract.destinationLocation = this.$refs.destinationLocation.getAdress();
-        this.contract.contractOwnerId = this.owner.userId;
-        console.log(this.contract);
-        await ContractRepository.create(this.contract)
+        let contract = this.$refs.contractInfo.getData();
+        await ContractRepository.update(contract)
           .then((res) => {
             if (res) {
-              this.isCreatedSuccessfully = true;
+              this.isUpdatedSuccessfully = true;
             }
           })
           .catch((ex) => {
@@ -513,6 +260,10 @@ export default {
         this.isLoading = false;
       }
     },
+    // Cancel
+    cancel() {
+      this.$refs.contractInfo.initContract();
+    },
     changeTab() {
       let isValid = this.checkBasicInformation();
       // let isValid = false;
@@ -521,29 +272,9 @@ export default {
         this.isUserInfoVisible = !this.isUserInfoVisible;
       }
     },
-    // Vehicle Owner
-    handleVehicleOwnerModal() {
-      this.isOwnerModalVisible = !this.isOwnerModalVisible;
-    },
-    // Get vehicle owner
-    getVehicleOwner() {
-      this.owner = this.$refs.ownerModal.getSelectedCustomer();
-      this.handleVehicleOwnerModal();
-    },
+
     isNumber(evt) {
       isNumber(evt);
-    },
-    // Check Phone input
-    phoneInput() {
-      var x = this.contract.departureTime
-        .replace(/\D/g, "")
-        .match(/(\d{0,3})(\d{0,3})(\d{0,4})/);
-      if (x[1].charAt(0) !== "0" && x[1].length != 0) {
-        x[1] = "0" + x[1];
-      }
-      this.contract.departureTime = !x[2]
-        ? x[1]
-        : "(" + x[1] + ") " + x[2] + (x[3] ? "-" + x[3] : "");
     },
   },
 };

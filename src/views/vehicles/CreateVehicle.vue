@@ -294,12 +294,13 @@ export default {
     // Init data document
     async initDataDocument(documentTypeId, documentRef) {
       if (this.checkDocumentSelected(documentTypeId)) {
+        this.$refs[documentRef].handleDuplicateErr(false);
         let document = this.$refs[documentRef].getData();
         this.vehicle.vehicleDocuments[this.index] = document.document;
-        // Delete old firebase image link
-        await this.deleteFirebaseLink(
-          this.vehicle.vehicleDocuments[this.index].imageLinks
-        );
+        // // Delete old firebase image link
+        // await this.deleteFirebaseLink(
+        //   this.vehicle.vehicleDocuments[this.index].imageLinks
+        // );
         this.vehicle.vehicleDocuments[this.index].imageLinks = [];
         // Upload images to firebase
         this.vehicle.vehicleDocuments[
@@ -349,7 +350,7 @@ export default {
           "CIVIL_LIABILITY_INSURANCE_CERTIFICATE",
           "civilLiabilityInsur"
         );
-
+        console.log(this.vehicle);
         // Init image for profile
         if (this.profileImage) {
           this.vehicle.imageLink = await this.uploadImageToFirebase(
@@ -360,63 +361,27 @@ export default {
         }
         this.vehicle.vehicleId = this.vehicle.vehicleDocuments[0].vehicleDocumentId;
         // Call api to create new vehicle
-        await VehicleRepository.create(this.vehicle, 3)
+        await VehicleRepository.create(this.vehicle)
           .then((res) => {
             if (res) {
               this.isCreatedSuccessfully = true;
             }
           })
           .catch((ex) => {
-            // if (
-            //   ex.debugMessage.includes(
-            //     "Cannot insert duplicate key in object 'dbo.user_document'"
-            //   )
-            // ) {
-            //   if (
-            //     this.vehicle.vehicleDocuments[2] &&
-            //     ex.debugMessage.includes(
-            //       this.vehicle.vehicleDocuments[2].userDocumentId
-            //     )
-            //   ) {
-            //     this.errMsg = "Driving license id is duplicated!";
-            //     // this.$refs.drivingLicense.focus();
-            //     this.$refs.drivingLicense.handleDuplicateErr(true);
-            //   }
-            //   if (
-            //     this.vehicle.vehicleDocuments[1] &&
-            //     ex.debugMessage.includes(
-            //       this.vehicle.vehicleDocuments[1].userDocumentId
-            //     )
-            //   ) {
-            //     this.errMsg = "Health insurance id is duplicated!";
-            //     // this.$refs.healthInsurance.focus();
-            //     this.$refs.healthInsurance.handleDuplicateErr(true);
-            //   }
-            //   if (
-            //     this.vehicle.vehicleDocuments[0] &&
-            //     ex.debugMessage.includes(
-            //       this.vehicle.vehicleDocuments[0].userDocumentId
-            //     )
-            //   ) {
-            //     this.errMsg = "Identity ID is duplicated!";
-            //     // this.$refs.vehicleRegistrationCer.focus();
-            //     this.$refs.vehicleRegistrationCer.handleDuplicateErr(true);
-            //   }
-            //   this.isError = true;
-            // } else if (
-            //   ex.debugMessage.includes(
-            //     "Cannot insert duplicate key in object 'dbo.user'"
-            //   )
-            // ) {
-            //   this.isError = true;
-            //   this.errMsg = "Identity ID is duplicated!";
-            //   // this.identity.documentDupErr = true;
-            //   // this.$refs.identityID.focus();
-            //   this.$refs.vehicleRegistrationCer.handleDuplicateErr(true);
-            // } else {
-            //   this.isError = true;
-            //   this.errMsg = ex.debugMessage;
-            // }
+            if (ex.debugMessage.includes("Document with ID")) {
+              this.errMsg =
+                "Civil liability insurace certificate id is duplicated!";
+              this.$refs.civilLiabilityInsur.handleDuplicateErr(true);
+              this.isError = true;
+            } else if (ex.debugMessage.includes("Vehicle with ID")) {
+              this.isError = true;
+              this.errMsg =
+                "Vehicle registration certificate id is duplicated!";
+              this.$refs.vehicleRegistrationCer.handleDuplicateErr(true);
+            } else {
+              this.isError = true;
+              this.errMsg = ex.debugMessage;
+            }
             if (ex.debugMessage) {
               this.isError = true;
               this.errMsg = ex.debugMessage;
