@@ -54,7 +54,7 @@ export default {
     }
     return vehicleList;
   },
-  // Get total drivers count
+  // Get total vehicles count
   async getTotalVehicle(
     model,
     vehicleId,
@@ -80,9 +80,38 @@ export default {
     }
     return count;
   },
+  // Get total vehicles count by status
+  async getTotalVehicleByStatus(vehicleStatus) {
+    let count = 0;
+    try {
+      const res = await Repository.get(
+        `${resource}/count?vehicleStatus=${vehicleStatus}&viewOption=1`
+      );
+      if (res.data) {
+        count = res.data;
+      }
+    } catch (ex) {
+      console.log(ex);
+    }
+    return count;
+  },
+  // Create Vehicle
+  async getTotalVehicleByType(vehicleType) {
+    console.log(`${resource}/count?vehicleTypeId=${vehicleType}&viewOption=1`);
+    return new Promise((resolve, reject) => {
+      Repository.get(
+        `${resource}/count?vehicleTypeId=${vehicleType}&viewOption=0`
+      )
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
   // Create Vehicle
   create(vehicle) {
-    console.log(vehicle);
     return new Promise((resolve, reject) => {
       Repository.post(resource, vehicle)
         .then((res) => {
