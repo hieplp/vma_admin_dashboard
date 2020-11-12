@@ -6,6 +6,7 @@ import CreateDriver from "../views/drivers/CreateDriver.vue";
 import UpdateDriver from "../views/drivers/UpdateDriver.vue";
 import DriverDetail from "../views/drivers/DriverDetail.vue";
 import Drivers from "../views/drivers/Drivers.vue";
+import DriversOverview from "../views/drivers/DriversOverview.vue";
 import PromoteDrivers from "../views/drivers/PromoteDrivers.vue";
 // Contributors
 import Contributors from "../views/contributors/Contributors.vue";
@@ -16,8 +17,10 @@ import UpdateContributor from "../views/contributors/UpdateContributor.vue";
 import DriverRegistrations from "../views/DriverRegistrations.vue";
 // Contracts
 import Contracts from "../views/contracts/Contracts.vue";
+import ContractCanlendar from "../views/contracts/ContractCanlendar.vue";
 import CreateContract from "../views/contracts/CreateContract.vue";
 import UpdateContract from "../views/contracts/UpdateContract.vue";
+import ContractDetail from "../views/contracts/ContractDetail.vue";
 
 // Customer
 import Customers from "../views/customers/Customers.vue";
@@ -30,6 +33,7 @@ import Vehicles from "../views/vehicles/Vehicles.vue";
 import CreateVehicle from "../views/vehicles/CreateVehicle.vue";
 import VehicleDetail from "../views/vehicles/VehicleDetail.vue";
 import UpdateVehicle from "../views/vehicles/UpdateVehicle.vue";
+import VehicleOverview from "../views/vehicles/VehicleOverview.vue";
 // Contributor vehicles
 import ContributedVehicles from "../views/vehicles/contributor/Vehicles.vue";
 
@@ -39,6 +43,9 @@ import AssignedVehicles from "../views/vehicles/assgin/AssignedVehicles.vue";
 // Document vehicle requests
 import VehicleDocumentRequests from "../views/requests/VehicleDocumentRequests.vue";
 import VehicleDocumentRequestDetail from "../views/requests/VehicleDocumentRequestDetail.vue";
+// Vehicle requests
+import VehicleRequests from "../views/requests/VehicleRequests.vue";
+import ChangeVehicleRequest from "../views/requests/vehicle/ChangeVehicleRequest.vue";
 // Document user requests
 import UserDocumentRequests from "../views/requests/UserDocumentRequests.vue";
 import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail.vue";
@@ -74,6 +81,11 @@ const routes = [
     path: "/drivers",
     name: "Drivers",
     component: Drivers,
+  },
+  {
+    path: "/drivers/overview",
+    name: "DriverStatistic",
+    component: DriversOverview,
   },
   {
     path: "/drivers/:userId",
@@ -122,16 +134,26 @@ const routes = [
     name: "Driver Registrations",
     component: DriverRegistrations,
   },
-  // Contracts
+  // Contract
   {
     path: "/contracts",
     name: "Contracts",
     component: Contracts,
   },
   {
+    path: "/contract-canlendar",
+    name: "ContractCanlendar",
+    component: ContractCanlendar,
+  },
+  {
     path: "/update-contract/:contractId",
     name: "UpdateContract",
     component: UpdateContract,
+  },
+  {
+    path: "/contracts/:contractId",
+    name: "ContractDetail",
+    component: ContractDetail,
   },
   {
     path: "/create-contract",
@@ -164,6 +186,11 @@ const routes = [
     path: "/vehicles",
     name: "Vehicles",
     component: Vehicles,
+  },
+  {
+    path: "/vehicles/overview",
+    name: "VehicleStatistic",
+    component: VehicleOverview,
   },
   {
     path: "/create-vehicle",
@@ -202,6 +229,17 @@ const routes = [
     path: "/requests/documents/vehicles/:requestId",
     name: "VehicleDocumentRequestDetail",
     component: VehicleDocumentRequestDetail,
+  },
+  // Vehicle request
+  {
+    path: "/requests/vehicles",
+    name: "VehicleRequests",
+    component: VehicleRequests,
+  },
+  {
+    path: "/requests/vehicles/change/:requestId",
+    name: "ChangeVehicleRequest",
+    component: ChangeVehicleRequest,
   },
   // User document request
   {

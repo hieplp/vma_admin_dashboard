@@ -151,6 +151,8 @@
                       class="badge"
                       v-bind:class="{
                         'badge-info': contract.contractStatus === 'FINISHED',
+                        'badge-warning':
+                          contract.contractStatus === 'NOT_STARTED',
                         'badge-danger':
                           contract.contractStatus === 'UNFINISHED',
                         'badge-dark': contract.contractStatus === 'CANCELLED',
@@ -161,7 +163,7 @@
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(contract.contractId)"
+                      @click="viewContract(contract.contractId)"
                     >
                       <i class="mdi mdi-account-box-outline"></i>
                     </button>
@@ -347,6 +349,13 @@ export default {
     updateContract(contractId) {
       this.$router.push({
         name: "UpdateContract",
+        params: { contractId: contractId },
+      });
+    },
+    // view vehicle detail
+    viewContract(contractId) {
+      this.$router.push({
+        name: "ContractDetail",
         params: { contractId: contractId },
       });
     },

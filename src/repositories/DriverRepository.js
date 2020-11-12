@@ -33,6 +33,18 @@ export default {
     }
     return count;
   },
+  // Get total drivers count
+  async getTotalDriverByStatus(userStatus) {
+    return new Promise((resolve, reject) => {
+      Repository.get(`${resource}/count?userStatus=${userStatus}`)
+        .then((res) => {
+          resolve(res.data);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
   // Get detailed driver
   getDetailDriver(userId) {
     return new Promise((resolve, reject) => {

@@ -5,8 +5,16 @@
         <button
           class="ui icon right floated button edit-btn"
           @click="handleUpdBtnVisible()"
+          v-if="!isInsert"
         >
           <i class="edit icon"></i>
+        </button>
+        <button
+          class="ui icon right floated button"
+          :class="isInsert ? 'edit-btn' : 'del-btn'"
+          @click="handleDelBtnVisible()"
+        >
+          <i class="trash alternate icon"></i>
         </button>
         <div class="ui form">
           <h4 class="ui dividing header">{{ this.title.toUpperCase() }}</h4>
@@ -22,7 +30,7 @@
                 <button
                   class="close-btn"
                   v-on:click="removeImage(index)"
-                  :disabled="!isUpdBtnVisibile"
+                  :disabled="!isUpdBtnVisibile && !isInsert"
                 >
                   <i class="mdi mdi-close-circle"></i>
                 </button>
@@ -69,7 +77,7 @@
                     @keypress="isNumber($event)"
                     style="text-transform:uppercase"
                     v-model="document.vehicleDocumentId"
-                    readonly
+                    :readonly="!isInsert"
                   />
                   <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -89,7 +97,7 @@
                     type="date"
                     class="form-control"
                     v-model="document.registeredDate"
-                    :readonly="!isUpdBtnVisibile"
+                    :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -109,7 +117,7 @@
                   <select
                     class="ui dropdown cus-select"
                     v-model="document.registeredLocation"
-                    :disabled="!isUpdBtnVisibile"
+                    :disabled="!isUpdBtnVisibile && !isInsert"
                   >
                     <option :value="''">
                       Cities/Provinces
@@ -149,7 +157,7 @@
                       @keypress="isNumber($event)"
                       style="text-transform:uppercase"
                       v-model="document.vehicleDocumentId"
-                      readonly
+                      :readonly="!isInsert"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -173,7 +181,7 @@
                       :maxlength="this.otherInfoMaxLength"
                       style="text-transform:uppercase"
                       v-model="document.otherInformation"
-                      :readonly="!isUpdBtnVisibile"
+                      :readonly="!isUpdBtnVisibile && !isInsert"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -198,7 +206,7 @@
                       @keypress="isNumber($event)"
                       style="text-transform:uppercase"
                       v-model="document.vehicleDocumentId"
-                      readonly
+                      :readonly="!isInsert"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -215,12 +223,11 @@
                 </div>
                 <div class="field">
                   <label>Registered Location</label>
-
                   <div class="ui left corner labeled input">
                     <select
                       class="ui dropdown cus-select"
                       v-model="document.registeredLocation"
-                      :disabled="!isUpdBtnVisibile"
+                      :disabled="!isUpdBtnVisibile && !isInsert"
                     >
                       <option :value="''">
                         Cities/Provinces
@@ -254,7 +261,7 @@
                   <select
                     class="ui dropdown cus-select"
                     v-model="document.registeredLocation"
-                    :disabled="!isUpdBtnVisibile"
+                    :disabled="!isUpdBtnVisibile && !isInsert"
                   >
                     <option :value="''">
                       Cities/Provinces
@@ -285,7 +292,7 @@
                     type="date"
                     class="form-control"
                     v-model="document.registeredDate"
-                    :readonly="!isUpdBtnVisibile"
+                    :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -307,7 +314,7 @@
                     v-model="document.expiryDate"
                     :disabled="document.registeredDate === null"
                     :min="document.registeredDate"
-                    :readonly="!isUpdBtnVisibile"
+                    :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -339,6 +346,24 @@
               </button>
             </div>
           </div>
+          <div class="row justify-content-center mt-5" v-if="isInsert">
+            <div class="col-4">
+              <button
+                class="btn btn-gradient-danger btn-fw"
+                type="button"
+                @click="clear()"
+              >
+                Clear
+              </button>
+              <button
+                class="btn btn-gradient-info btn-fw ml-2"
+                type="button"
+                @click="create()"
+              >
+                Create
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -367,6 +392,11 @@ export default {
     // Type = 2, there is other information is id
     type: Number,
     propDocument: Object,
+    handleDelBtnVisible: Function,
+    // Insert document
+    proIsInsert: Boolean,
+    insertFunc: Function,
+    cancelFunc: Function,
   },
   data() {
     return {
@@ -397,17 +427,21 @@ export default {
       cities: [],
       idMaxRange: 0,
       isUpdBtnVisibile: false,
+      isInsert: false,
     };
   },
   mounted() {
     this.cities = require("../../assets/json/addresses/tinh_tp.json");
-    this.initData();
+    this.isInsert = this.proIsInsert;
+    if (!this.isInsert) {
+      this.initData();
+    }
     if (this.type !== 2) {
       this.idMaxRange = this.idMaxLength[this.idMaxLength.length - 1];
       // Init error message for id
       this.initIDErrMsg();
     }
-    this.document.userDocumentType = this.documentType;
+    this.document.vehicleDocumentType = this.documentType;
   },
   methods: {
     // Init document data
@@ -506,6 +540,31 @@ export default {
       let isValid = this.check();
       if (!isValid) {
         this.$parent.openConfirmation(this.document.vehicleDocumentType);
+      }
+    },
+    // Clear input
+    clear() {
+      this.document = {
+        vehicleDocumentId: "",
+        vehicleDocumentType: "",
+        registeredLocation: "",
+        registeredDate: "",
+        expiryDate: "",
+        otherInformation: "",
+        imageLinks: [],
+      };
+    },
+    // Update is insert
+    updateDocument(document) {
+      this.isInsert = !this.isInsert;
+      this.initData(document);
+    },
+    // Create
+    create() {
+      let isValid = this.check();
+      if (!isValid) {
+        let docRes = this.getData();
+        this.insertFunc(docRes);
       }
     },
     // Get data

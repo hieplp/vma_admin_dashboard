@@ -27,7 +27,7 @@
           <span class="menu-title">Overview</span>
         </router-link>
       </li>
-
+      <!-- Drivers -->
       <li
         class="nav-item"
         id="Drivers"
@@ -39,11 +39,24 @@
               : false,
         }"
       >
-        <router-link to="/drivers" class="nav-link">
+        <a @click="isDriversVisible = !isDriversVisible" class="nav-link">
+          <i class="mdi mdi-account-outline menu-icon"></i>
+          <span class="menu-title">Drivers</span>
+        </a>
+      </li>
+      <li class="nav-item" v-if="isDriversVisible" id="Drivers">
+        <router-link to="/drivers/overview" class="nav-link sub-menu-title">
+          <i class="mdi mdi-chart-areaspline menu-icon"></i>
+          <span class="menu-title">Overview</span>
+        </router-link>
+      </li>
+      <li class="nav-item" v-if="isDriversVisible" id="Drivers">
+        <router-link to="/drivers" class="nav-link sub-menu-title">
           <i class="mdi mdi-account-outline menu-icon"></i>
           <span class="menu-title">Drivers</span>
         </router-link>
       </li>
+      <!-- Cotributor -->
       <li
         class="nav-item"
         id="Contributors"
@@ -56,6 +69,7 @@
           <span class="menu-title">Contributors</span>
         </router-link>
       </li>
+      <!-- Vehicle -->
       <li
         class="nav-item"
         id="Vehicles"
@@ -67,11 +81,24 @@
               : false,
         }"
       >
-        <router-link to="/vehicles" class="nav-link">
+        <a class="nav-link" @click="isVehiclesVisible = !isVehiclesVisible">
+          <i class="mdi mdi-car menu-icon"></i>
+          <span class="menu-title">Vehicles</span>
+        </a>
+      </li>
+      <li class="nav-item" v-if="isVehiclesVisible" id="Vehicles">
+        <router-link to="/vehicles/overview" class="nav-link sub-menu-title">
+          <i class="mdi mdi-chart-areaspline menu-icon"></i>
+          <span class="menu-title">Overview</span>
+        </router-link>
+      </li>
+      <li class="nav-item" v-if="isVehiclesVisible" id="Vehicles">
+        <router-link to="/vehicles" class="nav-link sub-menu-title">
           <i class="mdi mdi-car menu-icon"></i>
           <span class="menu-title">Vehicles</span>
         </router-link>
       </li>
+      <!-- Contract -->
       <li
         class="nav-item"
         id="Contracts"
@@ -79,11 +106,28 @@
           active: this.$route.name.includes('Contract') ? true : false,
         }"
       >
-        <router-link to="/contracts" class="nav-link">
+        <a
+          class="nav-link"
+          data-toggle="collapse"
+          @click="isContractsVisible = !isContractsVisible"
+        >
+          <i class="mdi mdi-flag-checkered menu-icon"></i>
+          <span class="menu-title">Contracts</span>
+        </a>
+      </li>
+      <li class="nav-item" v-if="isContractsVisible" id="Contracts">
+        <router-link to="/contracts" class="nav-link sub-menu-title">
           <i class="mdi mdi-flag-checkered menu-icon"></i>
           <span class="menu-title">Contracts</span>
         </router-link>
       </li>
+      <li class="nav-item" v-if="isContractsVisible" id="Contracts">
+        <router-link to="/contract-canlendar" class="nav-link sub-menu-title">
+          <i class="mdi mdi-calendar-clock menu-icon"></i>
+          <span class="menu-title">Canlendar</span>
+        </router-link>
+      </li>
+      <!-- Customer -->
       <li
         class="nav-item"
         id="Customers"
@@ -96,6 +140,7 @@
           <span class="menu-title">Customers</span>
         </router-link>
       </li>
+
       <!-- Requests -->
       <li
         class="nav-item"
@@ -131,7 +176,13 @@
           <span class="menu-title">User Documents</span>
         </router-link>
       </li>
-      <li class="nav-item">
+      <li class="nav-item" v-if="isRegistrationsVisible">
+        <router-link to="/requests/vehicles" class="nav-link sub-menu-title">
+          <i class="mdi mdi-car menu-icon mr-3" />
+          <span class="menu-title">Vehicles</span>
+        </router-link>
+      </li>
+      <!-- <li class="nav-item">
         <a class="nav-link" href="#">
           <i class="mdi mdi-clipboard-alert menu-icon"></i>
           <span class="menu-title">Feeback & <br />Service</span>
@@ -149,7 +200,7 @@
           <i class="mdi mdi-settings menu-icon"></i>
           <span class="menu-title">Setting</span>
         </a>
-      </li>
+      </li> -->
     </ul>
   </nav>
 </template>
@@ -164,6 +215,9 @@ export default {
   data() {
     return {
       isRegistrationsVisible: false,
+      isContractsVisible: false,
+      isVehiclesVisible: false,
+      isDriversVisible: false,
       prevRoute: null,
       userName: "",
       imageLink: "",
