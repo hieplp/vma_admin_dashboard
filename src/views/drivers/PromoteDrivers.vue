@@ -48,9 +48,7 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/users" class="nav-link">{{
-          this.userRole
-        }}</router-link>
+        <a class="nav-link">{{ this.userRole }}</a>
       </h3>
       <div class="dropdown">
         <!-- Filter group -->
@@ -76,7 +74,7 @@
         <div class="card" v-if="users.length > 0">
           <div class="card-body">
             <h4 class="card-title">{{ this.userRole }} List</h4>
-            <p class="card-description">{{ this.totalUsers }} total</p>
+            <p class="card-description">{{ this.usersCount }} total</p>
             <table class="table ">
               <thead>
                 <tr class="">
@@ -131,10 +129,10 @@
               </tbody>
             </table>
           </div>
-          <div v-if="this.totalUsers > 15">
+          <div v-if="this.usersCount > 15">
             <paginate
               v-model="currentPage"
-              :page-count="Math.floor(this.totalUsers / 15) + 1"
+              :page-count="Math.floor(this.usersCount / 15) + 1"
               :page-range="3"
               :margin-pages="1"
               :click-handler="clickCallback"
@@ -242,14 +240,12 @@
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-
-const UserRepository = RepositoryFactory.get("users");
 
 export default {
   name: "Drivers",
@@ -259,18 +255,21 @@ export default {
     Confirmation,
     MessageModal,
   },
+  computed: {
+    // Map state
+    ...mapState("User", ["users", "usersCount"]),
+  },
   data() {
     return {
       isFilterVisible: false,
       isTableVisible: true,
       statusList: [],
-      users: [],
+      // Filter
       searchPhoneNumber: "",
       searchDriverID: "",
       searchDriverName: "",
       searchStatusID: "",
       isLoading: true,
-      totalUsers: 0,
       page: 0,
       currentPage: 1,
       isDeleteConVisible: false,
@@ -290,29 +289,24 @@ export default {
     // console.log(this.$route.params.roleId);
     this.initRole();
     await this.initStatusList();
-    await this.initDriversList();
+    await this.initUsers();
   },
   methods: {
-    isNumber(evt) {
-      isNumber(evt);
-    },
+    // Map actions
+    ...mapActions("User", [
+      "_getUsersCountByRole",
+      "_getUsersByRole",
+      "_addNewRoleForUser",
+    ]),
+
     // pagination handle
     async clickCallback(pageNum) {
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.initDriversList();
+      this.initUsers();
     },
     // Init role
     initRole() {
-      // if (this.$route.params.roleId) {
-      //   console.log(this.$route.params.roleId);
-      //   this.roleId = this.this.$route.params.roleId;
-      // }
-      // localStorage.setItem("proRoleId", this.roleId);
-      // if (localStorage.getItem("assignDriver")) {
-      //   this.roleId = localStorage.getItem("proRoleId");
-      // }
-
       switch (this.roleId) {
         case "2":
           this.roleName = "user";
@@ -341,27 +335,28 @@ export default {
     async searchDrivers() {
       this.page = 0;
       this.currentPage = 1;
-      await this.initDriversList();
+      await this.initUsers();
     },
     // Init data for user list
-    async initDriversList() {
+    async initUsers() {
       this.isLoading = true;
 
-      this.users = await UserRepository.getUserByRole(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        this.roleId
-      );
-      this.totalUsers = await UserRepository.getUserCountByRole(
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        this.roleId
-      );
+      await this._getUsersByRole({
+        page: this.page,
+        name: this.searchDriverName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchDriverID,
+        roleId: this.roleId,
+      });
+
+      await this._getUsersCountByRole({
+        name: this.searchDriverName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchDriverID,
+        roleId: this.roleId,
+      });
       this.isLoading = false;
     },
     // Set filter to visible
@@ -402,14 +397,17 @@ export default {
         params: { userId: userId },
       });
     },
-    // Delete user
+    isNumber(evt) {
+      isNumber(evt);
+    },
+    // add new role user
     async addNewRoleForUser() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
-      await UserRepository.addNewRoleForUser(
-        this.deleteUserID,
-        this.promoteRole
-      )
+      this._addNewRoleForUser({
+        userId: this.deleteUserID,
+        roleId: this.promoteRole,
+      })
         .then((res) => {
           if (res) {
             this.isSuccess = true;

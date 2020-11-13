@@ -290,6 +290,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
@@ -298,7 +299,6 @@ import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
 import UserDocument from "../../components/UserDocument/ReadOnlyDocument";
 
-const DriverRepository = RepositoryFactory.get("drivers");
 const AssignVehicleRepository = RepositoryFactory.get("assignVehicle");
 
 export default {
@@ -338,6 +338,7 @@ export default {
         },
       ],
       prevRoute: null,
+      userId: this.$route.params.userId,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -350,14 +351,22 @@ export default {
     await this.initDetailDriver();
   },
   methods: {
+    ...mapActions("Driver", ["_getDetailDriver"]),
     // Init driver's information
     async initDetailDriver() {
       this.isLoading = true;
-      await DriverRepository.getDetailDriver(this.$route.params.userId).then(
-        (res) => {
+      await this._getDetailDriver(this.userId)
+        .then((res) => {
+          console.log(res);
           this.driver = res;
-        }
-      );
+          this.isUserLoading = true;
+        })
+        .catch((err) => {
+          if (err) {
+            this.isError = true;
+            this.errMsg = err.debugMessage;
+          }
+        });
       this.isLoading = false;
     },
     // Handle assgin vehicle

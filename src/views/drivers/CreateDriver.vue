@@ -19,45 +19,34 @@
         </span>
       </h3>
     </div>
-    <!-- Error modal -->
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <!-- Error message -->
+    <MessageModal
+      title="Create Driver Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Create Driver Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Driver with name ${this.driver.fullName} is created successfully！`
+      "
+      :proFunc="
+        () => {
+          this.$router.push({
+            name: 'Drivers',
+          });
+        }
+      "
       v-if="isCreatedSuccessfully"
-    >
-      <div class="ui icon header col-12">
-        <i class="user plus icon mb-3"></i>
-        Create Driver Successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Driver with name {{ this.driver.fullName }} is created successfully!
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <router-link to="/drivers" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Continue
-        </router-link>
-      </div>
-    </div>
-
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Create Driver Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    />
 
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
@@ -185,17 +174,15 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
 import UserDocument from "../../components/UserDocument/UserDocument";
+import MessageModal from "../../components/Modal/MessageModal";
 import DrivingLicenseDocument from "../../components/UserDocument/DrivingLicenseDocument";
 import UserInformation from "../../components/User/UserInformation";
 import Multiselect from "vue-multiselect";
-
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-// eslint-disable-next-line no-unused-vars
-const UserRepository = RepositoryFactory.get("users");
 
 export default {
   name: "CreateDriver",
@@ -205,6 +192,7 @@ export default {
     DrivingLicenseDocument,
     UserInformation,
     Multiselect,
+    MessageModal,
   },
   data() {
     return {
@@ -240,6 +228,8 @@ export default {
     this.documentValue = this.docOptions;
   },
   methods: {
+    // Map actions
+    ...mapActions("User", ["_create"]),
     // check document is selected
     checkDocumentSelected(id) {
       for (const document of this.documentValue) {
@@ -371,7 +361,7 @@ export default {
         }
         console.log(this.driver);
         // Call api to create new driver
-        await UserRepository.create(this.driver, 3)
+        await this._create({ user: this.driver, roleId: 3 })
           .then((res) => {
             if (res) {
               this.isCreatedSuccessfully = true;

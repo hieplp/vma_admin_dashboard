@@ -60,12 +60,11 @@
 // import "../assets/js/hoverable-collapse.js";
 // import "../assets/js/misc.js";
 // import "../assets/js/misc.js";
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import Chart from "chart.js";
 import $ from "jquery";
 import OverviewCard from "../../components/OverviewCard";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-const DriverRepository = RepositoryFactory.get("drivers");
 export default {
   name: "VehicleOverview",
   components: {
@@ -83,9 +82,9 @@ export default {
   },
   async mounted() {
     this.isLoading = true;
-    this.activeDrivers = await this.getTotalDriverByStatus("ACTIVE");
-    this.inactiveDrivers = await this.getTotalDriverByStatus("INACTIVE");
-    this.disableDrivers = await this.getTotalDriverByStatus("DISABLE");
+    this.activeDrivers = await this._getTotalDriverByStatus("ACTIVE");
+    this.inactiveDrivers = await this._getTotalDriverByStatus("INACTIVE");
+    this.disableDrivers = await this._getTotalDriverByStatus("DISABLE");
     // Set total vehicle bar char
     await this.initTotalDriverChart();
     // this.initRevenueChart();
@@ -93,11 +92,9 @@ export default {
     this.isLoading = false;
   },
   methods: {
-    // get Total Vehicle By Status
-    async getTotalDriverByStatus(statusId) {
-      let count = await DriverRepository.getTotalDriverByStatus(statusId);
-      return count ? count : 0;
-    },
+    // Map actions
+    ...mapActions("Driver", ["_getTotalDriverByStatus"]),
+
     // Init total vehicle type
     async initTotalDriverChart() {
       let driverStatusChart = document
@@ -150,10 +147,6 @@ export default {
           },
           legend: {
             display: false,
-            // position: "top",
-            // labels: {
-            //   fontColor: "#000",
-            // },
           },
           tooltips: {
             enabled: true,
@@ -161,6 +154,7 @@ export default {
         },
       });
     },
+
     // init revenue chart
     initRevenueChart() {
       let driverStatusChart = document

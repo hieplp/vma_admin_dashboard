@@ -96,7 +96,7 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="driversList.length > 0">
+        <div class="card" v-if="drivers.length > 0">
           <div class="card-body">
             <h4 class="card-title">Driver List</h4>
             <p class="card-description">{{ this.totalDrivers }} total</p>
@@ -114,7 +114,7 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="(driver, index) in this.driversList"
+                  v-for="(driver, index) in this.drivers"
                   :key="driver.userId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
@@ -275,15 +275,12 @@
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-
-const DriverRepository = RepositoryFactory.get("drivers");
-const UserRepository = RepositoryFactory.get("users");
 
 export default {
   name: "Drivers",
@@ -293,21 +290,27 @@ export default {
     Confirmation,
     MessageModal,
   },
+  computed: {
+    // Map state
+    ...mapState("Driver", ["drivers", "totalDrivers"]),
+  },
   data() {
     return {
       isFilterVisible: false,
       isTableVisible: true,
       statusList: [],
-      driversList: [],
+      // Filter
       searchPhoneNumber: "",
       searchDriverID: "",
       searchDriverName: "",
       searchStatusID: "",
       isLoading: true,
-      totalDrivers: 0,
+      // Pagination
       page: 0,
       currentPage: 1,
+      // Delete
       isDeleteConVisible: false,
+      // Error and success modal
       isError: false,
       isSuccess: false,
       errMsg: "",
@@ -315,20 +318,21 @@ export default {
     };
   },
   async mounted() {
-    await this.initStatusList();
+    // await this.initStatusList();
     await this.initDriversList();
   },
   methods: {
-    isNumber(evt) {
-      isNumber(evt);
-    },
+    // Map actions
+    ...mapActions("Driver", ["_getDrivers", "_getTotalDriversCount"]),
+    ...mapActions("User", ["_delete"]),
+
     // pagination handle
     async clickCallback(pageNum) {
       this.currentPage = pageNum;
       this.page = pageNum - 1;
       this.initDriversList();
     },
-    // Init data for Driver Status Dropdown
+    // Init data for driver Status Dropdown
     async initStatusList() {
       this.statusList = require("../../assets/json/user/driverStatus.json");
     },
@@ -348,22 +352,37 @@ export default {
     // Init data for driver list
     async initDriversList() {
       this.isLoading = true;
-
-      this.driversList = await DriverRepository.get(
-        this.page,
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        1
-      );
-      this.totalDrivers = await DriverRepository.getTotalDriver(
-        this.searchDriverName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchDriverID,
-        1
-      );
+      await this._getDrivers({
+        page: this.page,
+        name: this.searchDriverName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchDriverID,
+        viewOption: 1,
+      });
+      await this._getTotalDriversCount({
+        name: this.searchDriverName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchDriverID,
+        viewOption: 1,
+      });
+      this.isLoading = false;
+    },
+    // Delete driver
+    async deleteDriver() {
+      this.handleDialog("isDeleteConVisible", "");
+      this.isLoading = true;
+      await this._delete(this.deleteUserID)
+        .then((res) => {
+          if (res) {
+            this.isSuccess = true;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.debugMessage;
+        });
       this.isLoading = false;
     },
     // Set filter to visible
@@ -401,21 +420,8 @@ export default {
         params: { userId: userId },
       });
     },
-    // Delete driver
-    async deleteDriver() {
-      this.handleDialog("isDeleteConVisible", "");
-      this.isLoading = true;
-      await UserRepository.delete(this.deleteUserID)
-        .then((res) => {
-          if (res) {
-            this.isSuccess = true;
-          }
-        })
-        .catch((err) => {
-          this.isError = !this.isError;
-          this.errMsg = err.debugMessage;
-        });
-      this.isLoading = false;
+    isNumber(evt) {
+      isNumber(evt);
     },
     // Close Error Modal
     handleErrorModal() {

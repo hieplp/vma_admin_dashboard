@@ -116,7 +116,7 @@
         ref="userInformation"
         :isUpdate="true"
         :propDriver="driver"
-        v-if="isUserComLoading"
+        v-if="isUserLoading"
       />
     </div>
     <!-- User document -->
@@ -210,6 +210,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
@@ -219,11 +220,6 @@ import MessageModal from "../../components/Modal/MessageModal";
 import Multiselect from "vue-multiselect";
 import UpdateUserDocument from "../../components/UserDocument/Update User Document/UpdateUserDocument";
 import UpdateDrivingLicenseDocument from "../../components/UserDocument/Update User Document/UpdateDrivingLicenseDocument";
-
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-const DriverRepository = RepositoryFactory.get("drivers");
-const UserRepository = RepositoryFactory.get("users");
-const DocumentRepository = RepositoryFactory.get("documents");
 
 export default {
   name: "UpdateDriver",
@@ -235,6 +231,10 @@ export default {
     UpdateUserDocument,
     UpdateDrivingLicenseDocument,
     MessageModal,
+  },
+  computed: {
+    // Map state
+    // ...mapState("Driver", ["driver"]),
   },
   data() {
     return {
@@ -268,8 +268,8 @@ export default {
 
       isUpdConVisible: false,
       isDeleteConVisible: false,
-      isUserComLoading: false,
       isDocumentLoading: false,
+      isUserLoading: false,
 
       // Confirmation type
       confType: 0,
@@ -286,6 +286,8 @@ export default {
       // Document
       docOptions: [],
       documentValue: [],
+
+      userId: this.$route.params.userId,
     };
   },
   async mounted() {
@@ -295,14 +297,29 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    // Map actions
+    ...mapActions("Driver", ["_getDetailDriver"]),
+    ...mapActions("User", ["_updateUser"]),
+    ...mapActions("Document", [
+      "_updateDocument",
+      "_getDocuments",
+      "_delete",
+      "_create",
+    ]),
     // Init driver's detailed information
     async initDetailDriver() {
-      await DriverRepository.getDetailDriver(this.$route.params.userId).then(
-        (res) => {
+      await this._getDetailDriver(this.userId)
+        .then((res) => {
+          console.log(res);
           this.driver = res;
-          this.isUserComLoading = true;
-        }
-      );
+          this.isUserLoading = true;
+        })
+        .catch((err) => {
+          if (err) {
+            this.isError = true;
+            this.errMsg = err.debugMessage;
+          }
+        });
     },
     // Find document
     findDocumentByName(driverDocument, userDocumentType) {
@@ -326,7 +343,7 @@ export default {
         driver.imageLink = await this.uploadImageToFirebase(newImg, "profile");
         console.log(oldImg);
       }
-      await UserRepository.update(driver)
+      await this._updateUser(driver)
         .then(async (res) => {
           if (res) {
             if (oldImg !== null) {
@@ -362,7 +379,10 @@ export default {
     // Init data for document
     async initDataDocument() {
       this.documentValue = [];
-      let documents = await DocumentRepository.get(this.driver.userId, 0);
+      let documents = await this._getDocuments({
+        userId: this.driver.userId,
+        option: 0,
+      });
       this.indentifyInfor = this.findDocumentByName(documents, "IDENTITY_CARD");
 
       this.healthInsuranceInfor = this.findDocumentByName(
@@ -379,8 +399,9 @@ export default {
     async deleteDocument() {
       this.isDeleteConVisible = !this.isDeleteConVisible;
       if (this.deletedDocumentId) {
+        console.log(this.deletedDocumentId);
         this.isLoading = true;
-        await DocumentRepository.delete(this.deletedDocumentId)
+        await this._delete(this.deletedDocumentId)
           .then(async (res) => {
             if (res) {
               this.handleDeleteSuccess();
@@ -487,7 +508,7 @@ export default {
         docImage,
         document.userDocumentType
       );
-      await DocumentRepository.create(document, this.driver.userId)
+      await this._create({ document: document, userId: this.driver.userId })
         .then(async (res) => {
           if (res) {
             await this.initDataDocument();
@@ -637,7 +658,10 @@ export default {
         document.userDocumentImages,
         documentType
       );
-      await DocumentRepository.update(document, this.driver.userId)
+      await this._updateDocument({
+        document: document,
+        userId: this.driver.userId,
+      })
         .then(async (res) => {
           if (res) {
             await this.deleteFirebaseLink(delImgs);
