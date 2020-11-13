@@ -399,7 +399,6 @@ export default {
     async deleteDocument() {
       this.isDeleteConVisible = !this.isDeleteConVisible;
       if (this.deletedDocumentId) {
-        console.log(this.deletedDocumentId);
         this.isLoading = true;
         await this._delete(this.deletedDocumentId)
           .then(async (res) => {

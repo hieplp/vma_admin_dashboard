@@ -236,14 +236,11 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
-
 import UserDocument from "../../components/UserDocument/ReadOnlyDocument";
-
-const ContributorRepository = RepositoryFactory.get("contributors");
 
 export default {
   name: "CustomerDetail",
@@ -286,16 +283,20 @@ export default {
     });
   },
   async mounted() {
-    await this.initDetailDriver();
+    await this.initDetailContributor();
   },
   methods: {
-    async initDetailDriver() {
+    // Map actions
+    ...mapActions("Contributor", ["_getDetailContributor"]),
+    // Get contributor's detailed information
+    async initDetailContributor() {
       this.isLoading = true;
-      await ContributorRepository.getDetailContributor(
-        this.$route.params.userId
-      ).then((res) => {
-        this.contributor = res;
-      });
+      await this._getDetailContributor(this.$route.params.userId).then(
+        (res) => {
+          this.contributor = res;
+          this.isUserComLoading = true;
+        }
+      );
       this.isLoading = false;
     },
     changeTab() {

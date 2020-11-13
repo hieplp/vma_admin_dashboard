@@ -212,6 +212,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import moment from "moment";
@@ -221,11 +222,6 @@ import MessageModal from "../../components/Modal/MessageModal";
 import Multiselect from "vue-multiselect";
 import UpdateUserDocument from "../../components/UserDocument/Update User Document/UpdateUserDocument";
 import UpdateDrivingLicenseDocument from "../../components/UserDocument/Update User Document/UpdateDrivingLicenseDocument";
-
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-const ContributorRepository = RepositoryFactory.get("contributors");
-const UserRepository = RepositoryFactory.get("users");
-const DocumentRepository = RepositoryFactory.get("documents");
 
 export default {
   name: "UpdateContributor",
@@ -294,15 +290,24 @@ export default {
     this.docOptions = require("../../assets/json/document/userDocument.json");
   },
   methods: {
+    // Map actions
+    ...mapActions("Contributor", ["_getDetailContributor"]),
+    ...mapActions("User", ["_updateUser"]),
+    ...mapActions("Document", [
+      "_updateDocument",
+      "_getDocuments",
+      "_delete",
+      "_create",
+    ]),
+    // Get contributor's detailed information
     async initDetailContributor() {
       this.isLoading = true;
-      await ContributorRepository.getDetailContributor(
-        this.$route.params.userId
-      ).then((res) => {
-        this.contributor = res;
-        console.log(this.contributor);
-        this.isUserComLoading = true;
-      });
+      await this._getDetailContributor(this.$route.params.userId).then(
+        (res) => {
+          this.contributor = res;
+          this.isUserComLoading = true;
+        }
+      );
       this.isLoading = false;
     },
     // Find document
@@ -330,7 +335,7 @@ export default {
         );
         console.log(oldImg);
       }
-      await UserRepository.update(contributor)
+      await this._updateUser(contributor)
         .then(async (res) => {
           if (res) {
             if (oldImg !== null) {
@@ -366,7 +371,10 @@ export default {
     // Init data for document
     async initDataDocument() {
       this.documentValue = [];
-      let documents = await DocumentRepository.get(this.contributor.userId, 0);
+      let documents = await this._getDocuments({
+        userId: this.contributor.userId,
+        option: 0,
+      });
       this.indentifyInfor = this.findDocumentByName(documents, "IDENTITY_CARD");
 
       this.healthInsuranceInfor = this.findDocumentByName(
@@ -384,7 +392,7 @@ export default {
       this.isDeleteConVisible = !this.isDeleteConVisible;
       if (this.deletedDocumentId) {
         this.isLoading = true;
-        await DocumentRepository.delete(this.deletedDocumentId)
+        await this._delete(this.deletedDocumentId)
           .then(async (res) => {
             if (res) {
               this.handleDeleteSuccess();
@@ -491,7 +499,10 @@ export default {
         docImage,
         document.userDocumentType
       );
-      await DocumentRepository.create(document, this.contributor.userId)
+      await this._create({
+        document: document,
+        userId: this.contributor.userId,
+      })
         .then(async (res) => {
           if (res) {
             await this.initDataDocument();
@@ -610,9 +621,10 @@ export default {
         document.userDocumentImages,
         documentType
       );
-      console.log(document);
-      console.log(delImgs);
-      await DocumentRepository.update(document, this.contributor.userId)
+      await this._updateDocument({
+        document: document,
+        userId: this.contributor.userId,
+      })
         .then(async (res) => {
           if (res) {
             await this.deleteFirebaseLink(delImgs);

@@ -4,6 +4,7 @@ import Vuex from "vuex";
 import Driver from "./Driver/Driver";
 import User from "./User/User";
 import Document from "./Document/Document";
+import Contributor from "./Contributor/Contributor";
 
 Vue.use(Vuex);
 
@@ -15,5 +16,6 @@ export default new Vuex.Store({
     Driver: Driver,
     User: User,
     Document: Document,
+    Contributor: Contributor,
   },
 });

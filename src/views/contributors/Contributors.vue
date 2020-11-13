@@ -127,7 +127,7 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="contributorsList.length > 0">
+        <div class="card" v-if="contributors.length > 0">
           <div class="card-body">
             <h4 class="card-title">Contributor List</h4>
             <p class="card-description">{{ this.totalContributors }} total</p>
@@ -145,7 +145,7 @@
               </thead>
               <tbody>
                 <tr
-                  v-for="(contributor, index) in this.contributorsList"
+                  v-for="(contributor, index) in this.contributors"
                   :key="contributor.userId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
@@ -334,17 +334,12 @@
 </template>
 
 <script>
+import { mapState, mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-// import VueSlider from "vue-slider-component";
 import "vue-slider-component/theme/antd.css";
 import Confirmation from "../../components/Modal/Confirmation";
-
-const ContributorRepository = RepositoryFactory.get("contributors");
-const UserRepository = RepositoryFactory.get("users");
-// const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
   name: "Contributors",
@@ -354,6 +349,10 @@ export default {
     // VueSlider,
     Confirmation,
   },
+  computed: {
+    // Map state
+    ...mapState("Contributor", ["totalContributors", "contributors"]),
+  },
   data() {
     return {
       isFilterVisible: false,
@@ -362,7 +361,6 @@ export default {
       isSuccess: false,
       isTableVisible: true,
       statusList: [],
-      contributorsList: [],
       searchPhoneNumber: "",
       searchContributorID: "",
       searchContributorName: "",
@@ -371,7 +369,6 @@ export default {
       minTotalVehicles: 0,
       maxTotalVehicles: 0,
       isLoading: true,
-      totalContributors: 0,
       page: 0,
       currentPage: 1,
     };
@@ -382,23 +379,21 @@ export default {
     await this.initContributorsList();
   },
   methods: {
+    // Map actions
+    ...mapActions("Contributor", [
+      "_getContributors",
+      "_getTotalContributorsCount",
+    ]),
+    ...mapActions("User", ["_delete"]),
+
     isNumber(evt) {
       isNumber(evt);
     },
     // pagination handle
     async clickCallback(pageNum) {
-      this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.contributorsList = await ContributorRepository.get(
-        this.page,
-        this.searchContributorName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchContributorID,
-        this.searchTotalVehicles
-      );
-      this.isLoading = false;
+      await this.initContributorsList();
     },
     // Init data for Contributor Status Dropdown
     async initStatusList() {
@@ -433,22 +428,21 @@ export default {
     },
     // Init data for contributor list
     async initContributorsList() {
-      this.contributorsList = await ContributorRepository.get(
-        this.page,
-        this.searchContributorName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchContributorID,
-        this.searchTotalVehicles
-      );
-
-      this.totalContributors = await ContributorRepository.getTotalContributor(
-        this.searchContributorName,
-        this.searchPhoneNumber,
-        this.searchStatusID,
-        this.searchContributorID,
-        this.searchTotalVehicles
-      );
+      await this._getContributors({
+        page: this.page,
+        name: this.searchContributorName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchContributorID,
+        totalVehicle: this.searchTotalVehicles,
+      });
+      await this._getTotalContributorsCount({
+        name: this.searchContributorName,
+        phoneNumber: this.searchPhoneNumber,
+        userStatus: this.searchStatusID,
+        userId: this.searchContributorID,
+        totalVehicle: this.searchTotalVehicles,
+      });
 
       this.isLoading = false;
     },
@@ -477,7 +471,7 @@ export default {
     async deleteContributor() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
-      await UserRepository.delete(this.deleteUserID)
+      await this._delete(this.deleteUserID)
         .then((res) => {
           if (res) {
             this.isSuccess = true;
@@ -485,8 +479,7 @@ export default {
         })
         .catch((err) => {
           this.isError = !this.isError;
-          this.errMsg = err.message;
-          console.log(err);
+          this.errMsg = err.debugMessage;
         });
       this.isLoading = false;
     },
