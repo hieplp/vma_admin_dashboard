@@ -399,7 +399,7 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
   min-height: 550px !important;
 }

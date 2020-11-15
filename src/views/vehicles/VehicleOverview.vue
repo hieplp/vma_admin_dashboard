@@ -90,7 +90,7 @@ export default {
       "MAINTENANCE"
     );
     // Set total vehicle bar char
-    // await this.initTotalVehicleTypeChart();
+    await this.initTotalVehicleTypeChart();
     // this.initRevenueChart();
     // this.initTripByTypeChart();
   },
@@ -107,13 +107,14 @@ export default {
       console.log(123);
       let typesCount = [];
       let typeName = [];
-      types.forEach(async (type) => {
+      for (const type of types) {
         let count = await VehicleRepository.getTotalVehicleByType(
           type.vehicleTypeId
         );
         typesCount.push(count);
         typeName.push(type.vehicleTypeName);
-      });
+      }
+      console.log(typesCount);
 
       let revenueChart = document
         .getElementById("revenueChart")
@@ -134,7 +135,7 @@ export default {
           labels: typeName,
           datasets: [
             {
-              label: "Revenue",
+              label: "Vehicles",
               lineTension: 0,
               data: typesCount,
               backgroundColor: gradient,
@@ -152,7 +153,7 @@ export default {
             animateRotate: true,
           },
           legend: {
-            display: true,
+            display: false,
             position: "top",
             labels: {
               fontColor: "#000",

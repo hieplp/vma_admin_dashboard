@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-import jQuery from 'jquery'
+import jQuery from "jquery";
 
 var ChartColor = [
   "#5D62B4",
@@ -28,12 +28,13 @@ var infoColor = getComputedStyle(document.body).getPropertyValue("--info");
 var darkColor = getComputedStyle(document.body).getPropertyValue("--dark");
 var lightColor = getComputedStyle(document.body).getPropertyValue("--light");
 
-(function ($) {
+(function($) {
   "use strict";
-  $(function () {
+  $(function() {
     var body = $("body");
     var contentWrapper = $(".content-wrapper");
     var scroller = $(".container-scroller");
+    var mainPanel = $(".main-panel");
     var footer = $(".footer");
     var sidebar = $(".sidebar");
 
@@ -43,17 +44,23 @@ var lightColor = getComputedStyle(document.body).getPropertyValue("--light");
     function addActiveClass(element) {
       if (current === "") {
         //for root url
-        if (element.attr("href").indexOf("index.html") !== -1) {
-          element.parents(".nav-item").last().addClass("active");
-          if (element.parents(".sub-menu").length) {
-            element.closest(".collapse").addClass("show");
-            element.addClass("active");
-          }
-        }
+        // if (element.attr("href").indexOf("index.html") !== -1) {
+        //   element
+        //     .parents(".nav-item")
+        //     .last()
+        //     .addClass("active");
+        //   if (element.parents(".sub-menu").length) {
+        //     element.closest(".collapse").addClass("show");
+        //     element.addClass("active");
+        //   }
+        // }
       } else {
         //for other url
         if (element.attr("href").indexOf(current) !== -1) {
-          element.parents(".nav-item").last().addClass("active");
+          element
+            .parents(".nav-item")
+            .last()
+            .addClass("active");
           if (element.parents(".sub-menu").length) {
             element.closest(".collapse").addClass("show");
             element.addClass("active");
@@ -69,19 +76,19 @@ var lightColor = getComputedStyle(document.body).getPropertyValue("--light");
       .split("/")
       .slice(-1)[0]
       .replace(/^\/|\/$/g, "");
-    $(".nav li a", sidebar).each(function () {
+    $(".nav li a", sidebar).each(function() {
       var $this = $(this);
       addActiveClass($this);
     });
 
-    $(".horizontal-menu .nav li a").each(function () {
+    $(".horizontal-menu .nav li a").each(function() {
       var $this = $(this);
       addActiveClass($this);
     });
 
     //Close other submenu in sidebar on opening any
 
-    sidebar.on("show.bs.collapse", ".collapse", function () {
+    sidebar.on("show.bs.collapse", ".collapse", function() {
       sidebar.find(".collapse.show").collapse("hide");
     });
 
@@ -97,15 +104,17 @@ var lightColor = getComputedStyle(document.body).getPropertyValue("--light");
       }
     }
 
-    $('[data-toggle="minimize"]').on("click", function () {
+    $('[data-toggle="minimize"]').on("click", function() {
       if (
         body.hasClass("sidebar-toggle-display") ||
         body.hasClass("sidebar-absolute")
       ) {
         body.toggleClass("sidebar-hidden");
+        mainPanel.toggleClass("cus-sm-main-panel");
       } else {
         body.toggleClass("sidebar-icon-only");
         sidebar.children().toggleClass("custom-nav");
+        mainPanel.toggleClass("cus-main-panel");
       }
     });
 

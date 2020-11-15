@@ -101,7 +101,7 @@
           </div>
         </li>
         <li class="nav-item nav-profile dropdown">
-          <!-- <a
+          <a
             class="nav-link dropdown-toggle"
             id="profileDropdown"
             href="#"
@@ -115,7 +115,7 @@
             <div class="nav-profile-text">
               <p class="mb-1 text-black">{{ this.userName }}</p>
             </div>
-          </a> -->
+          </a>
           <div
             class="dropdown-menu navbar-dropdown"
             aria-labelledby="profileDropdown"
@@ -157,14 +157,14 @@ export default {
   methods: {
     // Sign out
     signOut() {
-      localStorage.removeItem("userId");
+      localStorage.removeItem("USER");
       this.$router.push({
         name: "Login",
       });
     },
     // Init data for user
     initAuthUser() {
-      let user = JSON.parse(localStorage.getItem("userId"));
+      let user = JSON.parse(localStorage.getItem("USER"));
       console.log(user);
       this.userName = user.displayName;
       this.imageLink = user.photoURL;

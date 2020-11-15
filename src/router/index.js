@@ -34,8 +34,8 @@ import CreateVehicle from "../views/vehicles/CreateVehicle.vue";
 import VehicleDetail from "../views/vehicles/VehicleDetail.vue";
 import UpdateVehicle from "../views/vehicles/UpdateVehicle.vue";
 import VehicleOverview from "../views/vehicles/VehicleOverview.vue";
-// Contributor vehicles
-import ContributedVehicles from "../views/vehicles/contributor/Vehicles.vue";
+// // Contributor vehicles
+// import ContributedVehicles from "../views/vehicles/contributor/Vehicles.vue";
 
 // Assign vehicles
 import AssignedVehicles from "../views/vehicles/assgin/AssignedVehicles.vue";
@@ -207,12 +207,12 @@ const routes = [
     name: "UpdateVehicle",
     component: UpdateVehicle,
   },
-  // Contributor vehicle list
-  {
-    path: "/vehicles/contributor",
-    name: "ContributedVehicles",
-    component: ContributedVehicles,
-  },
+  // // Contributor vehicle list
+  // {
+  //   path: "/vehicles/contributor",
+  //   name: "ContributedVehicles",
+  //   component: ContributedVehicles,
+  // },
   // Assign vehicle
   {
     path: "/assign-vehicles",

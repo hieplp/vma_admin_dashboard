@@ -1,5 +1,5 @@
 <template>
-  <div class="ui basic cus-modal justify-content-center">
+  <div class="ui basic cus-modal justify-content-center" id="modal">
     <div class="ui icon header col-12">
       <i :class="'icon mb-3 ' + this.icon"></i>
       {{ this.title }}
@@ -46,27 +46,5 @@ export default {
     handleLeftBtn: Function,
     handleRightBtn: Function,
   },
-  methods: {},
 };
 </script>
-
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
-</style>

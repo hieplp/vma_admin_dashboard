@@ -382,16 +382,6 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-
-<style>
-@import "../assets/vendors/mdi/css/materialdesignicons.min.css";
-</style>
-<style>
-@import "../assets/vendors/css/vendor.bundle.base.css";
-</style>
-<style>
-@import "../assets/css/style.css";
-</style>
 <style>
 @import "../assets/css/overview.css";
 </style>

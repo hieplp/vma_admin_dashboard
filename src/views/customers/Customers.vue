@@ -27,51 +27,34 @@
       "
       :handleRightBtn="deleteCustomer"
     />
-    <!-- Error message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Delete Customer Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
 
+    <!-- Error message -->
+    <MessageModal
+      title="Delete Customer Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
     <!-- Success message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
-      <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Delete successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Customer with id {{ this.deleteUserID }} is deleted successfully.
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          @click="
-            () => {
-              isSuccess = !isSuccess;
-              this.searchCustomers();
-            }
-          "
-          class="ui blue primary button"
-        >
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    <MessageModal
+      title="Delete Customer Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Customer with id ${this.deleteUserID} is deleted successfully.`
+      "
+      :proFunc="
+        () => {
+          isSuccess = !isSuccess;
+          this.searchCustomers();
+        }
+      "
+      v-if="isSuccess"
+    />
 
     <div class="page-header">
       <h3 class="page-title">
@@ -279,6 +262,7 @@ import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 
 const CustomerRepository = RepositoryFactory.get("customers");
 
@@ -288,6 +272,7 @@ export default {
   components: {
     Loading,
     Confirmation,
+    MessageModal,
   },
   data() {
     return {
@@ -418,9 +403,9 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
-  max-height: 250px !important;
+  max-height: 520px !important;
 }
 .label {
   font-size: 13px;
@@ -431,22 +416,7 @@ export default {
 .btn-action .btn i {
   font-size: 20px;
 }
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
+
 td {
   white-space: initial !important;
 }

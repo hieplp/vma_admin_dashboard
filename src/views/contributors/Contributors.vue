@@ -56,7 +56,7 @@
     <Confirmation
       icon="user times"
       title="Delete Confirmation"
-      subTitle="Do you want to delete this customer?"
+      subTitle="Do you want to delete this contributor?"
       rightBtnTitle="Delete"
       rightBtnIcon="trash alternate"
       rightBtnColor="red"
@@ -76,7 +76,7 @@
     <div class="ui basic cus-modal justify-content-center" v-if="isError">
       <div class="ui icon header col-12">
         <i class="frown outline icon mb-3"></i>
-        Delete Customer Fail!
+        Delete Contributor Fail!
       </div>
       <div class="content col-12 row justify-content-center">
         <h4>
@@ -467,7 +467,7 @@ export default {
         params: { userId: userId },
       });
     },
-    // Delete customer
+    // Delete contributor
     async deleteContributor() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
@@ -483,7 +483,7 @@ export default {
         });
       this.isLoading = false;
     },
-    // Close delete customer confimation dialog
+    // Close delete contributor confimation dialog
     handleDialog(dialogName, userId) {
       if (userId.length !== 0) {
         this.deleteUserID = userId;
@@ -507,7 +507,7 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
   min-height: 550px !important;
 }

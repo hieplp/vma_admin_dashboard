@@ -2,10 +2,7 @@
   <div id="app" class="container-scroller">
     <div v-if="isVisible">
       <TopMenu />
-      <div
-        class="container-fluid page-body-wrapper"
-        style="background-color: rgb(58, 3, 3)"
-      >
+      <div class="container-fluid page-body-wrapper">
         <SideMenu />
         <div class="main-panel">
           <router-view />
@@ -54,7 +51,6 @@ export default {
   },
   mounted() {
     this.isVisible = true;
-    this.checkAuthUser();
   },
   data() {
     return {
@@ -65,7 +61,7 @@ export default {
   },
   methods: {
     checkAuthUser() {
-      let user = JSON.parse(localStorage.getItem("userId"));
+      let user = JSON.parse(localStorage.getItem("USER"));
       if (user) {
         this.isVisible = true;
       } else {
@@ -83,5 +79,5 @@ export default {
 @import "./assets/vendors/css/vendor.bundle.base.css";
 </style>
 <style>
-@import "./assets/css/style.css";
+@import "./assets/css/style1.css";
 </style>

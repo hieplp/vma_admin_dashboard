@@ -150,10 +150,8 @@ export default {
       await confirmationResult
         .confirm(value)
         .then((result) => {
-          var user = result.user;
-          console.log("handleOnComplete -> user", user);
           if (result.user) {
-            localStorage.setItem("userId", JSON.stringify(result.user));
+            localStorage.setItem("USER", JSON.stringify(result.user));
             this.$router.push({
               name: "Overview",
             });

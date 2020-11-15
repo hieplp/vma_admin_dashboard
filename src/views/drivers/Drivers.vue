@@ -148,6 +148,7 @@
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                      :disabled="driver.userStatus === 'DISABLE'"
                       @click="updateDriver(driver.userId)"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
@@ -442,9 +443,9 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
-  max-height: 450px !important;
+  max-height: 420px !important;
 }
 .label {
   font-size: 13px;

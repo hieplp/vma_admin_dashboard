@@ -838,7 +838,7 @@ export default {
   top: 35%;
 }
 
-.cus-modal {
+/* .cus-modal {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -853,7 +853,7 @@ export default {
 .cus-modal .header {
   color: white;
   font-size: 35px !important;
-}
+} */
 
 .cus-select {
   padding-left: 26px !important;

@@ -379,7 +379,7 @@ export default {
   },
 };
 </script>
-<style>
+<style scoped>
 .filter {
   max-height: 450px !important;
 }
