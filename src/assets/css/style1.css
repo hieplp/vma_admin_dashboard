@@ -2311,7 +2311,7 @@ body {
   line-height: 1.5;
   color: #343a40;
   text-align: left;
-  background-color: #fff;
+  background-color: #f2edf3;
 }
 
 [tabindex="-1"]:focus:not(:focus-visible) {
@@ -14117,7 +14117,7 @@ code {
     from(#ffbf96),
     to(#fe7096)
   ) !important;
-  background: linear-gradient(to right, #ffbf96, #fe7096) !important;
+  background: linear-gradient(to right, #ffbf96, #ff355d) !important;
 }
 
 .bg-gradient-light {
@@ -18146,6 +18146,7 @@ dl li {
   font-family: "ubuntu-regular", sans-serif;
   padding: 0;
   width: 260px;
+  height: calc(100vh - 70px);
   z-index: 11;
   transition: width 0.25s ease, background 0.25s ease;
   -webkit-transition: width 0.25s ease, background 0.25s ease;
@@ -18406,6 +18407,7 @@ dl li {
   }
   .sidebar-icon-only .sidebar {
     width: 70px;
+    height: 100vh;
     overflow: unset;
   }
   .sidebar-icon-only .sidebar .nav {

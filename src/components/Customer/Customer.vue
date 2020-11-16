@@ -93,9 +93,10 @@
                 <input
                   type="text"
                   v-model="customer.taxCode"
-                  placeholder="Basic Salary"
+                  placeholder="Tax Code"
                   min="1"
                   step="any"
+                  maxlength="10"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>

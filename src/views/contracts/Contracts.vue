@@ -116,77 +116,80 @@
           <div class="card-body">
             <h4 class="card-title">Contract List</h4>
             <p class="card-description">{{ this.totalContracts }} total</p>
-            <table class="table ">
-              <thead>
-                <tr class="">
-                  <th>NO.</th>
-                  <th>ID</th>
-                  <!-- <th>DEPARTURE LOCATION</th>
-                  <th>DEPARTURE TIME</th>
-                  <th>DESTINATION LOCATION</th>
-                  <th>DESTINATION TIME</th> -->
-                  <th>DURATION FROM</th>
-                  <th>DURATION TO</th>
-                  <th>TOTAL PRICE</th>
-                  <th>STATUS</th>
-                  <th class="text-center">ACTION</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(contract, index) in this.contracts"
-                  :key="contract.contractId"
-                >
-                  <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <td>{{ contract.contractId }}</td>
-                  <td>{{ contract.durationFrom }}</td>
-                  <td>{{ contract.durationTo }}</td>
-                  <td>{{ contract.totalPrice }}</td>
-                  <!-- <td>{{ contract.departureLocation }}</td>
-                  <td>{{ contract.departureTime }}</td>
-                  <td>{{ contract.destinationLocation }}</td>
-                  <td>{{ contract.destinationTime }}</td> -->
-                  <td>
-                    <label
-                      class="badge"
-                      v-bind:class="{
-                        'badge-info': contract.contractStatus === 'FINISHED',
-                        'badge-warning':
-                          contract.contractStatus === 'NOT_STARTED',
-                        'badge-danger':
-                          contract.contractStatus === 'UNFINISHED',
-                        'badge-dark': contract.contractStatus === 'CANCELLED',
-                      }"
-                      >{{ contract.contractStatus }}</label
-                    >
-                  </td>
-                  <td class="row justify-content-center btn-action">
-                    <button
-                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewContract(contract.contractId)"
-                    >
-                      <i class="mdi mdi-account-box-outline"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      :disabled="contract.userStatusName === 'CANCELLED'"
-                      @click="updateContract(contract.contractId)"
-                    >
-                      <i class="mdi mdi-grease-pencil"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="contract.userStatusName === 'CANCELLED'"
-                      @click="
-                        handleDialog('isDeleteConVisible', contract.userId)
-                      "
-                    >
-                      <i class="mdi mdi-delete-forever"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr class="">
+                    <th>NO.</th>
+                    <!-- <th>ID</th> -->
+                    <th>DEPARTURE LOCATION</th>
+                    <th>DEPARTURE TIME</th>
+                    <th>DESTINATION LOCATION</th>
+                    <th>DESTINATION TIME</th>
+                    <th>DURATION FROM</th>
+                    <th>DURATION TO</th>
+                    <th>TOTAL PRICE</th>
+                    <th>STATUS</th>
+                    <th class="text-center">ACTION</th>
+                  </tr>
+                </thead>
+                <tbody style="">
+                  <tr
+                    v-for="(contract, index) in this.contracts"
+                    :key="contract.contractId"
+                  >
+                    <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
+
+                    <td>{{ contract.departureLocation }}</td>
+                    <td>{{ contract.departureTime }}</td>
+                    <td>{{ contract.destinationLocation }}</td>
+                    <td>{{ contract.destinationTime }}</td>
+                    <!-- <td>{{ contract.contractId }}</td> -->
+                    <td>{{ contract.durationFrom }}</td>
+                    <td>{{ contract.durationTo }}</td>
+                    <td>{{ contract.totalPrice }}</td>
+                    <td>
+                      <label
+                        class="badge"
+                        v-bind:class="{
+                          'badge-info': contract.contractStatus === 'FINISHED',
+                          'badge-warning':
+                            contract.contractStatus === 'NOT_STARTED',
+                          'badge-danger':
+                            contract.contractStatus === 'UNFINISHED',
+                          'badge-dark': contract.contractStatus === 'CANCELLED',
+                        }"
+                        >{{ contract.contractStatus }}</label
+                      >
+                    </td>
+                    <td class="row justify-content-center btn-action">
+                      <button
+                        class="btn btn-gradient-info btn-rounded btn-icon mr-1 mt-1"
+                        @click="viewContract(contract.contractId)"
+                      >
+                        <i class="mdi mdi-account-box-outline"></i>
+                      </button>
+                      <button
+                        class="btn btn-gradient-warning btn-rounded btn-icon mr-1 mt-1"
+                        :disabled="contract.userStatusName === 'CANCELLED'"
+                        @click="updateContract(contract.contractId)"
+                      >
+                        <i class="mdi mdi-grease-pencil"></i>
+                      </button>
+                      <button
+                        class="btn btn-gradient-danger btn-rounded btn-icon mr-1 mt-1"
+                        :disabled="contract.userStatusName === 'CANCELLED'"
+                        @click="
+                          handleDialog('isDeleteConVisible', contract.userId)
+                        "
+                      >
+                        <i class="mdi mdi-delete-forever"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div v-if="this.totalContracts > 15">
             <paginate
@@ -220,38 +223,94 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
+            <!-- Departure Location -->
             <div class="col-sm-12">
-              <!-- Search Contract ID -->
-              <label>Contract ID</label>
-              <input
+              <label>Departure Location</label>
+              <textarea
                 type="text"
+                rows="3"
                 class="form-control form-control-sm"
-                placeholder="Contract ID"
-                v-model="searchContractID"
-                @keypress="isNumber($event)"
-                maxlength="12"
+                placeholder="Departure Location"
+                v-model="departureLocation"
               />
             </div>
-            <div class="col-12 mt-3">
-              <label>Contract Name</label>
-              <input
+            <!-- Destination Location -->
+            <div class="col-sm-12 mt-3">
+              <label>Destination Location</label>
+              <textarea
                 type="text"
+                rows="3"
                 class="form-control form-control-sm"
-                v-model="searchContractName"
-                placeholder="Contract name"
+                placeholder="Destination Location"
+                v-model="destinationLocation"
               />
             </div>
-            <!-- Phone number dropdown-->
+            <!-- Departure Time -->
             <div class="col-12 mt-3">
-              <label>Phone Number</label>
+              <label>Departure Time</label>
               <input
-                type="text"
+                type="date"
                 class="form-control form-control-sm"
-                placeholder="Phone Number"
-                v-model="searchPhoneNumber"
-                @keypress="isNumber($event)"
-                maxlength="10"
+                v-model="departureTime"
+                placeholder="Departure Time"
               />
+            </div>
+            <!-- Destination Time -->
+            <div class="col-12 mt-3">
+              <label>Departure Time</label>
+              <input
+                type="date"
+                class="form-control form-control-sm"
+                v-model="destinationTime"
+                placeholder="Destination Time"
+              />
+            </div>
+            <!-- Duration From-->
+            <div class="col-12 mt-3">
+              <label>Duration From</label>
+              <input
+                type="date"
+                class="form-control form-control-sm"
+                v-model="durationFrom"
+                placeholder="Duration From"
+              />
+            </div>
+            <!-- Duration To-->
+            <div class="col-12 mt-3">
+              <label>Duration To</label>
+              <input
+                type="date"
+                class="form-control form-control-sm"
+                v-model="durationTo"
+                placeholder="Duration To"
+              />
+            </div>
+            <!-- Total vehicles-->
+            <div class="col-12 mt-4">
+              <label>Total Price</label>
+              <div class="row">
+                <div class="col-12">
+                  <input
+                    type="text"
+                    class="form-control form-control-sm test"
+                    placeholder="Min Price"
+                    @keypress="isNumber($event)"
+                    v-model="totalPriceMin"
+                  />
+                </div>
+                <div class="col-12 text-center">
+                  <h1>-</h1>
+                </div>
+                <div class="col-12">
+                  <input
+                    type="text"
+                    @keypress="isNumber($event)"
+                    class="form-control form-control-sm"
+                    placeholder="Max Price"
+                    v-model="totalPriceMax"
+                  />
+                </div>
+              </div>
             </div>
             <!-- Contract status dropdown -->
             <div class="col-12 mt-3">
@@ -259,13 +318,14 @@
               <select
                 class="form-control form-control-sm"
                 name="status"
-                v-model="searchStatusID"
+                v-model="contractStatus"
               >
+                <option value="" selected>NONE</option>
                 <option
                   v-for="status in this.statusList"
-                  :key="status.userStatusId"
-                  :value="status.userStatusId"
-                  >{{ status.userStatusName }}</option
+                  :key="status"
+                  :value="status"
+                  >{{ status }}</option
                 >
               </select>
             </div>
@@ -297,13 +357,10 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-
-const ContractRepository = RepositoryFactory.get("contracts");
-// const UserStatusRepository = RepositoryFactory.get("userStatus");
 
 export default {
   name: "Contracts",
@@ -315,11 +372,20 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
+      // Filter
       statusList: [],
-      searchPhoneNumber: "",
-      searchContractID: "",
-      searchContractName: "",
-      searchStatusID: "",
+      contractStatus: "",
+      departureLocation: "",
+      departureTime: "",
+      destinationLocation: "",
+      destinationTime: "",
+      durationFrom: "",
+      durationTo: "",
+      pageNum: "",
+      totalPriceMax: "",
+      totalPriceMin: "",
+      viewOption: "",
+      // End of filter
       isLoading: false,
       totalContracts: 0,
       page: 0,
@@ -334,16 +400,63 @@ export default {
   },
   async mounted() {
     this.isLoading = true;
-    // await this.initStatusList();
+    await this.initStatusList();
     await this.initContracts();
     this.isLoading = false;
   },
   methods: {
-    // Init
+    // Map actions
+    ...mapActions("Contract", ["_getContracts"]),
+    // Init contract
     async initContracts() {
-      await ContractRepository.get().then((res) => {
+      this.viewOption = this.contractStatus !== "" ? 1 : 0;
+      await this._getContracts({
+        contractStatus: this.contractStatus,
+        departureLocation: this.departureLocation,
+        departureTime: this.departureTime,
+        destinationLocation: this.destinationLocation,
+        destinationTime: this.destinationTime,
+        durationFrom: this.durationFrom,
+        durationTo: this.durationTo,
+        pageNum: this.page,
+        totalPriceMax: this.totalPriceMax,
+        totalPriceMin: this.totalPriceMin,
+        viewOption: this.viewOption,
+      }).then((res) => {
         this.contracts = res;
       });
+    },
+    // Init data for contract Status Dropdown
+    async initStatusList() {
+      this.statusList = ["NOT_STARTED", "IN_PROGRESS", "FINISHED", "CANCELLED"];
+    },
+    // Search vehicle
+    async searchContracts() {
+      this.isLoading = true;
+      this.page = 0;
+      this.currentPage = 1;
+      await this.initContracts();
+      this.isLoading = false;
+    },
+    // Clear seach value
+    clearSearchValue() {
+      this.contractStatus = "";
+      this.departureLocation = "";
+      this.departureTime = "";
+      this.destinationLocation = "";
+      this.destinationTime = "";
+      this.durationFrom = "";
+      this.durationTo = "";
+      this.page = "";
+      this.totalPriceMax = "";
+      this.totalPriceMin = "";
+      this.viewOption = "";
+    },
+    // pagination handle
+    async clickCallback(page) {
+      this.currentPage = page;
+      this.page = page - 1;
+      this.initContracts();
     },
     // Update vehicle detail
     updateContract(contractId) {
@@ -381,7 +494,7 @@ export default {
 </script>
 <style scoped>
 .filter {
-  max-height: 450px !important;
+  max-height: 950px !important;
 }
 .label {
   font-size: 13px;
@@ -392,21 +505,19 @@ export default {
 .btn-action .btn i {
   font-size: 20px;
 }
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
+td {
+  white-space: initial !important;
 }
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
+.table-scroll {
+  max-height: 550px;
+  overflow: auto;
+  widows: 100%;
+  /* overflow-y: hidden; */
+}
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

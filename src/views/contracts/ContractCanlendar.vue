@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
+import moment from "moment";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
@@ -69,7 +71,6 @@ export default {
           center: "title",
           right: "dayGridMonth,timeGridWeek,timeGridDay",
         },
-        initialEvents: { title: "event 1", date: "2020-11-11" }, // alternatively, use the `events` setting to fetch from a feed
         editable: true,
         selectable: true,
         selectMirror: true,
@@ -81,18 +82,14 @@ export default {
         eventsSet: this.handleEvents,
       },
 
-      isFilterVisible: false,
-      isTableVisible: true,
-      statusList: [],
-      searchPhoneNumber: "",
-      searchContractID: "",
-      searchContractName: "",
-      searchStatusID: "",
-      isLoading: false,
-      totalContracts: 0,
-      page: 0,
-      currentPage: 1,
+      //
+      fromDate: "",
+      toDate: "",
+
+      viewType: "dayGridMonth",
+
       isDeleteConVisible: false,
+      isLoading: false,
       isError: false,
       isSuccess: false,
       errMsg: "",
@@ -102,19 +99,116 @@ export default {
   },
   async mounted() {
     // this.isLoading = true;
-    await this.initContracts();
     this.initDataForCanlendar();
     // this.isLoading = false;
+    let seft = this;
+    // Handle next button
+    document
+      .querySelector(".fc-next-button")
+      .addEventListener("click", function() {
+        seft.handleNextBtn();
+      });
+    // Handle prev button
+    document
+      .querySelector(".fc-prev-button")
+      .addEventListener("click", function() {
+        seft.handlePrevBtn();
+      });
+    // Handle dayGridMonth button
+    document
+      .querySelector(".fc-dayGridMonth-button")
+      .addEventListener("click", function() {
+        seft.viewType = "dayGridMonth";
+      });
+    // Handle timeGridWeek button
+    document
+      .querySelector(".fc-timeGridWeek-button")
+      .addEventListener("click", function() {
+        seft.viewType = "timeGridWeek";
+      });
+    // Handle timeGridDay button
+    document
+      .querySelector(".fc-timeGridDay-button")
+      .addEventListener("click", function() {
+        seft.viewType = "timeGridDay";
+      });
   },
   methods: {
+    // Map actions
+    ...mapActions("Contract", ["_getContractsByDate"]),
+    // Init contracts by date
+    async initContractsByDate() {
+      await this._getContractsByDate({
+        departureTimeFrom: this.fromDate,
+        departureTimeTo: this.toDate,
+      }).then((res) => {
+        this.contracts = res;
+      });
+    },
+    // Handle next btn
+    handleNextBtn() {
+      let calendarApi = this.$refs.fullCalendar.getApi();
+      let date = calendarApi.getDate();
+      this.fromDate = moment(date).format("YYYY-MM-DD HH:mm:ss");
+
+      switch (this.viewType) {
+        case "dayGridMonth":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .add(1, "months") // To date = from date + 1 month
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+        case "timeGridWeek":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .add(7, "days") // To date = from date + 7 days
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+        case "timeGridDay":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .add(1, "days") // To date = from date + 1 day
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+      }
+      this.initDataForCanlendar();
+      // calendarApi.next();
+    },
+    handlePrevBtn() {
+      let calendarApi = this.$refs.fullCalendar.getApi();
+      let date = calendarApi.getDate();
+      this.fromDate = moment(date).format("YYYY-MM-DD HH:mm:ss");
+      switch (this.viewType) {
+        case "dayGridMonth":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .subtract(1, "months") // To date = from date - 1 month
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+        case "timeGridWeek":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .subtract(7, "days") // To date = from date - 7 days
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+        case "timeGridDay":
+          this.toDate = moment(this.fromDate, "YYYY-MM-DD HH:mm:ss")
+            .subtract(1, "days") // To date = from date - 1 day
+            .format("YYYY-MM-DD HH:mm:ss");
+          break;
+      }
+      this.initDataForCanlendar();
+    },
     // Full calendar
     handleWeekendsToggle() {
       this.calendarOptions.weekends = !this.calendarOptions.weekends; // update a property
+      console.log(this.calendarOptions.weekends);
     },
 
     // Init data for calendar
-    initDataForCanlendar() {
+    async initDataForCanlendar() {
+      this.isLoading = true;
       let calendarApi = this.$refs.fullCalendar.getApi();
+      calendarApi.getEvents().forEach((event) => {
+        event.remove();
+      });
+      await this.initContractsByDate();
+      // this.calendarOptions.events = [];
       this.contracts.forEach((contract) => {
         calendarApi.addEvent({
           id: contract.contractId,
@@ -123,30 +217,14 @@ export default {
           end: contract.destinationTime,
         });
       });
+      this.isLoading = false;
     },
-    handleDateSelect(selectInfo) {
-      console.log("handleDateSelect -> selectInfo", selectInfo);
-      // let title = prompt("Please enter a new title for your event");
-      // let calendarApi = selectInfo.view.calendar;
-      // calendarApi.unselect(); // clear date selection
-      // if (title) {
-      //   calendarApi.addEvent({
-      //     id: "2",
-      //     title,
-      //     start: selectInfo.startStr,
-      //     end: selectInfo.endStr,
-      //     allDay: selectInfo.allDay,
-      //   });
-      // }
-      // console.log(this.calendarApi.get.events);
-    },
+
     handleEventClick(clickInfo) {
       this.$router.push({
         name: "ContractDetail",
         params: { contractId: clickInfo.event.id },
       });
-      // let calendarApi = this.$refs.fullCalendar.getApi();
-      // console.log(calendarApi.getEventById("2"));
     },
     handleEvents(events) {
       this.currentEvents = events;
