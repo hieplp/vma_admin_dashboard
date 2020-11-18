@@ -520,7 +520,6 @@ export default {
         vehicle.ownerId = this.owner.userId;
       } else {
         let user = JSON.parse(localStorage.getItem("userId"));
-        console.log(user);
         vehicle.ownerId = user.uid;
       }
 

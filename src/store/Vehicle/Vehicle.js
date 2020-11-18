@@ -6,6 +6,7 @@ export default {
     totalVehicles: 0,
     vehicles: [],
     vehiclerDetail: {},
+    assignedDrivers: [],
   },
   mutations: {
     // set total vehicles
@@ -19,6 +20,10 @@ export default {
     // set vehicler detail
     setVehicleDetail(state, data) {
       state.vehiclerDetail = data;
+    },
+    // set assigned drivers
+    setAssignedDrivers(state, data) {
+      state.assignedDrivers = data;
     },
   },
 
@@ -61,12 +66,11 @@ export default {
       });
     },
     // Get vehicler's detailed information
-    _getDetailVehicle(context, userId) {
+    _getDetailVehicle(context, vehicleId) {
       return new Promise((resolve, reject) => {
-        Repository.get(`${VEHICLE_URL}/${userId}`)
+        Repository.get(`${VEHICLE_URL}/${vehicleId}`)
           .then((res) => {
-            // context.commit("setVehicleDetail", res.data.vehiclerDetail);
-            resolve(res.data.vehiclerDetail);
+            resolve(res.data.vehicleDetail);
           })
           .catch((err) => {
             reject(err.response.data);
@@ -81,6 +85,19 @@ export default {
         )
           .then((res) => {
             resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get assigned drivers history
+    _getDriverHistoryByVehicleId(context, vehicleId) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${VEHICLE_URL}/${vehicleId}/drivers`)
+          .then((res) => {
+            context.commit("setAssignedDrivers", res.data.driverHistory);
+            resolve();
           })
           .catch((err) => {
             reject(err.response.data);

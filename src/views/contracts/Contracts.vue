@@ -406,10 +406,11 @@ export default {
   },
   methods: {
     // Map actions
-    ...mapActions("Contract", ["_getContracts"]),
+    ...mapActions("Contract", ["_getContracts", "_getContractsCount"]),
     // Init contract
     async initContracts() {
       this.viewOption = this.contractStatus !== "" ? 1 : 0;
+      // Get contracts
       await this._getContracts({
         contractStatus: this.contractStatus,
         departureLocation: this.departureLocation,
@@ -424,6 +425,21 @@ export default {
         viewOption: this.viewOption,
       }).then((res) => {
         this.contracts = res;
+      });
+      // Get contracts count
+      await this._getContractsCount({
+        contractStatus: this.contractStatus,
+        departureLocation: this.departureLocation,
+        departureTime: this.departureTime,
+        destinationLocation: this.destinationLocation,
+        destinationTime: this.destinationTime,
+        durationFrom: this.durationFrom,
+        durationTo: this.durationTo,
+        totalPriceMax: this.totalPriceMax,
+        totalPriceMin: this.totalPriceMin,
+        viewOption: this.viewOption,
+      }).then((res) => {
+        this.totalContracts = res;
       });
     },
     // Init data for contract Status Dropdown
@@ -454,9 +470,11 @@ export default {
     },
     // pagination handle
     async clickCallback(page) {
+      this.isLoading = true;
       this.currentPage = page;
       this.page = page - 1;
       this.initContracts();
+      this.isLoading = false;
     },
     // Update vehicle detail
     updateContract(contractId) {

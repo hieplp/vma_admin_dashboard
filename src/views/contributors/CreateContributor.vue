@@ -361,7 +361,6 @@ export default {
           );
           this.profileImage = null;
         }
-        console.log(this.contributor);
         // Call api to create new contributor
         await this._create({ user: this.contributor, roleId: 2 })
           .then((res) => {

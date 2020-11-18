@@ -647,7 +647,6 @@ export default {
             this.documents,
             "CIVIL_LIABILITY_INSURANCE_CERTIFICATE"
           );
-          console.log(this.civilInsuranceInfor === null);
           this.isDocumentLoading = true;
         }
       }

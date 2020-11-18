@@ -32,7 +32,6 @@ export default {
     },
     // Update user
     _updateUser(context, user) {
-      console.log(user);
       return new Promise((resolve, reject) => {
         Repository.put(USER_URL, user)
           .then((res) => {
@@ -106,7 +105,6 @@ export default {
     },
     // Get user roles
     _getUserRoles() {
-      console.log(123);
       return new Promise((resolve, reject) => {
         let user = JSON.parse(localStorage.getItem("USER"));
         let token = {

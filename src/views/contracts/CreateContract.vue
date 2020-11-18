@@ -213,10 +213,6 @@ export default {
       return Number(dateArr[0]) + ex + "-" + dateArr[1] + "-" + dateArr[2];
     },
 
-    getDepartureLocation(address) {
-      console.log(address);
-    },
-
     // Cheack basic information
     checkBasicInformation() {
       this.durationFromErr = this.contract.durationFrom.length === 0;
@@ -256,7 +252,6 @@ export default {
         this.contract.departureLocation = this.$refs.departureLocation.getAdress();
         this.contract.destinationLocation = this.$refs.destinationLocation.getAdress();
         this.contract.contractOwnerId = this.owner.userId;
-        console.log(this.contract);
         await ContractRepository.create(this.contract)
           .then((res) => {
             if (res) {
@@ -288,7 +283,6 @@ export default {
     // Get vehicle owner
     getVehicleOwner() {
       this.owner = this.$refs.ownerModal.getSelectedCustomer();
-      console.log(this.owner);
       this.handleVehicleOwnerModal();
     },
     isNumber(evt) {

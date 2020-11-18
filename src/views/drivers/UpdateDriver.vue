@@ -310,7 +310,6 @@ export default {
     async initDetailDriver() {
       await this._getDetailDriver(this.userId)
         .then((res) => {
-          console.log(res);
           this.driver = res;
           this.isUserLoading = true;
         })
@@ -341,7 +340,6 @@ export default {
       if (newImg) {
         oldImg = driver.imageLink;
         driver.imageLink = await this.uploadImageToFirebase(newImg, "profile");
-        console.log(oldImg);
       }
       await this._updateUser(driver)
         .then(async (res) => {

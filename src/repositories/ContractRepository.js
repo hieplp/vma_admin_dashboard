@@ -28,7 +28,6 @@ export default {
   },
   // Update contract
   update(contract) {
-    console.log(contract);
     return new Promise((resolve, reject) => {
       Repository.patch(resource, contract)
         .then((res) => {

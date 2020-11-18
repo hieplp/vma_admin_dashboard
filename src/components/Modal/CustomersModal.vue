@@ -213,7 +213,7 @@ export default {
 
 <style scoped>
 .con-modal {
-  position: absolute;
+  position: fixed;
   padding-top: 0% !important;
   padding-left: 1%;
   padding-right: 1%;

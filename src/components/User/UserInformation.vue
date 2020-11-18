@@ -565,7 +565,6 @@ export default {
         this.selectedDistrict.name_with_type +
         ", " +
         this.selectedCity.name_with_type;
-      console.log(driver);
       return {
         driver: driver,
         image: this.profileImage,

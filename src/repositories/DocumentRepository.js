@@ -43,7 +43,6 @@ export default {
   },
   // Delete document
   delete(documentId) {
-    console.log(document);
     return new Promise((resolve, reject) => {
       Repository.delete(
         `${adminResource}/documents?userDocumentId=${documentId}`

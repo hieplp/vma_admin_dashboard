@@ -8,6 +8,7 @@ import DriverDetail from "../views/drivers/DriverDetail.vue";
 import Drivers from "../views/drivers/Drivers.vue";
 import DriversOverview from "../views/drivers/DriversOverview.vue";
 import PromoteDrivers from "../views/drivers/PromoteDrivers.vue";
+import AssignedDriversHistory from "../views/drivers/AssignedDriversHistory.vue";
 // Contributors
 import Contributors from "../views/contributors/Contributors.vue";
 import CreateContributor from "../views/contributors/CreateContributor.vue";
@@ -40,6 +41,7 @@ import VehicleOverview from "../views/vehicles/VehicleOverview.vue";
 
 // Assign vehicles
 import AssignedVehicles from "../views/vehicles/assgin/AssignedVehicles.vue";
+import AssignedVehiclesHistory from "../views/vehicles/assgin/AssignedVehiclesHistory.vue";
 
 // Document vehicle requests
 import VehicleDocumentRequests from "../views/requests/VehicleDocumentRequests.vue";
@@ -109,6 +111,12 @@ const routes = [
     path: "/promote-drivers/:roleId",
     name: "PromoteDrivers",
     component: PromoteDrivers,
+  },
+  // Assigned drivers history
+  {
+    path: "/vehicles/:vehicleId/drivers",
+    name: "AssignedDriversHistory",
+    component: AssignedDriversHistory,
   },
   // Contributors
   {
@@ -226,6 +234,11 @@ const routes = [
     path: "/assign-vehicles",
     name: "AssignedVehicles",
     component: AssignedVehicles,
+  },
+  {
+    path: "/assign-vehicles/history",
+    name: "AssignedVehiclesHistory",
+    component: AssignedVehiclesHistory,
   },
   // vehicle document request
   {

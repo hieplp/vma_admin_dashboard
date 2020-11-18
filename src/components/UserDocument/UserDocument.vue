@@ -205,7 +205,6 @@ export default {
       for (const idLength in this.idMaxLength) {
         if (documentID.length === this.idMaxLength[idLength]) {
           this.documentIdErr = false;
-          console.log(123);
           break;
         }
       }

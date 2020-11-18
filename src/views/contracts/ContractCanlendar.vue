@@ -197,7 +197,6 @@ export default {
     // Full calendar
     handleWeekendsToggle() {
       this.calendarOptions.weekends = !this.calendarOptions.weekends; // update a property
-      console.log(this.calendarOptions.weekends);
     },
 
     // Init data for calendar

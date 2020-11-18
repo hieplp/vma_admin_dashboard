@@ -359,7 +359,6 @@ export default {
           );
           this.profileImage = null;
         }
-        console.log(this.driver);
         // Call api to create new driver
         await this._create({ user: this.driver, roleId: 3 })
           .then((res) => {

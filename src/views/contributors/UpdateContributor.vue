@@ -333,7 +333,6 @@ export default {
           newImg,
           "profile"
         );
-        console.log(oldImg);
       }
       await this._updateUser(contributor)
         .then(async (res) => {

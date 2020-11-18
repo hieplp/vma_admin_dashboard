@@ -258,14 +258,12 @@ export default {
     if (this.prevRoute && this.prevRoute.name === "Login") {
       window.location.reload();
     }
-    console.log("mounted -> this.prevRoute", this.prevRoute);
     this.initRevenueChart();
     this.initTripByTypeChart();
   },
   beforeRouteEnter(to, from, next) {
     next((vm) => {
       vm.prevRoute = from;
-      console.log("beforeRouteEnter -> to", to);
     });
   },
   methods: {

@@ -9,7 +9,7 @@
     ></loading>
 
     <div class="page-header">
-      <h3 class="page-title test">
+      <h3 class="page-title ">
         <a @click="$router.go(-1)" href="javascript:void(0)">
           {{
             this.prevRoute === null ||
@@ -162,6 +162,51 @@
                 />
               </div>
             </div>
+            <!-- Assigned driver -->
+            <div class="field ">
+              <label>Driver</label>
+              <div class="ui action input">
+                <input v-model="assignedDriver.userName" type="text" readonly />
+                <button
+                  class="ui right labeled icon button "
+                  type="button"
+                  data-toggle="dropdown"
+                >
+                  <i class="users icon"></i>
+                  View
+                </button>
+                <ul class="dropdown-menu ">
+                  <button
+                    @click="
+                      () => {
+                        this.$router.push({
+                          name: 'DriverDetail',
+                          params: { userId: assignedDriver.userId },
+                        });
+                      }
+                    "
+                    class="mb-1"
+                    v-if="assignedDriver.userId"
+                  >
+                    Current driver
+                  </button>
+                  <li class="divider"></li>
+                  <button
+                    class="mt-1"
+                    @click="
+                      () => {
+                        this.$router.push({
+                          name: 'AssignedDriversHistory',
+                          params: { vehicleId: vehicle.vehicleId },
+                        });
+                      }
+                    "
+                  >
+                    Driver history
+                  </button>
+                </ul>
+              </div>
+            </div>
           </div>
 
           <div class="two fields">
@@ -217,7 +262,7 @@
                     () => {
                       this.$router.push({
                         name: 'ContributorDetail',
-                        params: { userId: vehicle.ownerId },
+                        params: { userId: vehicle.owner.userId },
                       });
                     }
                   "
@@ -280,6 +325,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
@@ -287,7 +333,6 @@ require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 
 import VehicleDocument from "../../components/Vehicle/ReadOnlyDocument";
 
-const VehicleRepository = RepositoryFactory.get("vehicles");
 const VehicleDocRepos = RepositoryFactory.get("vehicleDocument");
 
 export default {
@@ -317,6 +362,11 @@ export default {
         yearOfManufacture: "",
       },
       documents: [],
+      // Assigned driver
+      assignedDriver: {
+        userId: "",
+        userName: "N/A",
+      },
       // Profile image
       profileImage: null,
       profileImagePrev: null,
@@ -344,12 +394,15 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    // Map state
+    ...mapActions("Vehicle", ["_getDetailVehicle"]),
     // Init vehicle information
     async initVehicle() {
-      await VehicleRepository.getDetailVehicle(
-        this.$route.params.vehicleId
-      ).then((res) => {
+      await this._getDetailVehicle(this.$route.params.vehicleId).then((res) => {
         this.vehicle = res;
+        if (this.vehicle.assignedDriver) {
+          this.assignedDriver = this.vehicle.assignedDriver;
+        }
         this.isVehiclenfoLoading = true;
       });
     },

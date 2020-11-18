@@ -97,7 +97,6 @@ export default {
   },
   // Create Vehicle
   async getTotalVehicleByType(vehicleType) {
-    console.log(`${resource}/count?vehicleTypeId=${vehicleType}&viewOption=1`);
     return new Promise((resolve, reject) => {
       Repository.get(
         `${resource}/count?vehicleTypeId=${vehicleType}&viewOption=0`

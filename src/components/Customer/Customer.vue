@@ -415,7 +415,6 @@ export default {
         this.selectedDistrict.name_with_type +
         ", " +
         this.selectedCity.name_with_type;
-      console.log(customer);
       return customer;
     },
     getJsonObjects(str) {

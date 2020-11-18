@@ -81,7 +81,6 @@ export default {
   // get users count dont have roleId
   addNewRoleForUser(userId, roleId) {
     return new Promise((resolve, reject) => {
-      console.log(`${resource}/${userId}/roles?roleId=${roleId}`);
       Repository.patch(`${resource}/${userId}/roles?roleId=${roleId}`)
         .then((res) => {
           resolve(res);

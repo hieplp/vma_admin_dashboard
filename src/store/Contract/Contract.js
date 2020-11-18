@@ -60,19 +60,6 @@ export default {
           });
       });
     },
-    // get contracts by date TODO: FIXXXXXXXXXXX
-    // eslint-disable-next-line no-unused-vars
-    _getContractsByDate(context, { departureTimeFrom, departureTimeTo }) {
-      return new Promise((resolve, reject) => {
-        Repository.get(`${CONTRACT_URL}?departureTime=${departureTimeFrom}`)
-          .then((res) => {
-            resolve(res.data.contractList);
-          })
-          .catch((err) => {
-            reject(err.response.data);
-          });
-      });
-    },
     // get contracts count
     _getContractsCount(
       context,
@@ -95,6 +82,19 @@ export default {
         )
           .then((res) => {
             console.log(res);
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // get contracts by date TODO: FIXXXXXXXXXXX
+    // eslint-disable-next-line no-unused-vars
+    _getContractsByDate(context, { departureTimeFrom, departureTimeTo }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${CONTRACT_URL}?departureTime=${departureTimeFrom}`)
+          .then((res) => {
             resolve(res.data.contractList);
           })
           .catch((err) => {
