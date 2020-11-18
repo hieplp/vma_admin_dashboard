@@ -214,6 +214,34 @@
           </ul>
         </div>
       </li>
+      <!-- Reports -->
+      <li
+        class="nav-item"
+        :class="{
+          active: this.$route.name.includes('Report') ? true : false,
+        }"
+      >
+        <a
+          class="nav-link"
+          data-toggle="collapse"
+          href="#reports"
+          aria-expanded="false"
+          aria-controls="reports"
+        >
+          <span class="menu-title">Reports</span>
+          <i class="menu-arrow"></i>
+          <i class="mdi mdi-clipboard-text menu-icon"></i>
+        </a>
+        <div class="collapse" id="reports">
+          <ul class="nav flex-column sub-menu">
+            <li class="nav-item">
+              <router-link to="/reports/vehicles" class="nav-link ">
+                Vehicles Reports
+              </router-link>
+            </li>
+          </ul>
+        </div>
+      </li>
     </ul>
   </nav>
 </template>

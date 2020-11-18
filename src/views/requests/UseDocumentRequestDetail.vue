@@ -75,7 +75,6 @@
       :proFunc="
         () => {
           this.isSuccess = !this.isSuccess;
-          this.searchRequests();
         }
       "
       v-if="isSuccess"
@@ -262,21 +261,16 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
 import UserDocument from "../../components/UserDocument/ReadOnlyDocument";
 
-// const DriverRepository = RepositoryFactory.get("requests");
-// const AssignVehicleRepository = RepositoryFactory.get("assignVehicle");
-const RequestRepository = RepositoryFactory.get("requests");
-const DocumentRepository = RepositoryFactory.get("documents");
-
 export default {
-  name: "DriverDetail",
+  name: "UseDocumentRequestDetail",
   components: {
     Loading,
     LightBox,
@@ -336,22 +330,29 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    // Map actions
+    ...mapActions("Request", ["_updateStatus", "_getRequestById"]),
+    ...mapActions("Document", ["_getUserDocumentById"]),
     // Init request's information
     async initRequest() {
-      await RequestRepository.getRequestById(this.$route.params.requestId).then(
-        (res) => {
+      await this._getRequestById(this.$route.params.requestId)
+        .then((res) => {
           this.request = res;
-        }
-      );
+        })
+        .catch((err) => {
+          this.errTitle = "Something went wrong!";
+          this.errMsg = err.debugMessage;
+          this.isError = !this.isError;
+        });
     },
     // Init user document
     async initDocument() {
-      await DocumentRepository.getUserDocumentById(
-        this.request.userDocumentId
-      ).then((res) => {
-        this.document = res;
-        this.documentChangeType = this.document.userDocumentType;
-      });
+      await this._getUserDocumentById(this.request.userDocumentId).then(
+        (res) => {
+          this.document = res;
+          this.documentChangeType = this.document.userDocumentType;
+        }
+      );
     },
     // Update request status
     async updateRequestStatus(requestStatus) {
@@ -372,10 +373,10 @@ export default {
           break;
       }
       // update status
-      await RequestRepository.updateStatus(
-        this.request.requestId,
-        requestStatus
-      )
+      await this._updateStatus({
+        requestId: this.request.requestId,
+        requestStatus: requestStatus,
+      })
         .then(() => {
           this.isSuccess = true;
           this.request.requestStatus = requestStatus;
@@ -428,7 +429,4 @@ export default {
   width: 280px !important;
   height: 280px !important;
 }
-</style>
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>

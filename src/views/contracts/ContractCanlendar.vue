@@ -212,7 +212,12 @@ export default {
       this.contracts.forEach((contract) => {
         calendarApi.addEvent({
           id: contract.contractId,
-          title: contract.contractId,
+          title:
+            contract.contractId +
+            ": " +
+            contract.departureLocation +
+            "-" +
+            contract.destinationLocation,
           start: contract.departureTime,
           end: contract.destinationTime,
         });

@@ -213,18 +213,15 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 import moment from "moment";
-const RequestRepository = RepositoryFactory.get("requests");
 
 export default {
   name: "VehicleDocumentRequests",
-  props: {
-    handleDelBtnVisible: Function,
-  },
+
   components: {
     Loading,
   },
@@ -243,25 +240,14 @@ export default {
       fromDate: "",
       requestType: "NEW_VEHICLE_DOCUMENT",
       toDate: "",
-      requestId: "",
+      userId: "",
       requestStatus: "",
 
       isLoading: true,
       totalRequests: 0,
       page: 0,
       currentPage: 1,
-      isRejectConVisible: false,
-      isAcceptConVisible: false,
-      // Error modal
-      isError: false,
-      errTitle: "",
-      errMsg: "",
-      // Success modal
-      isSuccess: false,
-      successSubTitle: "",
-      successTitle: "",
 
-      selectedReqId: "",
       requestTypes: [],
       searchTotalDistance: ["", ""],
     };
@@ -275,6 +261,8 @@ export default {
     await this.initRequests();
   },
   methods: {
+    // Map actions
+    ...mapActions("Request", ["_getRequest", "_getRequestCount"]),
     // format date
     formatDate(date) {
       return moment(date).format("YYYY-MM-DD HH:MM:SS");
@@ -308,23 +296,23 @@ export default {
     // Get request list
     async initRequests() {
       this.isLoading = true;
-      await RequestRepository.getRequests(
-        this.fromDate,
-        this.toDate,
-        this.requestType,
-        this.requestId,
-        this.page,
-        this.requestStatus
-      ).then((res) => {
+      await this._getRequest({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        page: this.page,
+        requestStatus: this.requestStatus,
+      }).then((res) => {
         this.requests = res;
       });
-      await RequestRepository.getRequestsCount(
-        this.fromDate,
-        this.toDate,
-        this.requestType,
-        this.requestId,
-        this.requestStatus
-      ).then((res) => {
+      await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: this.requestStatus,
+      }).then((res) => {
         this.totalRequests = res;
       });
       this.isLoading = false;
@@ -370,22 +358,7 @@ export default {
 .btn-action .btn i {
   font-size: 20px;
 }
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
+
 /* .form-control {
   border-color: rgb(187, 181, 181) !important;
 } */

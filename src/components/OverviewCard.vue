@@ -1,6 +1,6 @@
 <template>
   <!-- Vehicle on route -->
-  <div class="card card-img-holder text-white" :class="color">
+  <div class="card card-img-holder text-white" :class="color" @click="goTo">
     <div class="card-body">
       <img
         src="../assets/images/dashboard/circle.png"
@@ -27,8 +27,14 @@ export default {
     title: String,
     count: Number,
     countName: String,
+    goTo: Function,
   },
+  methods: {},
 };
 </script>
 
-<style></style>
+<style scoped>
+.card.card-img-holder.text-white:hover {
+  cursor: pointer;
+}
+</style>

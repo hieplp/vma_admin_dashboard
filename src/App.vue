@@ -10,12 +10,14 @@
       </div>
     </div>
     <div v-else>
+      <!-- <router-view /> -->
       <Login />
     </div>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import TopMenu from "./components/TopMenu";
 import SideMenu from "./components/SideMenu";
 import Login from "./views/Login";
@@ -33,12 +35,18 @@ export default {
     Login,
   },
   watch: {
-    $route: function(from, to) {
-      if (to !== null && to.name === "Login") {
+    // eslint-disable-next-line no-unused-vars
+    $route: async function(from, to) {
+      //   await this.checkAuthUser();
+      // } else if (from !== null && from.name === "Login") {
+      //   await this.checkAuthUser();
+      // }
+      await this.checkAuthUser();
+      if (
+        to !== null &&
+        (to.name === "Login" || to.name === "DefaultOverview")
+      ) {
         window.location.reload();
-        this.checkAuthUser();
-      } else if (from !== null && from.name === "Login") {
-        this.checkAuthUser();
       }
     },
   },
@@ -46,27 +54,60 @@ export default {
     next((vm) => {
       if (next) {
         vm.nextRoute = next.name;
+        vm.prevRoute = from;
       }
     });
   },
-  mounted() {
-    this.isVisible = true;
+  async mounted() {
+    await this.checkAuthUser();
+    // this.isVisible = true;
   },
   data() {
     return {
-      isVisible: false,
+      isVisible: true,
       timeReload: 0,
       nextRoute: null,
+      prevRoute: null,
     };
   },
   methods: {
-    checkAuthUser() {
-      let user = JSON.parse(localStorage.getItem("USER"));
-      if (user) {
-        this.isVisible = true;
-      } else {
-        this.isVisible = false;
-      }
+    // Map actions
+    ...mapActions("User", ["_getUserRoles"]),
+    // Check user valid
+    async checkAuthUser() {
+      console.log(this.prevRoute);
+      await this._getUserRoles()
+        .then((res) => {
+          if (res) {
+            if (this.isAdmin(res)) {
+              this.isVisible = true;
+            } else {
+              this.isVisible = false;
+            }
+          }
+        })
+        .catch((err) => {
+          if (err) {
+            this.isVisible = false;
+            if (
+              this.prevRoute ||
+              (this.prevRoute && this.prevRoute.name !== "Login")
+            ) {
+              this.$router.push({
+                name: "Login",
+              });
+            }
+          }
+        });
+    },
+
+    isAdmin(roles) {
+      roles.forEach((role) => {
+        if (role.roleId === 1) {
+          return true;
+        }
+      });
+      return false;
     },
   },
 };
@@ -80,4 +121,7 @@ export default {
 </style>
 <style>
 @import "./assets/css/style1.css";
+</style>
+<style>
+@import "./assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
 </style>

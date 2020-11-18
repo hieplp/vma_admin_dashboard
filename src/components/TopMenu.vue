@@ -165,7 +165,6 @@ export default {
     // Init data for user
     initAuthUser() {
       let user = JSON.parse(localStorage.getItem("USER"));
-      console.log(user);
       this.userName = user.displayName;
       this.imageLink = user.photoURL;
     },

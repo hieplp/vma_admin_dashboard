@@ -243,20 +243,30 @@
 </template>
 
 <script>
-import "../assets/vendors/js/vendor.bundle.base.js";
-import "../assets/js/off-canvas.js";
-import "../assets/js/hoverable-collapse.js";
-import "../assets/js/misc.js";
-import "../assets/js/misc.js";
 import Chart from "chart.js";
 import $ from "jquery";
 
 export default {
   name: "OverView",
   props: {},
+  data() {
+    return {
+      prevRoute: null,
+    };
+  },
   mounted() {
+    if (this.prevRoute && this.prevRoute.name === "Login") {
+      window.location.reload();
+    }
+    console.log("mounted -> this.prevRoute", this.prevRoute);
     this.initRevenueChart();
     this.initTripByTypeChart();
+  },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      vm.prevRoute = from;
+      console.log("beforeRouteEnter -> to", to);
+    });
   },
   methods: {
     // init revenue chart

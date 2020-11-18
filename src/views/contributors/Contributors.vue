@@ -179,6 +179,7 @@
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
+                      :disabled="contributor.userStatus === 'DISABLE'"
                       @click="updateContributor(contributor.userId)"
                     >
                       <i class="mdi mdi-grease-pencil"></i>
@@ -375,6 +376,9 @@ export default {
   },
   async mounted() {
     // await this.initTotalVehicleSlider();
+    if (this.$route.params.status) {
+      this.searchStatusID = this.$route.params.status;
+    }
     await this.initStatusList();
     await this.initContributorsList();
   },

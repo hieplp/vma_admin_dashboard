@@ -13,6 +13,7 @@ import Contributors from "../views/contributors/Contributors.vue";
 import CreateContributor from "../views/contributors/CreateContributor.vue";
 import ContributorDetail from "../views/contributors/ContributorDetail.vue";
 import UpdateContributor from "../views/contributors/UpdateContributor.vue";
+import ContributorsOverview from "../views/contributors/ContributorsOverview.vue";
 
 import DriverRegistrations from "../views/DriverRegistrations.vue";
 // Contracts
@@ -49,6 +50,8 @@ import ChangeVehicleRequest from "../views/requests/vehicle/ChangeVehicleRequest
 // Document user requests
 import UserDocumentRequests from "../views/requests/UserDocumentRequests.vue";
 import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail.vue";
+// Report
+import VehiclesReport from "../views/reports/VehiclesReport";
 
 import Login from "../views/Login.vue";
 
@@ -112,6 +115,11 @@ const routes = [
     path: "/contributors",
     name: "Contributors",
     component: Contributors,
+  },
+  {
+    path: "/contributors/overview",
+    name: "ContributorsOverview",
+    component: ContributorsOverview,
   },
   {
     path: "/contributors/:userId",
@@ -251,6 +259,12 @@ const routes = [
     path: "/requests/documents/users/:requestId",
     name: "UseDocumentRequestDetail",
     component: UseDocumentRequestDetail,
+  },
+  // Vehicles reports
+  {
+    path: "/reports/vehicles",
+    name: "VehiclesReport",
+    component: VehiclesReport,
   },
 ];
 

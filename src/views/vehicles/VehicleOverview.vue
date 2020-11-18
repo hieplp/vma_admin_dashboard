@@ -1,6 +1,13 @@
 /* eslint-disable no-unused-vars */
 <template>
   <div>
+    <loading
+      :active.sync="isLoading"
+      :can-cancel="false"
+      :loader="'dots'"
+      :is-full-page="false"
+      :color="'#2e5bff'"
+    ></loading>
     <div class="content-wrapper">
       <div class="row">
         <!-- Vehicle On Route -->
@@ -10,6 +17,11 @@
             color="bg-gradient-success"
             :count="vehicleOnRoute"
             countName="vehicles"
+            :goTo="
+              () => {
+                this.viewVehicles('ON_ROUTE');
+              }
+            "
           />
         </div>
         <!-- Available Vehicles -->
@@ -19,6 +31,11 @@
             color="bg-gradient-info"
             :count="availableVehicles"
             countName="vehicles"
+            :goTo="
+              () => {
+                this.viewVehicles('AVAILABLE');
+              }
+            "
           />
         </div>
         <!-- Pending Appoval -->
@@ -28,15 +45,25 @@
             color="bg-gradient-warning"
             :count="pendingVehicles"
             countName="vehicles"
+            :goTo="
+              () => {
+                this.viewVehicles('PENDING_APPROVAL');
+              }
+            "
           />
         </div>
-        <!-- Incompleted Requests -->
+        <!-- Maintenance Vehicles -->
         <div class="col-md-3 stretch-card grid-margin">
           <OverviewCard
             title="Maintenance Vehicles"
             color="bg-gradient-danger"
             :count="maintenanceVehicles"
             countName="vehicles"
+            :goTo="
+              () => {
+                this.viewVehicles('MAINTENANCE');
+              }
+            "
           />
         </div>
       </div>
@@ -57,13 +84,10 @@
 </template>
 
 <script>
-// import "../assets/vendors/js/vendor.bundle.base.js";
-// import "../assets/js/off-canvas.js";
-// import "../assets/js/hoverable-collapse.js";
-// import "../assets/js/misc.js";
-// import "../assets/js/misc.js";
+import { mapActions } from "vuex";
 import Chart from "chart.js";
 import $ from "jquery";
+import Loading from "vue-loading-overlay";
 import OverviewCard from "../../components/OverviewCard";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 const VehicleRepository = RepositoryFactory.get("vehicles");
@@ -71,6 +95,7 @@ export default {
   name: "VehicleOverview",
   components: {
     OverviewCard,
+    Loading,
   },
   data() {
     return {
@@ -78,33 +103,38 @@ export default {
       availableVehicles: 0,
       pendingVehicles: 0,
       maintenanceVehicles: 0,
+      isLoading: true,
     };
   },
   async mounted() {
-    this.vehicleOnRoute = await this.getTotalVehicleByStatus("ON_ROUTE");
-    this.availableVehicles = await this.getTotalVehicleByStatus("AVAILABLE");
-    this.pendingVehicles = await this.getTotalVehicleByStatus(
+    this.isLoading = true;
+    this.vehicleOnRoute = await this._getTotalVehicleByStatus("ON_ROUTE");
+    this.availableVehicles = await this._getTotalVehicleByStatus("AVAILABLE");
+    this.pendingVehicles = await this._getTotalVehicleByStatus(
       "PENDING_APPROVAL"
     );
-    this.maintenanceVehicles = await this.getTotalVehicleByStatus(
+    this.maintenanceVehicles = await this._getTotalVehicleByStatus(
       "MAINTENANCE"
     );
     // Set total vehicle bar char
     await this.initTotalVehicleTypeChart();
     // this.initRevenueChart();
     // this.initTripByTypeChart();
+    this.isLoading = false;
   },
   methods: {
-    // get Total Vehicle By Status
-    async getTotalVehicleByStatus(statusId) {
-      let count = await VehicleRepository.getTotalVehicleByStatus(statusId);
-      return count ? count : 0;
+    // Map actions
+    ...mapActions("Vehicle", ["_getTotalVehicleByStatus"]),
+    // View vehicles
+    viewVehicles(status) {
+      this.$router.push({
+        name: "Vehicles",
+        params: { status: status },
+      });
     },
     // Init total vehicle type
     async initTotalVehicleTypeChart() {
       let types = await VehicleRepository.getVehicleType();
-      console.log(types);
-      console.log(123);
       let typesCount = [];
       let typeName = [];
       for (const type of types) {
@@ -142,7 +172,6 @@ export default {
               borderWidth: 2,
               borderColor: "#2e5bff",
               hoverBorderWidth: 4,
-              hoverBorderColor: "#000",
             },
           ],
         },

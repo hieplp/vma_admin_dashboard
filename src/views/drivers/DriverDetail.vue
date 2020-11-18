@@ -453,6 +453,3 @@ export default {
   height: 280px !important;
 }
 </style>
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-</style>

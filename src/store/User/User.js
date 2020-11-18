@@ -104,5 +104,23 @@ export default {
           });
       });
     },
+    // Get user roles
+    _getUserRoles() {
+      console.log(123);
+      return new Promise((resolve, reject) => {
+        let user = JSON.parse(localStorage.getItem("USER"));
+        let token = {
+          idToken: user.stsTokenManager.accessToken,
+        };
+        Repository.post(`${USER_URL}/role-token`, token)
+          .then((res) => {
+            resolve(res.roleList);
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

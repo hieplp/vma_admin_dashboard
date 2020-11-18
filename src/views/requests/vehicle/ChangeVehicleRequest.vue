@@ -295,6 +295,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
 import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
@@ -367,13 +368,19 @@ export default {
     this.isLoading = false;
   },
   methods: {
+    // Map actions
+    ...mapActions("Request", ["_updateStatus", "_getRequestById"]),
     // Init request's information
     async initRequest() {
-      await RequestRepository.getRequestById(this.$route.params.requestId).then(
-        (res) => {
+      await this._getRequestById(this.$route.params.requestId)
+        .then((res) => {
           this.request = res;
-        }
-      );
+        })
+        .catch((err) => {
+          this.errTitle = "Something went wrong!";
+          this.errMsg = err.debugMessage;
+          this.isError = !this.isError;
+        });
     },
     // Init user document
     async initDocument() {

@@ -1,7 +1,6 @@
 import Repository from "./Repository";
 
 const resource = "/requests";
-const documentResource = "/document-requests";
 
 export default {
   // Update document
@@ -72,7 +71,7 @@ export default {
   async updateStatus(requestId, requestStatus) {
     return new Promise((resolve, reject) => {
       Repository.patch(
-        `${documentResource}/${requestId}?requestStatus=${requestStatus}`
+        `${resource}/${requestId}?requestStatus=${requestStatus}`
       )
         .then((res) => {
           resolve(res.data);
@@ -85,7 +84,7 @@ export default {
   // update document status
   async getRequestById(requestId) {
     return new Promise((resolve, reject) => {
-      Repository.get(`${documentResource}/${requestId}`)
+      Repository.get(`${resource}/${requestId}`)
         .then((res) => {
           resolve(res.data.requestDetail);
         })

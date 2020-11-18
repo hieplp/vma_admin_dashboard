@@ -435,6 +435,3 @@ export default {
   color: rgb(255, 255, 255);
 }
 </style>
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-</style>

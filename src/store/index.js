@@ -6,6 +6,9 @@ import User from "./User/User";
 import Document from "./Document/Document";
 import Contributor from "./Contributor/Contributor";
 import Contract from "./Contract/Contract";
+import Report from "./Report/Report";
+import Vehicle from "./Vehicle/Vehicle";
+import Request from "./Request/Request";
 
 Vue.use(Vuex);
 
@@ -19,5 +22,8 @@ export default new Vuex.Store({
     Document: Document,
     Contributor: Contributor,
     Contract: Contract,
+    Report: Report,
+    Vehicle: Vehicle,
+    Request: Request,
   },
 });

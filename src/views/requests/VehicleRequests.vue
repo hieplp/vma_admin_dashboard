@@ -215,12 +215,11 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 import moment from "moment";
-const RequestRepository = RepositoryFactory.get("requests");
 
 export default {
   name: "VehicleDocumentRequests",
@@ -245,7 +244,7 @@ export default {
       fromDate: "",
       requestType: "CHANGE_VEHICLE",
       toDate: "",
-      requestId: "",
+      userId: "",
       requestStatus: "",
 
       isLoading: true,
@@ -275,15 +274,10 @@ export default {
     this.initTypes();
     this.initStatusList();
     await this.initRequests();
-    this.requests.push({
-      requestId: 45,
-      userId: "TuuTtLDv",
-      requestType: "CHANGE_VEHICLE",
-      requestStatus: "PENDING",
-      createDate: "2020-11-08T05:37:16.020+00:00",
-    });
   },
   methods: {
+    // Map actions
+    ...mapActions("Request", ["_getRequest", "_getRequestCount"]),
     // format date
     formatDate(date) {
       return moment(date).format("YYYY-MM-DD HH:MM:SS");
@@ -317,23 +311,23 @@ export default {
     // Get request list
     async initRequests() {
       this.isLoading = true;
-      await RequestRepository.getRequests(
-        this.fromDate,
-        this.toDate,
-        this.requestType,
-        this.requestId,
-        this.page,
-        this.requestStatus
-      ).then((res) => {
+      await this._getRequest({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        page: this.page,
+        requestStatus: this.requestStatus,
+      }).then((res) => {
         this.requests = res;
       });
-      await RequestRepository.getRequestsCount(
-        this.fromDate,
-        this.toDate,
-        this.requestType,
-        this.requestId,
-        this.requestStatus
-      ).then((res) => {
+      await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: this.requestStatus,
+      }).then((res) => {
         this.totalRequests = res;
       });
       this.isLoading = false;

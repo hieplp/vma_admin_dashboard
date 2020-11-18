@@ -10,30 +10,30 @@
     ></loading>
     <div class="content-wrapper">
       <div class="row">
-        <!-- Active drivers -->
+        <!-- Active contributors -->
         <div class="col-md-4 stretch-card grid-margin">
           <OverviewCard
-            title="Active Drivers"
+            title="Active Contributors"
             color="bg-gradient-info"
-            :count="activeDrivers"
-            countName="drivers"
+            :count="activeContributors"
+            countName="contributors"
             :goTo="
               () => {
-                this.viewDrivers('ACTIVE');
+                this.viewContributors('ACTIVE');
               }
             "
           />
         </div>
-        <!-- Inactive drivers -->
+        <!-- Inactive contributors -->
         <div class="col-md-4 stretch-card grid-margin">
           <OverviewCard
-            title="Inactive Drivers"
+            title="Inactive Contributors"
             color="bg-gradient-danger"
-            :count="inactiveDrivers"
-            countName="drivers"
+            :count="inactiveContributors"
+            countName="contributors"
             :goTo="
               () => {
-                this.viewDrivers('INACTIVE');
+                this.viewContributors('INACTIVE');
               }
             "
           />
@@ -41,13 +41,13 @@
         <!-- Pending Appoval -->
         <div class="col-md-4 stretch-card grid-margin">
           <OverviewCard
-            title="Disable Drivers"
+            title="Disable Contributors"
             color="bg-gradient-dark"
-            :count="disableDrivers"
-            countName="drivers"
+            :count="disableContributors"
+            countName="contributors"
             :goTo="
               () => {
-                this.viewDrivers('DISABLE');
+                this.viewContributors('DISABLE');
               }
             "
           />
@@ -59,8 +59,11 @@
         <div class="col-12 grid-margin stretch-card">
           <div class="card">
             <div class="card-body">
-              <h4 class="card-title">Drivers</h4>
-              <canvas id="driverStatusChart" style="height: 250px"></canvas>
+              <h4 class="card-title">Contributors</h4>
+              <canvas
+                id="contributorStatusChart"
+                style="height: 250px"
+              ></canvas>
             </div>
           </div>
         </div>
@@ -70,6 +73,11 @@
 </template>
 
 <script>
+// import "../assets/vendors/js/vendor.bundle.base.js";
+// import "../assets/js/off-canvas.js";
+// import "../assets/js/hoverable-collapse.js";
+// import "../assets/js/misc.js";
+// import "../assets/js/misc.js";
 import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import Chart from "chart.js";
@@ -83,38 +91,42 @@ export default {
   },
   data() {
     return {
-      activeDrivers: 0,
-      inactiveDrivers: 0,
-      disableDrivers: 0,
+      activeContributors: 0,
+      inactiveContributors: 0,
+      disableContributors: 0,
       maintenanceVehicles: 0,
       isLoading: false,
     };
   },
   async mounted() {
     this.isLoading = true;
-    this.activeDrivers = await this._getTotalDriverByStatus("ACTIVE");
-    this.inactiveDrivers = await this._getTotalDriverByStatus("INACTIVE");
-    this.disableDrivers = await this._getTotalDriverByStatus("DISABLE");
+    this.activeContributors = await this._getTotalContributorByStatus("ACTIVE");
+    this.inactiveContributors = await this._getTotalContributorByStatus(
+      "INACTIVE"
+    );
+    this.disableContributors = await this._getTotalContributorByStatus(
+      "DISABLE"
+    );
     // Set total vehicle bar char
-    await this.initTotalDriverChart();
+    await this.initTotalContributorChart();
     // this.initRevenueChart();
     // this.initTripByTypeChart();
     this.isLoading = false;
   },
   methods: {
     // Map actions
-    ...mapActions("Driver", ["_getTotalDriverByStatus"]),
-    // View drivers
-    viewDrivers(status) {
+    ...mapActions("Contributor", ["_getTotalContributorByStatus"]),
+    // View driver detail
+    viewContributors(status) {
       this.$router.push({
-        name: "Drivers",
+        name: "Contributors",
         params: { status: status },
       });
     },
     // Init total vehicle type
-    async initTotalDriverChart() {
-      let driverStatusChart = document
-        .getElementById("driverStatusChart")
+    async initTotalContributorChart() {
+      let contributorStatusChart = document
+        .getElementById("contributorStatusChart")
         .getContext("2d");
       // Global Options
       Chart.defaults.global.defaultFontFamily = "Lato";
@@ -122,33 +134,48 @@ export default {
       Chart.defaults.global.defaultFontColor = "#777";
 
       // gradient color
-      let gradientInfo = driverStatusChart.createLinearGradient(0, 0, 0, 400);
+      let gradientInfo = contributorStatusChart.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
       gradientInfo.addColorStop(0, "rgba(144, 202, 249, 1)");
       gradientInfo.addColorStop(1, "rgba(4, 126, 223, 1)");
 
-      let gradientDanger = driverStatusChart.createLinearGradient(0, 0, 0, 400);
+      let gradientDanger = contributorStatusChart.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
       gradientDanger.addColorStop(0, "rgba(255, 191, 150, 1)");
       gradientDanger.addColorStop(1, "rgba(254, 112, 150, 1)");
 
-      let gradientDark = driverStatusChart.createLinearGradient(0, 0, 0, 400);
+      let gradientDark = contributorStatusChart.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
       gradientDark.addColorStop(0, "rgba(94, 113, 136, 1)");
       gradientDark.addColorStop(1, "rgba(62, 75, 91, 1)");
 
-      new Chart(driverStatusChart, {
+      new Chart(contributorStatusChart, {
         type: "bar", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
         data: {
           labels: ["Active", "Inactive", "Disable"],
           datasets: [
             {
-              label: "Drivers",
+              label: "Contributors",
               lineTension: 0,
               data: [
-                this.activeDrivers,
-                this.inactiveDrivers,
-                this.disableDrivers,
+                this.activeContributors,
+                this.inactiveContributors,
+                this.disableContributors,
               ],
               backgroundColor: [gradientInfo, gradientDanger, gradientDark],
-              borderWidth: 2,
+              borderWidth: 1,
               borderColor: [gradientInfo, gradientDanger, gradientDark],
               hoverBorderWidth: 4,
               hoverBorderColor: [gradientInfo, gradientDanger, gradientDark],
@@ -173,8 +200,8 @@ export default {
 
     // init revenue chart
     initRevenueChart() {
-      let driverStatusChart = document
-        .getElementById("driverStatusChart")
+      let contributorStatusChart = document
+        .getElementById("contributorStatusChart")
         .getContext("2d");
       // Global Options
       Chart.defaults.global.defaultFontFamily = "Lato";
@@ -182,11 +209,11 @@ export default {
       Chart.defaults.global.defaultFontColor = "#777";
 
       // gradient color
-      let gradient = driverStatusChart.createLinearGradient(0, 0, 0, 400);
+      let gradient = contributorStatusChart.createLinearGradient(0, 0, 0, 400);
       gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
       gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
 
-      new Chart(driverStatusChart, {
+      new Chart(contributorStatusChart, {
         type: "bar", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
         data: {
           labels: [

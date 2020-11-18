@@ -282,23 +282,6 @@ export default {
   top: 35%;
 }
 
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
-
 .cus-select {
   padding-left: 26px !important;
 }
@@ -311,7 +294,5 @@ export default {
   color: rgb(255, 255, 255);
 }
 </style>
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-</style>
+
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

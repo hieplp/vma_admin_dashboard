@@ -320,6 +320,9 @@ export default {
   },
   async mounted() {
     // await this.initStatusList();
+    if (this.$route.params.status) {
+      this.searchStatusID = this.$route.params.status;
+    }
     await this.initDriversList();
   },
   methods: {

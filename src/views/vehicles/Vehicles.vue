@@ -403,6 +403,10 @@ export default {
     if (this.$route.params.ownerId) {
       this.ownerId = this.$route.params.ownerId;
     }
+    if (this.$route.params.status) {
+      this.viewOption = 1;
+      this.searchStatusID = this.$route.params.status;
+    }
     await this.initStatusList();
     await this.initVehiclesList();
     await this.initTypes();
@@ -568,22 +572,7 @@ export default {
 .btn-action .btn i {
   font-size: 20px;
 }
-.cus-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(92, 90, 87, 0.637);
-  z-index: 10000;
-  width: 100%;
-  height: 100%;
-  padding-top: 12%;
-  color: white;
-}
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
+
 /* .form-control {
   border-color: rgb(187, 181, 181) !important;
 } */

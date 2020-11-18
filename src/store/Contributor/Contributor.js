@@ -59,6 +59,19 @@ export default {
           });
       });
     },
+    // Get total contributors count by status
+    _getTotalContributorByStatus(context, userStatus) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${CONTRIBUTOR_URL}/count?userStatus=${userStatus}`)
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(err.response.data);
+          });
+      });
+    },
     // Get contributor's detailed information
     _getDetailContributor(context, userId) {
       return new Promise((resolve, reject) => {

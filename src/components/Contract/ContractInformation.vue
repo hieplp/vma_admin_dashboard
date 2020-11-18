@@ -371,11 +371,6 @@ export default {
   color: red;
 }
 
-.cus-modal .header {
-  color: white;
-  font-size: 35px !important;
-}
-
 .cus-select {
   padding-left: 26px !important;
 }
@@ -388,7 +383,5 @@ export default {
   color: rgb(255, 255, 255);
 }
 </style>
-<style>
-@import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";
-</style>
+
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
