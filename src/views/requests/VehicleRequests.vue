@@ -31,11 +31,23 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="requests.length > 0">
+        <div class="card">
           <div class="card-body">
             <h4 class="card-title">Requests List</h4>
-            <p class="card-description">{{ this.totalRequests }} total</p>
-            <table class="table ">
+            <!-- Tab -->
+            <vue-tabs
+              class="mb-4"
+              active-tab-color="#047edf"
+              active-text-color="white"
+              @tab-change="handleTabChange"
+              v-model="tabValue"
+            >
+              <v-tab :title="`ALL (${this.allCount})`"> </v-tab>
+              <v-tab :title="`ACCEPT (${this.acceptCount})`"> </v-tab>
+              <v-tab :title="`PENDING (${this.pendingCount})`"> </v-tab>
+              <v-tab :title="`DENIED (${this.deniedCount})`"> </v-tab>
+            </vue-tabs>
+            <table class="table" v-if="requests.length > 0">
               <thead>
                 <tr class="">
                   <th>NO.</th>
@@ -60,8 +72,7 @@
                     <label
                       class="badge"
                       v-bind:class="{
-                        'badge-info':
-                          request.requestType === 'NEW_VEHICLE_DOCUMENT',
+                        'badge-info': request.requestType === 'ADD_NEW_VEHICLE',
                         'badge-danger':
                           request.requestType === 'DELETE_VEHICLE_DOCUMENT',
                         'badge-warning':
@@ -93,6 +104,14 @@
                 </tr>
               </tbody>
             </table>
+            <!-- Empty list -->
+            <div class="card empty-list " v-else-if="!isLoading">
+              <div class="mt-5">
+                <i class="icon clipboard list ui text-center mt-5"></i>
+              </div>
+              <h1>NOTHING</h1>
+              <h3>Your list is empty.</h3>
+            </div>
           </div>
           <div v-if="this.totalRequests > 15">
             <paginate
@@ -112,14 +131,6 @@
             >
             </paginate>
           </div>
-        </div>
-        <!-- Empty list -->
-        <div class="card empty-list " v-else-if="!isLoading">
-          <div class="mt-5">
-            <i class="icon clipboard list ui text-center mt-5"></i>
-          </div>
-          <h1>NOTHING</h1>
-          <h3>Your list is empty.</h3>
         </div>
       </div>
 
@@ -167,27 +178,6 @@
                 >
               </select>
             </div>
-            <!-- Vehicle status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Status</label>
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="requestStatus"
-              >
-                <option :value="''">
-                  Select request type
-                </option>
-                <option
-                  v-for="status in this.statusList"
-                  :key="status"
-                  :value="status"
-                >
-                  {{ status }}
-                </option>
-              </select>
-            </div>
-
             <br />
             <div class="col-12 mt-3">
               <button
@@ -262,9 +252,14 @@ export default {
       successSubTitle: "",
       successTitle: "",
 
-      selectedReqId: "",
       requestTypes: [],
-      searchTotalDistance: ["", ""],
+
+      tabValue: "", // current tab
+      // Count
+      allCount: 0,
+      acceptCount: 0,
+      pendingCount: 0,
+      deniedCount: 0,
     };
   },
   async mounted() {
@@ -274,6 +269,7 @@ export default {
     this.initTypes();
     this.initStatusList();
     await this.initRequests();
+    await this.initCountByStatus();
   },
   methods: {
     // Map actions
@@ -281,6 +277,55 @@ export default {
     // format date
     formatDate(date) {
       return moment(date).format("YYYY-MM-DD HH:MM:SS");
+    },
+    // Init count by status
+    async initCountByStatus() {
+      this.allCount = await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: "",
+      });
+      this.acceptCount = await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: "ACCEPTED",
+      });
+      this.pendingCount = await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: "PENDING",
+      });
+      this.deniedCount = await this._getRequestCount({
+        fromDate: this.fromDate,
+        toDate: this.toDate,
+        requestType: this.requestType,
+        userId: this.userId,
+        requestStatus: "DENIED",
+      });
+    },
+    // handle Tab Change
+    async handleTabChange(tabIndex) {
+      switch (tabIndex) {
+        case 0:
+          this.requestStatus = "";
+          break;
+        case 1:
+          this.requestStatus = "ACCEPTED";
+          break;
+        case 2:
+          this.requestStatus = "PENDING";
+          break;
+        case 3:
+          this.requestStatus = "DENIED";
+          break;
+      }
+      await this.initRequests();
     },
     isNumber(evt) {
       isNumber(evt);
@@ -300,13 +345,13 @@ export default {
       this.fromDate = "";
       this.requestType = "CHANGE_VEHICLE";
       this.toDate = "";
-      this.requestStatus = "";
     },
     // Search request
     async searchRequests() {
       this.page = 0;
       this.currentPage = 1;
       await this.initRequests();
+      await this.initCountByStatus();
     },
     // Get request list
     async initRequests() {

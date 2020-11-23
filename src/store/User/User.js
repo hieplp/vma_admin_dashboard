@@ -120,5 +120,17 @@ export default {
           });
       });
     },
+    // Create client registration token
+    _createClientRegistrationToken(context, { user, roleId }) {
+      return new Promise((resolve, reject) => {
+        Repository.post(`${USER_URL}?roleId=${roleId}`, user)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

@@ -104,6 +104,7 @@
                       {{ city.name_with_type }}
                     </option>
                   </select>
+
                   <div class="ui left corner label">
                     <i class="asterisk icon"></i>
                   </div>
@@ -249,7 +250,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .asterisk.icon {
   color: red;
 }

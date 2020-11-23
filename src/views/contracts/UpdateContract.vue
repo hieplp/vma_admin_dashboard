@@ -15,32 +15,14 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Update Contract
+          Create Contract
         </span>
       </h3>
     </div>
-    <!-- Update Confirmation -->
-    <Confirmation
-      icon="edit outline"
-      title="Update Confirmation"
-      subTitle="Do you want to update this contract?"
-      rightBtnTitle="Update"
-      rightBtnIcon="check"
-      rightBtnColor="blue"
-      leftBtnTitle="Cancel"
-      leftBtnIcon="x"
-      leftBtnColor="red"
-      v-if="isUpdConVisible"
-      :handleLeftBtn="
-        () => {
-          this.isUpdConVisible = !this.isUpdConVisible;
-        }
-      "
-      :handleRightBtn="update"
-    />
+
     <!-- Error message -->
     <MessageModal
-      title="Update Contract Fail!"
+      title=" Create Contract Fail!"
       icon="frown outline "
       :subTitle="errMsg"
       :proFunc="
@@ -52,42 +34,43 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Update Contract Successfully!"
+      title="Create Contract Successfully!"
       icon="check circle"
-      :subTitle="
-        `Contract with id ${this.propContract.contractId} is updated successfully！`
-      "
+      :subTitle="`Contract is created successfully!`"
       :proFunc="
         () => {
-          this.isUpdatedSuccessfully = !this.isUpdatedSuccessfully;
+          this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
+          this.$router.push({
+            name: 'Contracts',
+          });
         }
       "
-      v-if="isUpdatedSuccessfully"
+      v-if="isCreatedSuccessfully"
     />
 
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <div class="ui two steps">
+            <div class="ui three steps">
               <button
                 class="step"
-                v-on:click="changeTab()"
-                v-bind:class="{ active: isUserInfoVisible }"
+                v-on:click="changeTab('isContractVisible')"
+                v-bind:class="{ active: isContractVisible }"
               >
-                <i class="flag checkered icon"></i>
+                <i class="mdi mdi-file-document icon"></i>
                 <div class="content">
-                  <div class="title">CONTRACT INFORMATION</div>
+                  <div class="title">CONTRACT</div>
                 </div>
               </button>
               <button
                 class="step"
-                v-on:click="changeTab()"
-                v-bind:class="{ active: !isUserInfoVisible }"
+                v-on:click="changeTab('isTripVisible')"
+                v-bind:class="{ active: isTripVisible }"
               >
-                <i class="bus icon"></i>
+                <i class="newspaper outline icon"></i>
                 <div class="content">
-                  <div class="title">VEHICLE</div>
+                  <div class="title">TRIP</div>
                 </div>
               </button>
             </div>
@@ -95,14 +78,15 @@
         </div>
       </div>
     </div>
+    <div v-if="isUserLoading">
+      <ContractInformation
+        :propContract="contract"
+        ref="contract"
+        v-show="isContractVisible && contract"
+      />
+    </div>
 
-    <ContractInformation
-      ref="contractInfo"
-      :propContract="propContract"
-      v-if="propContract"
-    />
-
-    <div class="row" v-if="propContract">
+    <div class="row" v-show="isContractVisible">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
@@ -110,22 +94,11 @@
               <!-- Button group -->
               <div class="row justify-content-center">
                 <button
-                  class="btn btn-gradient-danger btn-fw ml-2"
-                  type="button"
-                  @click="cancel"
-                >
-                  Cancel
-                </button>
-                <button
                   class="btn btn-gradient-info btn-fw ml-2"
                   type="button"
-                  @click="
-                    () => {
-                      this.isUpdConVisible = !this.isUpdConVisible;
-                    }
-                  "
+                  v-on:click="changeTab('isTripVisible')"
                 >
-                  Update
+                  Next
                 </button>
               </div>
             </div>
@@ -134,8 +107,42 @@
       </div>
     </div>
 
+    <!-- FIRST TRIP -->
+    <TripPicker
+      title="FIRST TRIP"
+      ref="firstTrip"
+      :propTrip="contract.trips[0]"
+      v-show="isTripVisible"
+      :endDateChange="
+        () => {
+          this.$refs.returnTrip.trip.departureTime = '';
+          this.$refs.returnTrip.trip.destinationTime = '';
+          this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
+        }
+      "
+    />
+    <div v-if="contract.trips.length == 2">
+      <!-- RETURN TRIP -->
+      <TripPicker
+        title="RETURN TRIP"
+        ref="returnTrip"
+        v-show="isTripVisible && contract.roundTrip"
+        :propTrip="contract.trips[1]"
+        :endDateChange="() => {}"
+        :importLocation="
+          () => {
+            // Reverse locations arrays
+            this.$refs.returnTrip.firstLocations = this.$refs.firstTrip.firstLocations;
+            this.$refs.returnTrip.firstLocations = []
+              .concat(this.$refs.returnTrip.firstLocations)
+              .reverse();
+          }
+        "
+      />
+    </div>
+
     <!-- User document -->
-    <div class="row" v-if="!isUserInfoVisible">
+    <div class="row" v-show="isTripVisible">
       <!-- Confirm Group -->
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
@@ -147,16 +154,16 @@
                   <button
                     class="btn btn-gradient-danger btn-fw"
                     type="button"
-                    @click="cancel"
+                    v-on:click="changeTab('isContractVisible')"
                   >
                     Back
                   </button>
                   <button
                     class="btn btn-gradient-info btn-fw ml-2"
                     type="button"
-                    v-on:click="() => {}"
+                    v-on:click="create()"
                   >
-                    Update
+                    Create
                   </button>
                 </div>
               </div>
@@ -169,85 +176,74 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
-// import * as firebase from "firebase";
+import MessageModal from "../../components/Modal/MessageModal";
 import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-import Confirmation from "../../components/Modal/Confirmation";
-import MessageModal from "../../components/Modal/MessageModal";
-const ContractRepository = RepositoryFactory.get("contracts");
+import TripPicker from "../../components/TripPicker";
 
 export default {
-  name: "UpdateContract",
+  name: "CreateContract",
   components: {
     Loading,
     ContractInformation,
-    Confirmation,
+    TripPicker,
     MessageModal,
   },
   data() {
     return {
-      contract: null,
-      propContract: null,
-
-      // Profile image
-      isUserInfoVisible: true,
-
-      isAddressLoading: false,
-
-      // Basic Information Error
-      ownerErr: false,
-      departureTimeErr: false,
-      destinationTimeErr: false,
-      durationFromErr: false,
-      durationToErr: false,
-      otherInformationErr: false,
-      signedDateErr: false,
-      totalPriceErr: false,
-
       isLoading: false,
-      isUpdatedSuccessfully: false,
-      isUpdConVisible: false,
+      isCreatedSuccessfully: false,
       isError: false,
       errMsg: "",
-
+      contract: null,
       documentExpiryDate: [],
+      isContractVisible: true,
+      isTripVisible: false,
 
-      // Vehicle Owner
-      isOwnerModalVisible: false,
-      // Owner
-      owner: {
-        userId: "",
-        fullName: "",
-      },
+      isUserLoading: false,
+
+      isAddressModalVisible: false,
     };
   },
   async mounted() {
     this.isLoading = true;
     await this.initContract();
+    this.isUserLoading = true;
     this.isLoading = false;
   },
   methods: {
+    // Map state
+    ...mapActions("Contract", ["_create", "_getContractDetail"]),
     // Init contract
     async initContract() {
-      await ContractRepository.getDetail(this.$route.params.contractId).then(
+      await this._getContractDetail(this.$route.params.contractId).then(
         (res) => {
-          this.propContract = res;
+          this.contract = res;
         }
       );
     },
-    // Update contract
-    async update() {
-      this.isUpdConVisible = false;
-      let isValid = this.$refs.contractInfo.checkBasicInformation();
-      if (!isValid) {
-        this.isLoading = true;
-        let contract = this.$refs.contractInfo.getData();
-        await ContractRepository.update(contract)
+    // Create
+    async create() {
+      this.isLoading = true;
+      let isValid = false;
+      this.contract.trips = [];
+      // Get first trip
+      let firstTrip = this.$refs.firstTrip.getData();
+      this.contract.trips.push(firstTrip);
+      isValid = firstTrip !== null;
+      // If is round-trip
+      if (this.contract.roundTrip) {
+        let returnTrip = this.$refs.returnTrip.getData();
+        this.contract.trips.push(returnTrip);
+        isValid = returnTrip !== null;
+      }
+      if (isValid) {
+        await this._create(this.contract)
           .then((res) => {
             if (res) {
-              this.isUpdatedSuccessfully = true;
+              this.isCreatedSuccessfully = true;
             }
           })
           .catch((ex) => {
@@ -257,20 +253,28 @@ export default {
             }
             console.error(ex);
           });
-        this.isLoading = false;
       }
+      this.isLoading = false;
     },
-    // Cancel
-    cancel() {
-      this.$refs.contractInfo.initContract();
-    },
-    changeTab() {
-      let isValid = this.checkBasicInformation();
+    changeTab(step) {
+      let isValid = this.$refs.contract.checkBasicInformation();
       // let isValid = false;
       if (!isValid) {
+        this.contract = this.$refs.contract.getData();
         document.getElementById("app").scrollIntoView();
-        this.isUserInfoVisible = !this.isUserInfoVisible;
+        this.isContractVisible = step === "isContractVisible" ? true : false;
+        this.isTripVisible = step === "isTripVisible" ? true : false;
       }
+    },
+
+    // Vehicle Owner
+    handleVehicleOwnerModal() {
+      this.isOwnerModalVisible = !this.isOwnerModalVisible;
+    },
+    // Get vehicle owner
+    getVehicleOwner() {
+      this.owner = this.$refs.ownerModal.getSelectedCustomer();
+      this.handleVehicleOwnerModal();
     },
 
     isNumber(evt) {
@@ -288,22 +292,6 @@ export default {
 .asterisk.icon {
   color: red;
 }
-.preview-img {
-  position: relative;
-}
-.close-btn {
-  position: absolute;
-  top: 0%;
-  right: 8%;
-  color: red;
-  font-size: 30px;
-  background-color: transparent;
-  border: none;
-  visibility: hidden;
-}
-.preview-img:hover > .close-btn {
-  visibility: visible;
-}
 
 .upload-photo {
   opacity: 0;
@@ -312,38 +300,6 @@ export default {
 }
 .step i {
   color: #047edf !important;
-}
-/* Upload profile img */
-.upload-pro {
-  position: relative;
-}
-.upload-pro:hover > .upload-pro-plus {
-  cursor: pointer;
-  visibility: visible;
-}
-
-.upload-pro img {
-  border-radius: 50%;
-  width: 280px !important;
-  height: 280px !important;
-}
-.upload-pro-plus {
-  position: absolute;
-  z-index: 1000;
-  background-color: rgba(221, 209, 209, 0.5);
-  color: rgb(138, 135, 135);
-  width: 100%;
-  height: 100%;
-  top: 0%;
-  left: 0%;
-  font-size: 80px;
-  border-radius: 55%;
-  visibility: hidden;
-}
-.upload-pro-plus i {
-  position: absolute;
-  left: 35%;
-  top: 35%;
 }
 
 .cus-select {

@@ -31,14 +31,62 @@ export default {
     // Get vehicles
     _getVehicles(
       context,
-      { page, name, phoneNumber, userStatus, userId, viewOption }
+      {
+        pageNum,
+        model,
+        vehicleId,
+        vehicleMinDis,
+        vehicleMaxDis,
+        vehicleStatus,
+        vehicleType,
+        vehicleMinSeat,
+        vehicleMaxSeat,
+        viewOption,
+        ownerId,
+      }
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${VEHICLE_URL}?name=${name}&page=${page}&phoneNumber=${phoneNumber}&userStatus=${userStatus}&userId=${userId}&viewOption=${viewOption}`
+          `${VEHICLE_URL}?model=${model}&pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&viewOption=${viewOption}&ownerId=${ownerId}`
         )
           .then((res) => {
-            context.commit("setVehicles", res.data.vehiclerRes);
+            context.commit("setVehicles", res.data.vehicleList);
+            resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get vehicles
+    _getVehiclesWithIdAndType(
+      context,
+      { pageNum, vehicleId, viewOption, vehicleStatus, vehicleType }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${VEHICLE_URL}?pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleTypeId=${vehicleType}&viewOption=${viewOption}&vehicleStatus=${vehicleStatus}`
+        )
+          .then((res) => {
+            context.commit("setVehicles", res.data.vehicleList);
+            resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get vehicles
+    _getVehiclesWithIdAndTypeCount(
+      context,
+      { vehicleId, viewOption, vehicleStatus, vehicleType }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${VEHICLE_URL}/count?vehicleId=${vehicleId}&vehicleTypeId=${vehicleType}&viewOption=${viewOption}&vehicleStatus=${vehicleStatus}`
+        )
+          .then((res) => {
+            context.commit("setTotalVehicles", res.data);
             resolve();
           })
           .catch((err) => {
@@ -60,7 +108,18 @@ export default {
             resolve();
           })
           .catch((err) => {
-            console.log(err);
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get vehicle type
+    _getVehicleType() {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${VEHICLE_URL}/misc/types`)
+          .then((res) => {
+            resolve(res.data.vehicleTypes);
+          })
+          .catch((err) => {
             reject(err.response.data);
           });
       });
@@ -98,6 +157,32 @@ export default {
           .then((res) => {
             context.commit("setAssignedDrivers", res.data.driverHistory);
             resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Delete contracts
+    _deleteContract(context, vehicleValueId) {
+      return new Promise((resolve, reject) => {
+        Repository.delete(
+          `${VEHICLE_URL}/value?vehicleValueId=${vehicleValueId}`
+        )
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Insert contracts
+    _insertContract(context, vehicleValueReq) {
+      return new Promise((resolve, reject) => {
+        Repository.post(`${VEHICLE_URL}/value`, vehicleValueReq)
+          .then((res) => {
+            resolve(res);
           })
           .catch((err) => {
             reject(err.response.data);

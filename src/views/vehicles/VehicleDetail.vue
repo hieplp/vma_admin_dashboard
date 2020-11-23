@@ -25,14 +25,61 @@
       </h3>
     </div>
 
+    <!-- Delete confimation -->
+    <Confirmation
+      icon="trash alternate"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this contract?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
+      v-if="isDeleteConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteContract"
+    />
+
+    <!-- Error message -->
+    <MessageModal
+      title="Delete Contract Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
+    <!-- Success message -->
+    <MessageModal
+      title="Delete Contract Successfully!"
+      icon="check circle"
+      :subTitle="
+        `Contract with id ${this.deleteVehicleId} is deleted successfully.`
+      "
+      :proFunc="
+        () => {
+          this.isSuccess = !this.isSuccess;
+        }
+      "
+      v-if="isSuccess"
+    />
+
     <div class="row">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <div class="ui two steps">
+            <div class="ui three steps">
               <button
                 class="step"
-                v-on:click="changeTab()"
+                v-on:click="changeTab('isVehiclenfoVisible')"
                 v-bind:class="{ active: isVehiclenfoVisible }"
               >
                 <i class="ui bus icon"></i>
@@ -42,8 +89,19 @@
               </button>
               <button
                 class="step"
-                v-on:click="changeTab()"
-                v-bind:class="{ active: !isVehiclenfoVisible }"
+                v-if="vehicle.values && vehicle.values.length > 0"
+                v-on:click="changeTab('isContractVisible')"
+                v-bind:class="{ active: isContractVisible }"
+              >
+                <i class="newspaper outline icon"></i>
+                <div class="content">
+                  <div class="title">CONTRACT</div>
+                </div>
+              </button>
+              <button
+                class="step"
+                v-on:click="changeTab('isDocumentVisible')"
+                v-bind:class="{ active: isDocumentVisible }"
               >
                 <i class="mdi mdi-file-document icon"></i>
                 <div class="content">
@@ -273,22 +331,123 @@
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="row" v-else-if="isContractVisible">
+      <div class="grid-margin stretch-card col-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="page-header">
+              <h4 class="card-title">Contract List</h4>
+              <div class="dropdown">
+                <button
+                  class="btn btn-gradient-info btn-icon-text mr-2"
+                  type="button"
+                  :disable="isContractActive"
+                  @click="
+                    () => {
+                      this.$router.push({
+                        name: 'CreateVehicleContract',
+                        params: { vehicleId: vehicle.vehicleId },
+                      });
+                    }
+                  "
+                >
+                  <i class="mdi mdi-plus-box btn-icon-prepend"></i>
+                  Create
+                </button>
+              </div>
+            </div>
 
-          <!-- Button group -->
-          <div class="row justify-content-center mt-5">
-            <button
-              class="btn btn-gradient-info btn-fw ml-2"
-              type="button"
-              v-on:click="changeTab()"
-            >
-              Continue
-            </button>
+            <table class="table" v-if="vehicle.values.length > 0">
+              <thead>
+                <tr class="">
+                  <th>NO.</th>
+                  <th>ID</th>
+                  <th>START DATE</th>
+                  <th>END DATE</th>
+                  <th>VALUE</th>
+                  <th>STATUS</th>
+                  <th class="text-center">ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(contract, index) in this.vehicle.values"
+                  :key="contract.contractId"
+                >
+                  <td class="text-secondary">{{ index + 1 }}</td>
+                  <td>{{ contract.vehicleValueId }}</td>
+                  <td>{{ contract.startDate }}</td>
+                  <td>{{ contract.endDate }}</td>
+                  <td>{{ contract.value }}</td>
+                  <td>
+                    <label
+                      class="badge"
+                      :class="{
+                        'badge-info': isContractAvailable(
+                          contract.startDate,
+                          contract.endDate,
+                          contract.deleted
+                        ),
+                        'badge-danger': !isContractAvailable(
+                          contract.startDate,
+                          contract.endDate,
+                          contract.deleted
+                        ),
+                        'badge-dark': contract.deleted,
+                      }"
+                      >{{
+                        contract.deleted
+                          ? "DELETED"
+                          : isContractAvailable(
+                              contract.startDate,
+                              contract.endDate,
+                              contract.deleted
+                            )
+                          ? "ACTIVE"
+                          : "EXPIRED"
+                      }}</label
+                    >
+                  </td>
+
+                  <td class="row justify-content-center btn-action">
+                    <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1 mt-1"
+                      @click="
+                        handleDialog(
+                          'isDeleteConVisible',
+                          contract.vehicleValueId,
+                          index
+                        )
+                      "
+                      :disabled="
+                        contract.deleted ||
+                          !isContractAvailable(
+                            contract.startDate,
+                            contract.endDate
+                          )
+                      "
+                    >
+                      <i class="mdi mdi-delete-forever"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Empty list -->
+            <div class="card empty-list" v-else>
+              <i class="mdi mdi-newspaper"></i>
+              <h1>NOTHING</h1>
+              <h3>Your list is empty.</h3>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <!-- Vehicle document -->
-    <div class="row" v-else>
+    <div class="row" v-else-if="isDocumentVisible">
       <div
         class="col-lg-12 grid-margin stretch-card"
         v-for="document in documents"
@@ -298,25 +457,6 @@
           :title="document.vehicleDocumentType"
           :document="document"
         />
-      </div>
-      <!-- Confirm Group -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <!-- Button group -->
-              <div class="row justify-content-center">
-                <button
-                  class="btn btn-gradient-danger btn-fw ml-2"
-                  type="button"
-                  v-on:click="changeTab()"
-                >
-                  Back
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
     <!-- Light box -->
@@ -328,9 +468,11 @@
 import { mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import LightBox from "vue-image-lightbox";
+import moment from "moment";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
-
+import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 import VehicleDocument from "../../components/Vehicle/ReadOnlyDocument";
 
 const VehicleDocRepos = RepositoryFactory.get("vehicleDocument");
@@ -341,6 +483,8 @@ export default {
     Loading,
     LightBox,
     VehicleDocument,
+    Confirmation,
+    MessageModal,
   },
   data() {
     return {
@@ -371,7 +515,13 @@ export default {
       profileImage: null,
       profileImagePrev: null,
       isVehiclenfoVisible: true,
+      isContractVisible: false,
+      isDocumentVisible: false,
       isVehiclenfoLoading: false,
+      isDeleteConVisible: false,
+      isError: false,
+      errMsg: "",
+      isSuccess: false,
       isLoading: false,
       media: [
         {
@@ -380,6 +530,11 @@ export default {
         },
       ],
       prevRoute: null,
+
+      // Contract
+      isContractActive: false,
+      vehicleValueId: "",
+      index: 0,
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -395,7 +550,7 @@ export default {
   },
   methods: {
     // Map state
-    ...mapActions("Vehicle", ["_getDetailVehicle"]),
+    ...mapActions("Vehicle", ["_getDetailVehicle", "_deleteContract"]),
     // Init vehicle information
     async initVehicle() {
       await this._getDetailVehicle(this.$route.params.vehicleId).then((res) => {
@@ -414,10 +569,57 @@ export default {
         }
       );
     },
-    changeTab() {
+    changeTab(step) {
       document.getElementById("app").scrollIntoView();
-      this.isVehiclenfoVisible = !this.isVehiclenfoVisible;
+      this.isVehiclenfoVisible = step === "isVehiclenfoVisible" ? true : false;
+      this.isContractVisible = step === "isContractVisible" ? true : false;
+      this.isDocumentVisible = step === "isDocumentVisible" ? true : false;
     },
+    // Contact ----------->
+    // Check is contract available
+    isContractAvailable(startDate, endDate, isDeleted) {
+      if (isDeleted) {
+        return false;
+      }
+      let date = Number(moment(new Date()).format("YYYYMMDD"));
+      let startNum = Number(startDate.replaceAll("-", ""));
+      let endNum = Number(endDate.replaceAll("-", ""));
+      if (startNum >= date && endNum >= date) {
+        this.isContractActive = true;
+        return true;
+      }
+      return false;
+    },
+    // Delete contract
+    async deleteContract() {
+      this.handleDialog("isDeleteConVisible", "");
+      this.isLoading = true;
+      await this._deleteContract(this.vehicleValueId)
+        .then((res) => {
+          if (res) {
+            this.isSuccess = true;
+            this.vehicle.values[this.index].deleted = true;
+            console.log(
+              "deleteContract -> this.vehicle.values[this.index]",
+              this.vehicle.values[this.index]
+            );
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.debugMessage;
+        });
+      this.isLoading = false;
+    },
+    // Close delete contract confimation dialog
+    handleDialog(dialogName, vehicleValueId, index) {
+      if (vehicleValueId.length !== 0) {
+        this.vehicleValueId = vehicleValueId;
+        this.index = index;
+      }
+      this.$data[dialogName] = !this.$data[dialogName];
+    },
+    /// End of contract
     viewProfilePhoto() {
       this.media = [];
       let temp = {

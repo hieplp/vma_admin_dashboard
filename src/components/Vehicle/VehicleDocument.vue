@@ -286,7 +286,7 @@
                     type="date"
                     class="form-control"
                     v-model="document.expiryDate"
-                    :disabled="document.registeredDate === null"
+                    :disabled="!document.registeredDate"
                     :min="document.registeredDate"
                   />
                   <div class="ui corner label">

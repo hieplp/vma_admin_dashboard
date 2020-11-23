@@ -8,6 +8,25 @@
       :color="'#2e5bff'"
     ></loading>
 
+    <!-- Delete confimation -->
+    <Confirmation
+      icon="user times"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this driver?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
+      v-if="isDeleteConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteDriver"
+    />
     <!-- Error message -->
     <MessageModal
       title="Delete Driver Fail!"
@@ -16,17 +35,25 @@
       :proFunc="handleErrorModal"
       v-if="isError"
     />
+    <!-- Success message -->
+    <MessageModal
+      title="Delete Driver Successfully!"
+      icon="check circle"
+      :subTitle="`Driver with id ${this.deleteUserID} is deleted successfully.`"
+      :proFunc="handleSuccessModal"
+      v-if="isSuccess"
+    />
 
     <div class="page-header">
       <h3 class="page-title">
         <router-link to="/drivers" class="nav-link"
-          >Vehicles Report</router-link
+          >Schedule Report</router-link
         >
       </h3>
       <div class="dropdown">
-        <!-- Create new driver -->
+        <!-- Download report -->
         <a
-          :href="`${baseUrl}`"
+          :href="`${baseUrl}?quarter=${this.quarter}&year=${this.year}`"
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
         >
@@ -60,15 +87,26 @@
             <!-- <input type="file" id="input" @change="previewFiles($event)" /> -->
             <vue-excel-editor
               width="100%"
-              v-model="vehiclesData"
+              v-model="schedulesData"
               remember
               readonly
+              no-header-edit
             >
-              <vue-excel-column field="vehicleId" label="ID" />
-              <vue-excel-column field="vehicleType" label="Type" />
-              <vue-excel-column field="brand" label="Brand" />
-              <vue-excel-column field="ownerId" label="Owner Id" />
-              <vue-excel-column field="ownerName" label="Owner Name" />
+              <vue-excel-column field="contractId" label="ID" />
+              <vue-excel-column field="date" label="Date" />
+              <vue-excel-column
+                field="departureLocation"
+                label="Departure Location"
+              />
+              <vue-excel-column
+                field="destinationLocation"
+                label="Destination Location"
+              />
+              <vue-excel-column field="contractValue" label="Contract Value" />
+              <vue-excel-column
+                field="contractStatus"
+                label="Contract Status"
+              />
             </vue-excel-editor>
           </div>
         </div>
@@ -79,47 +117,23 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
-            <!-- Search Driver ID -->
-            <!-- 
-            <div class="col-sm-12">
-              <label>Driver ID</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Driver ID"
-                v-model="searchDriverID"
-                @keypress="isNumber($event)"
-                maxlength="12"
-              />
-            </div> -->
             <div class="col-12 mt-4">
-              <label>Driver Name</label>
+              <label>Year</label>
               <input
                 type="text"
                 class="form-control form-control-sm"
-                v-model="searchDriverName"
-                placeholder="Driver name"
+                v-model="year"
+                placeholder="Year"
               />
             </div>
-            <!-- Phone number dropdown-->
+
+            <!-- Quarter -->
             <div class="col-12 mt-4">
-              <label>Phone Number</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Phone Number"
-                v-model="searchPhoneNumber"
-                @keypress="isNumber($event)"
-                maxlength="10"
-              />
-            </div>
-            <!-- Driver status dropdown -->
-            <div class="col-12 mt-4">
-              <label>Status</label>
+              <label>Quarter</label>
               <select
                 class="form-control form-control-sm"
                 name="status"
-                v-model="searchStatusID"
+                v-model="quarter"
               >
                 <option value="" selected>NONE</option>
                 <option
@@ -136,7 +150,7 @@
               <button
                 class="btn btn-outline-info w-100"
                 type="button"
-                v-on:click="searchDrivers()"
+                v-on:click="intiScheduleData()"
               >
                 Filter
               </button>
@@ -161,6 +175,7 @@
 import { mapState, mapActions } from "vuex";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
+import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
 import CONSTANT from "../../constant";
 
@@ -169,6 +184,7 @@ export default {
   props: {},
   components: {
     Loading,
+    Confirmation,
     MessageModal,
   },
   computed: {
@@ -179,35 +195,74 @@ export default {
     return {
       isFilterVisible: false,
       isTableVisible: true,
-      isLoading: true,
       statusList: [],
+      // Filter
+      searchPhoneNumber: "",
+      searchDriverID: "",
+      searchDriverName: "",
+      searchStatusID: "",
+      isLoading: false,
+      // Pagination
+      page: 0,
+      currentPage: 1,
+      // Delete
+      isDeleteConVisible: false,
       // Error and success modal
       isError: false,
       isSuccess: false,
       errMsg: "",
       deleteUserID: "",
-      //
-      vehiclesData: [],
-
+      // Report
+      schedulesData: [],
       quarter: "",
-      vehicleId: "",
       year: "",
-      baseUrl: `${CONSTANT.BASE_URL}/reports/vehicles`,
+
+      vehicleId: "",
+      baseUrl: `${CONSTANT.BASE_URL}/reports/schedule`,
     };
   },
   async mounted() {
-    await this.intiVehicleData();
+    this.initStatusList();
+    await this.intiScheduleData();
   },
   methods: {
     // Map actions
-    ...mapActions("Report", ["_getVehiclesReport"]),
-
-    async intiVehicleData() {
+    ...mapActions("Report", ["_getScheduleReport"]),
+    // Init schedule data
+    async intiScheduleData() {
       this.isLoading = true;
-      await this._getVehiclesReport().then((res) => {
-        this.vehiclesData = res;
+      await this._getScheduleReport({
+        quarter: this.quarter,
+        year: this.year,
+      }).then((res) => {
+        this.schedulesData = res;
       });
       this.isLoading = false;
+    },
+    // Init data for driver Status Dropdown
+    initStatusList() {
+      this.statusList = ["FIRST", "SECOND", "THIRD", "FOURTH"];
+    },
+    // Clear search item value
+    clearSearchValue() {
+      this.quarter = "";
+      this.year = "";
+    },
+    // Get excel file
+
+    // Set filter to visible
+    clickToViewFilter() {
+      if (this.isFilterVisible && !this.isTableVisible) {
+        this.isFilterVisible = !this.isFilterVisible;
+        setTimeout(() => {
+          this.isTableVisible = !this.isTableVisible;
+        }, 300);
+      } else if (!this.isFilterVisible && this.isTableVisible) {
+        this.isTableVisible = !this.isTableVisible;
+        setTimeout(() => {
+          this.isFilterVisible = !this.isFilterVisible;
+        }, 300);
+      }
     },
   },
 };

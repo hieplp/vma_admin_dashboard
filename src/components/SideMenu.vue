@@ -131,6 +131,39 @@
           </ul>
         </div>
       </li>
+      <!-- Maintenance -->
+      <li
+        class="nav-item"
+        :class="{
+          active: this.$route.name.includes('Maintenance') ? true : false,
+        }"
+      >
+        <a
+          class="nav-link"
+          data-toggle="collapse"
+          href="#maintenance"
+          aria-expanded="false"
+          aria-controls="maintenance"
+        >
+          <span class="menu-title">Maintenance</span>
+          <i class="menu-arrow"></i>
+          <i class="mdi mdi-wrench menu-icon"></i>
+        </a>
+        <div class="collapse" id="maintenance">
+          <ul class="nav flex-column sub-menu">
+            <li class="nav-item">
+              <router-link to="/vehicles/overview" class="nav-link">
+                Overview
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/maintenances" class="nav-link">
+                Maintenances List
+              </router-link>
+            </li>
+          </ul>
+        </div>
+      </li>
       <!-- Contracts -->
       <li
         class="nav-item"
@@ -239,6 +272,16 @@
                 Vehicles Reports
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/reports/schedule" class="nav-link ">
+                Schedule Reports
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/reports/contracts" class="nav-link ">
+                Contract Reports
+              </router-link>
+            </li>
           </ul>
         </div>
       </li>
@@ -278,8 +321,10 @@ export default {
     // Init data for user
     initAuthUser() {
       let user = JSON.parse(localStorage.getItem("USER"));
-      this.userName = user.displayName;
-      this.imageLink = user.photoURL;
+      if (user) {
+        this.userName = user.displayName;
+        this.imageLink = user.photoURL;
+      }
     },
   },
 };

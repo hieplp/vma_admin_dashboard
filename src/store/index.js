@@ -9,6 +9,8 @@ import Contract from "./Contract/Contract";
 import Report from "./Report/Report";
 import Vehicle from "./Vehicle/Vehicle";
 import Request from "./Request/Request";
+import Notification from "./Notification/Notification";
+import Maintenance from "./Maintenance/Maintenance";
 
 Vue.use(Vuex);
 
@@ -25,5 +27,7 @@ export default new Vuex.Store({
     Report: Report,
     Vehicle: Vehicle,
     Request: Request,
+    Notification: Notification,
+    Maintenance: Maintenance,
   },
 });

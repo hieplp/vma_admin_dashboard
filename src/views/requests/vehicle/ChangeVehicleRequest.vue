@@ -135,10 +135,8 @@
                     <input
                       type="text"
                       :class="{
-                        'blue-req':
-                          request.requestType === 'NEW_VEHICLE_DOCUMENT',
-                        'red-req':
-                          request.requestType === 'DELETE_VEHICLE_DOCUMENT',
+                        'blue-req': request.requestType === 'ADD_NEW_VEHICLE',
+                        'yellow-req': request.requestType === 'CHANGE_VEHICLE',
                       }"
                       v-model="request.requestType"
                       readonly

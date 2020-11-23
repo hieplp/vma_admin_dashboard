@@ -86,14 +86,14 @@
                   placeholder="Engine Number"
                   v-model="vehicle.engineNumber"
                   style="text-transform:uppercase"
-                  maxlength="10"
+                  maxlength="12"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
                 </div>
               </div>
               <div class="ui pointing red basic label" v-if="isEngineNumberErr">
-                Engine Number is required 10 chars!
+                Engine Number is required 12 chars!
               </div>
             </div>
             <!-- Model -->
@@ -180,9 +180,6 @@
                 Year of manufacture is required 4 numbers!
               </div>
             </div>
-          </div>
-
-          <div class="two fields">
             <!-- Seat -->
             <div class="field ">
               <label>Total Seats</label>
@@ -203,6 +200,9 @@
                 Total seats is required!
               </div>
             </div>
+          </div>
+
+          <div class="two fields">
             <!-- Vehicle Type -->
             <div class="field ">
               <label>Vehicle Type</label>
@@ -271,6 +271,73 @@
             </div>
           </div>
 
+          <h4
+            class="ui dividing header"
+            v-if="owner.userId && isContractVisible"
+          >
+            Contributor contract
+          </h4>
+          <div class="three fields" v-if="owner.userId && isContractVisible">
+            <!-- Contributor Share Money -->
+            <div class="field">
+              <label>Shared Money</label>
+              <div class="ui corner labeled input">
+                <input
+                  v-model="vehicle.vehicleValue.value"
+                  type="text"
+                  placeholder="Shared Money"
+                  @keypress="isNumber($event)"
+                />
+                <div class="ui corner label">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div
+                class="ui pointing red basic label"
+                v-if="isContributorMoneyErr"
+              >
+                Shared money is required!
+              </div>
+            </div>
+            <!-- Contract Start Date -->
+            <div class="field">
+              <label>Start Date</label>
+              <div class="ui corner labeled input">
+                <input
+                  v-model="vehicle.vehicleValue.startDate"
+                  type="date"
+                  :min="maxDate"
+                  placeholder="Start Date"
+                />
+                <div class="ui corner label">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div class="ui pointing red basic label" v-if="isStartDateErr">
+                Start date is required!
+              </div>
+            </div>
+            <!-- Contract End Date -->
+            <div class="field">
+              <label>End Date</label>
+              <div class="ui corner labeled input">
+                <input
+                  v-model="vehicle.vehicleValue.endDate"
+                  type="date"
+                  :disabled="!vehicle.vehicleValue.startDate"
+                  :min="vehicle.vehicleValue.startDate"
+                  placeholder="End Date"
+                />
+                <div class="ui corner label">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div class="ui pointing red basic label" v-if="isEndDateErr">
+                End date is required!
+              </div>
+            </div>
+          </div>
+
           <!-- Button group -->
           <div class="row justify-content-center mt-5">
             <!-- If update user is call -->
@@ -309,6 +376,7 @@
 <script>
 import { isNumber } from "../../assets/js/input.js";
 import Multiselect from "vue-multiselect";
+import moment from "moment";
 import ContributorsModal from "../Modal/ContributorsModal";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 
@@ -342,7 +410,16 @@ export default {
         vehicleTypeId: "",
         yearOfManufacture: "",
         vehicleStatus: "",
+        vehicleValue: {
+          endDate: "",
+          startDate: "",
+          value: "",
+          vehicleId: "",
+        },
       },
+
+      isContractVisible: true,
+
       // Basic Information Error
       isChassisNumberErr: false,
       isEngineNumberErr: false,
@@ -354,6 +431,10 @@ export default {
       isDistanceDrivenErr: false,
       isVehicleTypeErr: false,
       isVehicleImgErr: false,
+      // If vehicle belongs to a contributor
+      isContributorMoneyErr: false,
+      isStartDateErr: false,
+      isEndDateErr: false,
 
       // Profile image
       profileImage: null,
@@ -369,9 +450,6 @@ export default {
       // Origin
       originOtions: [],
       origin: null,
-      // Seat
-      totalSeats: [],
-      seat: "",
       // vehicle Types
       vehicleTypes: [],
       vehicleType: "",
@@ -382,23 +460,26 @@ export default {
       },
       // Vehicle Owner
       isOwnerModalVisible: false,
+
+      // let max date
+      maxDate: "",
     };
   },
   async mounted() {
     this.originOtions = require("../../assets/json/contry.json");
-    this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
     await this.initBrands();
     await this.initTypes();
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
     //If there is a vehicle data
     if (this.propVehicle) {
       this.initData();
     }
-    // Init max birthdate = current year - 18
   },
   methods: {
     // Init
     // Init data when is update
     initData() {
+      this.isContractVisible = false;
       this.vehicle = this.copyProperties(this.propVehicle, this.vehicle);
 
       // Init brand
@@ -467,7 +548,7 @@ export default {
     // Cheack basic information
     checkBasicInformation() {
       this.isChassisNumberErr = this.vehicle.chassisNumber.length !== 17;
-      this.isEngineNumberErr = this.vehicle.engineNumber.length !== 10;
+      this.isEngineNumberErr = this.vehicle.engineNumber.length !== 12;
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
       this.isOriginErr = this.origin === null;
@@ -475,8 +556,18 @@ export default {
       this.isSeatErr = this.vehicle.seats.length === 0;
       this.isVehicleTypeErr = this.vehicle.vehicleTypeId.length === 0;
       this.isDistanceDrivenErr = this.vehicle.distanceDriven.length === 0;
-      // this.isVehicleImgErr =
-      //   this.profileImage === null || this.profileImage === null;
+
+      if (this.owner.userId && this.isContractVisible) {
+        this.isContributorMoneyErr =
+          this.vehicle.vehicleValue.value.length === 0;
+        this.isStartDateErr = this.vehicle.vehicleValue.startDate.length === 0;
+        this.isEndDateErr = this.vehicle.vehicleValue.endDate.length === 0;
+      } else {
+        this.isContributorMoneyErr = false;
+        this.isStartDateErr = false;
+        this.isEndDateErr = false;
+      }
+
       this.isVehicleImgErr =
         (this.profileImage === null || this.profileImage === null) &&
         (this.vehicle.imageLink === null ||
@@ -493,7 +584,8 @@ export default {
         this.isSeatErr ||
         this.isVehicleTypeErr ||
         this.isDistanceDrivenErr ||
-        this.isVehicleImgErr
+        this.isVehicleImgErr ||
+        this.isContributorMoneyErr
       );
     },
     update() {
@@ -519,8 +611,10 @@ export default {
       if (this.owner.userId.length > 0) {
         vehicle.ownerId = this.owner.userId;
       } else {
-        let user = JSON.parse(localStorage.getItem("userId"));
-        vehicle.ownerId = user.uid;
+        let user = JSON.parse(localStorage.getItem("USER"));
+        if (user) {
+          vehicle.ownerId = user.uid;
+        }
       }
 
       return {
@@ -548,6 +642,10 @@ export default {
 .upload-pro:hover > .upload-pro-plus {
   cursor: pointer;
   visibility: visible;
+}
+
+.cus-select {
+  padding-left: 26px !important;
 }
 
 .upload-pro img {

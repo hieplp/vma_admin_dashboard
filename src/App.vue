@@ -37,17 +37,13 @@ export default {
   watch: {
     // eslint-disable-next-line no-unused-vars
     $route: async function(from, to) {
-      //   await this.checkAuthUser();
-      // } else if (from !== null && from.name === "Login") {
-      //   await this.checkAuthUser();
+      // await this.checkAuthUser();
+      // if (
+      //   to !== null &&
+      //   (to.name === "Login" || to.name === "DefaultOverview")
+      // ) {
+      //   window.location.reload();
       // }
-      await this.checkAuthUser();
-      if (
-        to !== null &&
-        (to.name === "Login" || to.name === "DefaultOverview")
-      ) {
-        window.location.reload();
-      }
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -59,8 +55,8 @@ export default {
     });
   },
   async mounted() {
-    await this.checkAuthUser();
-    // this.isVisible = true;
+    // await this.checkAuthUser();
+    this.isVisible = true;
   },
   data() {
     return {
@@ -75,7 +71,6 @@ export default {
     ...mapActions("User", ["_getUserRoles"]),
     // Check user valid
     async checkAuthUser() {
-      console.log(this.prevRoute);
       await this._getUserRoles()
         .then((res) => {
           if (res) {
@@ -90,7 +85,7 @@ export default {
           if (err) {
             this.isVisible = false;
             if (
-              this.prevRoute ||
+              (!this.prevRoute && this.$route.name !== "Login") ||
               (this.prevRoute && this.prevRoute.name !== "Login")
             ) {
               this.$router.push({

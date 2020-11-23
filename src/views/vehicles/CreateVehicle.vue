@@ -350,7 +350,6 @@ export default {
           "CIVIL_LIABILITY_INSURANCE_CERTIFICATE",
           "civilLiabilityInsur"
         );
-        console.log(this.vehicle);
         // Init image for profile
         if (this.profileImage) {
           this.vehicle.imageLink = await this.uploadImageToFirebase(
@@ -360,6 +359,12 @@ export default {
           this.profileImage = null;
         }
         this.vehicle.vehicleId = this.vehicle.vehicleDocuments[0].vehicleDocumentId;
+
+        if (this.vehicle.vehicleValue.value) {
+          this.vehicle.vehicleValue.vehicleId = this.vehicle.vehicleId;
+        } else {
+          this.vehicle.vehicleValue = null;
+        }
         // Call api to create new vehicle
         await VehicleRepository.create(this.vehicle)
           .then((res) => {

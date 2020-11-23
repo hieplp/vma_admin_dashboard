@@ -7,7 +7,7 @@
       :userId="owner.userId"
       ref="ownerModal"
     />
-    <div class="row">
+    <div class="row" v-if="isLoading">
       <!-- BASIC INFORMAION -->
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
@@ -23,6 +23,7 @@
                     <input
                       type="date"
                       v-model="contract.durationFrom"
+                      :min="currentDate"
                       placeholder="Duration From"
                     />
                     <div class="ui corner label">
@@ -74,6 +75,69 @@
                 </div>
               </div>
               <div class="two fields">
+                <!-- Estimated Passenger Count -->
+                <div class="field">
+                  <label>Estimated Passenger Count</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="contract.estimatedPassengerCount"
+                      placeholder="Estimated Passenger Count"
+                      @keypress="isNumber($event)"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                  <div
+                    class="ui pointing red basic label"
+                    v-if="estimatedPassengerCountErr"
+                  >
+                    Estimated Passenger Count is required!
+                  </div>
+                </div>
+                <!-- Estimated Vehicle Count -->
+                <div class="field">
+                  <label>Estimated Vehicle Count</label>
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      v-model="contract.estimatedVehicleCount"
+                      placeholder="Estimated Vehicle Count"
+                      @keypress="isNumber($event)"
+                    />
+                    <div class="ui corner label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                  <div
+                    class="ui pointing red basic label"
+                    v-if="estimatedVehicleCountErr"
+                  >
+                    Estimated Vehicle Count is required!
+                  </div>
+                </div>
+                <!-- Trip type -->
+                <div class="field">
+                  <label>Type</label>
+                  <div class="ui corner labeled input ">
+                    <select v-model="contract.roundTrip" class="cus-select">
+                      <option :value="false">One-way</option>
+                      <option :value="true">Round-trip</option>
+                    </select>
+                    <div class="ui corner left label">
+                      <i class="asterisk icon"></i>
+                    </div>
+                  </div>
+                  <div
+                    class="ui pointing red basic label"
+                    v-if="estimatedVehicleCountErr"
+                  >
+                    Estimated Vehicle Count is required!
+                  </div>
+                </div>
+              </div>
+              <div class="two fields">
                 <!-- Total Price -->
                 <div class="field">
                   <label>Total Price</label>
@@ -82,6 +146,7 @@
                       type="text"
                       v-model="contract.totalPrice"
                       placeholder="Total Price"
+                      @keypress="isNumber($event)"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -118,61 +183,6 @@
           </div>
         </div>
       </div>
-      <!-- DEPARTURE/DESTINATION TIME -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <h4 class="ui dividing header">DEPARTURE/DESTINATION TIME</h4>
-              <div class="two fields">
-                <!-- Departure Time -->
-                <div class="field">
-                  <label>Departure Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      v-model="contract.departureTime"
-                      placeholder="Departure Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="departureTimeErr"
-                  >
-                    Departure time is required!
-                  </div>
-                </div>
-                <!-- Destination Time-->
-                <div class="field ">
-                  <label>Destination Time</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="datetime-local"
-                      name="Salary"
-                      v-model="contract.destinationTime"
-                      :min="contract.departureTime"
-                      :readonly="!contract.departureTime"
-                      placeholder=" Destination Time"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="destinationTimeErr"
-                  >
-                    Destination Time is required!
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
     <Address
       title="SIGNED LOCATION"
@@ -180,25 +190,11 @@
       v-if="contract.signedLocation || isCreate"
       ref="signedLocation"
     />
-    <Address
-      title="DEPARTURE LOCATION"
-      :propAddress="contract.departureLocation"
-      v-if="contract.departureLocation || isCreate"
-      ref="departureLocation"
-    />
-    <Address
-      title="DESTINATION LOCATION"
-      :propAddress="contract.destinationLocation"
-      v-if="contract.destinationLocation || isCreate"
-      ref="destinationLocation"
-    />
   </div>
 </template>
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
-// import * as firebase from "firebase";
-import moment from "moment";
 import Address from "../Address";
 import CustomersModal from "../../components/Modal/CustomersModal";
 
@@ -216,16 +212,16 @@ export default {
       contract: {
         contractId: "",
         contractOwnerId: "",
-        departureLocation: "",
-        departureTime: "",
-        destinationLocation: "",
-        destinationTime: "",
         durationFrom: "",
         durationTo: "",
         otherInformation: "",
         signedDate: "",
         signedLocation: "",
         totalPrice: "",
+        estimatedPassengerCount: "",
+        estimatedVehicleCount: "",
+        roundTrip: false,
+        trips: [],
       },
 
       // Basic Information Error
@@ -237,6 +233,8 @@ export default {
       otherInformationErr: false,
       signedDateErr: false,
       totalPriceErr: false,
+      estimatedPassengerCountErr: false,
+      estimatedVehicleCountErr: false,
 
       isLoading: false,
       isCreatedSuccessfully: false,
@@ -250,24 +248,20 @@ export default {
         userId: "",
         fullName: "",
       },
+      currentDate: "",
+      currentDateTime: "",
     };
   },
-  async mounted() {
+  mounted() {
     if (this.propContract) {
       this.initContract();
     }
+    this.isLoading = true;
   },
   methods: {
     // Init contract
     initContract() {
       this.contract = this.copyProperties(this.propContract, this.contract);
-      // Format departure and destination time
-      this.contract.departureTime = moment(this.contract.departureTime).format(
-        "YYYY-MM-DDTkk:mm"
-      );
-      this.contract.destinationTime = moment(
-        this.contract.destinationTime
-      ).format("YYYY-MM-DDTkk:mm");
       this.initOwner(this.propContract.contractOwner);
     },
     // Init owner
@@ -290,37 +284,28 @@ export default {
       this.durationToErr = this.contract.durationTo.length === 0;
       this.signedDateErr = this.contract.signedDate.length === 0;
       this.totalPriceErr = this.contract.totalPrice.length === 0;
-      this.departureTimeErr = this.contract.departureTime.length === 0;
-      this.destinationTimeErr = this.contract.destinationTime.length === 0;
+      this.estimatedPassengerCountErr =
+        this.contract.estimatedPassengerCount.length === 0;
+      this.estimatedVehicleCountErr =
+        this.contract.estimatedVehicleCount.length === 0;
       let signedLocationErr = this.$refs.signedLocation.checkValid();
-      let departureLocationErr = this.$refs.departureLocation.checkValid();
-      let destinationLocationErr = this.$refs.destinationLocation.checkValid();
+      this.ownerErr = this.owner.userId.length === 0;
       return (
         this.durationFromErr ||
         this.durationToErr ||
         this.signedDateErr ||
         this.totalPriceErr ||
-        this.departureTimeErr ||
-        this.destinationTimeErr ||
         signedLocationErr ||
-        departureLocationErr ||
-        destinationLocationErr
+        this.estimatedPassengerCountErr ||
+        this.estimatedVehicleCountErr ||
+        this.ownerErr
       );
     },
     // Get contract data
     getData() {
       let contract = Object.assign({}, this.contract);
-      // Format date
-      contract.departureTime = moment(contract.departureTime).format(
-        "YYYY-MM-DD HH:mm:ss"
-      );
-      contract.destinationTime = moment(contract.destinationTime).format(
-        "YYYY-MM-DD HH:mm:ss"
-      );
 
       contract.signedLocation = this.$refs.signedLocation.getAdress();
-      contract.departureLocation = this.$refs.departureLocation.getAdress();
-      contract.destinationLocation = this.$refs.destinationLocation.getAdress();
       contract.contractOwnerId = this.owner.userId;
 
       return contract;
@@ -335,7 +320,6 @@ export default {
           contractOwnerId: "",
           departureLocation: "",
           departureTime: "",
-          destinationLocation: "",
           destinationTime: "",
           durationFrom: "",
           durationTo: "",
@@ -343,6 +327,8 @@ export default {
           signedDate: "",
           signedLocation: "",
           totalPrice: "",
+          estimatedPassengerCount: 0,
+          estimatedVehicleCount: 0,
         };
       }
     },

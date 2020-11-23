@@ -122,10 +122,10 @@
                   <tr class="">
                     <th>NO.</th>
                     <!-- <th>ID</th> -->
-                    <th>DEPARTURE LOCATION</th>
+                    <!-- <th>DEPARTURE LOCATION</th>
                     <th>DEPARTURE TIME</th>
                     <th>DESTINATION LOCATION</th>
-                    <th>DESTINATION TIME</th>
+                    <th>DESTINATION TIME</th> -->
                     <th>DURATION FROM</th>
                     <th>DURATION TO</th>
                     <th>TOTAL PRICE</th>
@@ -140,10 +140,10 @@
                   >
                     <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
 
-                    <td>{{ contract.departureLocation }}</td>
+                    <!-- <td>{{ contract.departureLocation }}</td>
                     <td>{{ contract.departureTime }}</td>
                     <td>{{ contract.destinationLocation }}</td>
-                    <td>{{ contract.destinationTime }}</td>
+                    <td>{{ contract.destinationTime }}</td> -->
                     <!-- <td>{{ contract.contractId }}</td> -->
                     <td>{{ contract.durationFrom }}</td>
                     <td>{{ contract.durationTo }}</td>

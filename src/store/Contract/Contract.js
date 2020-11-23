@@ -23,9 +23,17 @@ export default {
       return new Promise((resolve, reject) => {
         Repository.post(CONTRACT_URL, contract)
           .then((res) => {
+            console.log(
+              "🚀 ~ file: Contract.js ~ line 28 ~ _create ~ res",
+              res
+            );
             resolve(res);
           })
           .catch((err) => {
+            console.log(
+              "🚀 ~ file: Contract.js ~ line 35 ~ _create ~ err",
+              err
+            );
             reject(err.response.data);
           });
       });
@@ -56,6 +64,19 @@ export default {
             resolve(res.data.contractList);
           })
           .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get contracts list
+    _getContractDetail(context, contractId) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${CONTRACT_URL}/${contractId}`)
+          .then((res) => {
+            resolve(res.data.contractDetail);
+          })
+          .catch((err) => {
+            console.log(err);
             reject(err.response.data);
           });
       });

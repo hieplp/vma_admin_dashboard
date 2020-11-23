@@ -35,70 +35,44 @@
           <a
             class="nav-link count-indicator dropdown-toggle"
             id="notificationDropdown"
-            href="#"
+            @click="showNotifications"
             data-toggle="dropdown"
           >
             <i class="mdi mdi-bell-outline"></i>
             <span class="count-symbol bg-danger"></span>
           </a>
+          <!-- Notification -->
           <div
             class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list"
             aria-labelledby="notificationDropdown"
           >
             <h6 class="p-3 mb-0">Notifications</h6>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item preview-item">
-              <div class="preview-thumbnail">
-                <div class="preview-icon bg-success">
-                  <i class="mdi mdi-calendar"></i>
+            <div v-for="notify in notifications" :key="notify.notificationId">
+              <a class="dropdown-item preview-item">
+                <div class="preview-thumbnail">
+                  <div class="preview-icon bg-success">
+                    <i class="mdi mdi-calendar"></i>
+                  </div>
                 </div>
-              </div>
-              <div
-                class="preview-item-content d-flex align-items-start flex-column justify-content-center"
-              >
-                <h6 class="preview-subject font-weight-normal mb-1">
-                  Event today
-                </h6>
-                <p class="text-gray ellipsis mb-0">
-                  Just a reminder that you have an event today
-                </p>
-              </div>
-            </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item preview-item">
-              <div class="preview-thumbnail">
-                <div class="preview-icon bg-warning">
-                  <i class="mdi mdi-settings"></i>
+                <div
+                  class="preview-item-content d-flex align-items-start flex-column justify-content-center"
+                >
+                  <h6 class="preview-subject font-weight-normal mb-1">
+                    {{ notify.title }}
+                  </h6>
+                  <p class="text-gray ellipsis mb-0">
+                    {{ notify.body }}
+                  </p>
                 </div>
-              </div>
-              <div
-                class="preview-item-content d-flex align-items-start flex-column justify-content-center"
-              >
-                <h6 class="preview-subject font-weight-normal mb-1">
-                  Settings
-                </h6>
-                <p class="text-gray ellipsis mb-0">Update dashboard</p>
-              </div>
-            </a>
-            <div class="dropdown-divider"></div>
-            <a class="dropdown-item preview-item">
-              <div class="preview-thumbnail">
-                <div class="preview-icon bg-info">
-                  <i class="mdi mdi-link-variant"></i>
-                </div>
-              </div>
-              <div
-                class="preview-item-content d-flex align-items-start flex-column justify-content-center"
-              >
-                <h6 class="preview-subject font-weight-normal mb-1">
-                  Launch Admin
-                </h6>
-                <p class="text-gray ellipsis mb-0">New admin wow!</p>
-              </div>
-            </a>
+              </a>
+              <div class="dropdown-divider"></div>
+            </div>
+
             <div class="dropdown-divider"></div>
             <h6 class="p-3 mb-0 text-center">See all notifications</h6>
           </div>
+          <!-- End of notification -->
         </li>
         <li class="nav-item nav-profile dropdown">
           <a
@@ -130,7 +104,8 @@
           </div>
         </li>
       </ul>
-
+      <!-- The actual snackbar -->
+      <SnackingToast ref="snackbar" />
       <button
         class="navbar-toggler navbar-toggler-right d-lg-none align-self-center"
         type="button"
@@ -143,18 +118,96 @@
 </template>
 
 <script>
+import * as firebase from "firebase";
+import SnackingToast from "../components/SnackingToast";
 export default {
+  components: {
+    SnackingToast,
+  },
   props: {},
   mounted() {
     this.initAuthUser();
+    // this.getRegistrationToken();
+  },
+  created() {
+    const messaging = firebase.messaging();
+    let seft = this;
+    messaging.onMessage(function(payload) {
+      // Open indexedDB
+      const request = indexedDB.open("VMA_DB", 1);
+      // If not exist, create new one
+      request.onupgradeneeded = (event) => {
+        let db = event.target.result;
+        db.createObjectStore("Notification", {
+          autoIncrement: false,
+        });
+      };
+      // Add new notfication
+      request.onsuccess = (event) => {
+        let db = event.target.result;
+        let notification = {
+          notificationId: new Date().toString(),
+          title: payload.notification.title,
+          body: payload.notification.body,
+          id: "",
+          type: "",
+        };
+        db.transaction("Notification", "readwrite")
+          .objectStore("Notification")
+          .add(notification, notification.notificationId);
+        seft.$refs.snackbar.setVisible(notification);
+      };
+    });
   },
   data() {
     return {
       userName: "",
       imageLink: "",
+      notifications: [],
     };
   },
   methods: {
+    // Show notifications
+    showNotifications() {
+      this.notifications = [];
+      // Open indexedDB
+      const request = indexedDB.open("VMA_DB", 1);
+      // If not exist, create new one
+      request.onupgradeneeded = (event) => {
+        let db = event.target.result;
+        db.createObjectStore("Notification", {
+          autoIncrement: true,
+        });
+      };
+      // Get notfications
+      request.onsuccess = (event) => {
+        let db = event.target.result;
+        let notifications = db
+          .transaction("Notification")
+          .objectStore("Notification")
+          .getAll();
+        notifications.onsuccess = (event) => {
+          let notificationsList = event.target.result;
+          let notificationsListLength = notificationsList.length;
+          // Get top 3 of the latest notification
+          if (notificationsListLength >= 1) {
+            this.notifications.push(
+              notificationsList[notificationsListLength - 1]
+            );
+          }
+          if (notificationsListLength >= 2) {
+            this.notifications.push(
+              notificationsList[notificationsListLength - 2]
+            );
+          }
+          if (notificationsListLength >= 3) {
+            this.notifications.push(
+              notificationsList[notificationsListLength - 3]
+            );
+          }
+        };
+      };
+    },
     // Sign out
     signOut() {
       localStorage.removeItem("USER");
@@ -165,8 +218,28 @@ export default {
     // Init data for user
     initAuthUser() {
       let user = JSON.parse(localStorage.getItem("USER"));
-      this.userName = user.displayName;
-      this.imageLink = user.photoURL;
+      if (user) {
+        this.userName = user.displayName;
+        this.imageLink = user.photoURL;
+      }
+    },
+    // Get registration token.
+    getRegistrationToken() {
+      // Retrieve Firebase Messaging object.
+      const messaging = firebase.messaging();
+      // Get registration token. Initially this makes a network call, once retrieved
+      // subsequent calls to getToken will return from cache.
+      messaging
+        .getToken({
+          vapidKey:
+            "BNFkrBWhs0AJHgEyuTbs_Xe_hR8XD31EF0iQIa0dnT9op_S9-3H_hFUSbJ7ryyGEb6Wzkncwsh259iQ1oY76hEA",
+        })
+        .then((currentToken) => {
+          console.log("getRegistrationToken -> currentToken", currentToken);
+        })
+        .catch((err) => {
+          console.log("An error occurred while retrieving token. ", err);
+        });
     },
   },
 };
@@ -178,5 +251,8 @@ export default {
 }
 .brand-logo-mini {
   width: 80% !important;
+}
+.dropdown-menu-right {
+  width: 200px;
 }
 </style>

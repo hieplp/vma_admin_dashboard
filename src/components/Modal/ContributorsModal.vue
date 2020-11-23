@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <table class="table tableBodyScroll mt-5">
+    <table class="table tableBodyScroll mt-1">
       <thead>
         <tr class="">
           <th style="width: 80px">NO.</th>
@@ -244,7 +244,7 @@ export default {
 
 <style scoped>
 .con-modal {
-  position: absolute;
+  position: fixed;
   padding-top: 0% !important;
   padding-left: 1%;
   padding-right: 1%;
@@ -271,7 +271,8 @@ export default {
 }
 table.tableBodyScroll tbody {
   display: block;
-  max-height: 450px;
+  max-height: 420px;
+  height: 420px;
   overflow-y: scroll;
 }
 

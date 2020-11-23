@@ -126,7 +126,6 @@ export default {
     };
   },
   mounted() {
-    // const seft = this;
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
       "sign-in-button",
       {
@@ -142,6 +141,7 @@ export default {
       window.recaptchaWidgetId = widgetId;
     });
   },
+  created() {},
   methods: {
     // Handle otp complete input
     async handleOnComplete(value) {
@@ -155,7 +155,14 @@ export default {
             this.$router.push({
               name: "Overview",
             });
-            this.isLoading = false;
+            // let fcmToken = await this.getRegistrationToken();
+            // if (fcmToken) {
+            //   localStorage.setItem("USER", JSON.stringify(result.user));
+            //   localStorage.setItem("FCM_TOKEN", fcmToken);
+            //   this.$router.push({
+            //     name: "Overview",
+            //   });
+            // }
           }
         })
         .catch((error) => {
@@ -195,6 +202,26 @@ export default {
           });
         this.isLoading = false;
       }
+    },
+    // Get registration token.
+    getRegistrationToken() {
+      // Retrieve Firebase Messaging object.
+      const messaging = firebase.messaging();
+      // Get registration token. Initially this makes a network call, once retrieved
+      // subsequent calls to getToken will return from cache.
+      messaging
+        .getToken({
+          vapidKey:
+            "BNFkrBWhs0AJHgEyuTbs_Xe_hR8XD31EF0iQIa0dnT9op_S9-3H_hFUSbJ7ryyGEb6Wzkncwsh259iQ1oY76hEA",
+        })
+        .then((currentToken) => {
+          console.log("getRegistrationToken -> currentToken", currentToken);
+          return currentToken;
+        })
+        .catch((err) => {
+          console.log("An error occurred while retrieving token. ", err);
+        });
+      return null;
     },
     // Check Phone input
     phoneInput() {

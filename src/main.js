@@ -12,9 +12,13 @@ import "firebase/firestore";
 import OtpInput from "@bachdgvn/vue-otp-input";
 import * as VueGoogleMaps from "vue2-google-maps";
 import VueExcelEditor from "vue-excel-editor";
+//global registration fpr nav tabs
+import VueTabs from "vue-nav-tabs";
+import "vue-nav-tabs/themes/vue-tabs.css";
 
 Vue.config.productionTip = false;
 
+Vue.use(VueTabs);
 Vue.use(VueExcelEditor);
 Vue.use(VModal);
 Vue.use(VueConfirmDialog);

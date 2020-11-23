@@ -126,7 +126,9 @@
                           vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
                         'badge-warning':
                           vehicle.vehicleStatus === 'PENDING_APPROVAL',
-                        'badge-dark': vehicle.vehicleStatus === 'DELETED',
+                        'badge-dark':
+                          vehicle.vehicleStatus === 'DELETED' ||
+                          vehicle.vehicleStatus === 'REJECTED',
                       }"
                       >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
                     >
@@ -149,13 +151,21 @@
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
                       @click="updateVehicle(vehicle.vehicleId)"
-                      :disabled="vehicle.vehicleStatus === 'Disabled'"
+                      :disabled="
+                        vehicle.vehicleStatus === 'PENDING_APPROVAL' ||
+                          vehicle.vehicleStatus === 'DELETED' ||
+                          vehicle.vehicleStatus === 'REJECTED'
+                      "
                     >
                       <i class="mdi mdi-grease-pencil"></i>
                     </button>
                     <button
                       class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="vehicle.vehicleStatus === 'Disabled'"
+                      :disabled="
+                        vehicle.vehicleStatus === 'PENDING_APPROVAL' ||
+                          vehicle.vehicleStatus === 'DELETED' ||
+                          vehicle.vehicleStatus === 'REJECTED'
+                      "
                       @click="
                         handleDialog('isDeleteConVisible', vehicle.vehicleId)
                       "

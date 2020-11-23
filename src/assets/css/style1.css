@@ -18773,3 +18773,12 @@ dl li {
   width: 100% !important;
   position: fixed !important;
 }
+.cus-select {
+  padding-left: 26px !important;
+}
+
+
+.cus-disable {
+  background-color: #858585 !important;
+  color: white;
+}

@@ -160,7 +160,56 @@
                 <div class="field">
                   <label>Vehicle ID</label>
                   <div class="ui action input">
-                    <template v-if="driver.vehicleId">
+                    <input
+                      type="text"
+                      :value="driver.vehicleId ? driver.vehicleId : 'N/A'"
+                      readonly
+                    />
+                    <button
+                      class="ui right labeled blue icon button"
+                      type="button"
+                      data-toggle="dropdown"
+                    >
+                      <i class="truck icon"></i>
+                      Action
+                    </button>
+                    <ul class="dropdown-menu">
+                      <button
+                        v-if="driver.vehicleId"
+                        @click="
+                          () => {
+                            this.isWithdrawVisible = !this.isWithdrawVisible;
+                          }
+                        "
+                      >
+                        Withdraw
+                      </button>
+                      <button
+                        v-if="driver.vehicleId"
+                        @click="
+                          () => {
+                            this.$router.push({
+                              name: 'VehicleDetail',
+                              params: { vehicleId: driver.vehicleId },
+                            });
+                          }
+                        "
+                      >
+                        View
+                      </button>
+                      <button
+                        v-else-if="driver.userStatus !== 'DISABLE'"
+                        @click="handAssignVehicle"
+                      >
+                        Assign
+                      </button>
+
+                      <!-- <li class="divider"></li>
+                      <button class="mt-1" @click="() => {}">
+                        Vehicles history
+                      </button> -->
+                    </ul>
+                    <!-- <template v-if="driver.vehicleId">
                       <input
                         type="text"
                         :value="driver.vehicleId ? driver.vehicleId : 'N/A'"
@@ -188,7 +237,7 @@
                         <i class="truck icon"></i>
                         Assign
                       </button>
-                    </template>
+                    </template> -->
                   </div>
                 </div>
               </div>
@@ -357,7 +406,6 @@ export default {
       this.isLoading = true;
       await this._getDetailDriver(this.userId)
         .then((res) => {
-          console.log(res);
           this.driver = res;
           this.isUserLoading = true;
         })
@@ -388,6 +436,7 @@ export default {
       await AssignVehicleRepository.withdrawVehicle(this.driver.vehicleId)
         .then((res) => {
           if (res) {
+            this.driver.vehicleId = "";
             this.isSuccess = !this.isSuccess;
           }
         })

@@ -36,6 +36,14 @@ import CreateVehicle from "../views/vehicles/CreateVehicle.vue";
 import VehicleDetail from "../views/vehicles/VehicleDetail.vue";
 import UpdateVehicle from "../views/vehicles/UpdateVehicle.vue";
 import VehicleOverview from "../views/vehicles/VehicleOverview.vue";
+// Vehicle contracts
+import CreateVehicleContract from "../views/contracts/vehicles/CreateVehicleContract.vue";
+
+// Maintenance
+import Maintenances from "../views/maintenance/Maintenances.vue";
+import CreateMaintenance from "../views/maintenance/CreateMaintenance.vue";
+import UpdateMaintenance from "../views/maintenance/UpdateMaintenance.vue";
+import MaintenanceDetail from "../views/maintenance/MaintenanceDetail.vue";
 // // Contributor vehicles
 // import ContributedVehicles from "../views/vehicles/contributor/Vehicles.vue";
 
@@ -54,6 +62,8 @@ import UserDocumentRequests from "../views/requests/UserDocumentRequests.vue";
 import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail.vue";
 // Report
 import VehiclesReport from "../views/reports/VehiclesReport";
+import ScheduleReport from "../views/reports/ScheduleReport";
+import ContractReport from "../views/reports/ContractReport";
 
 import Login from "../views/Login.vue";
 
@@ -223,6 +233,32 @@ const routes = [
     name: "UpdateVehicle",
     component: UpdateVehicle,
   },
+  {
+    path: "/create-vehicle-contract",
+    name: "CreateVehicleContract",
+    component: CreateVehicleContract,
+  },
+  // Maintenances
+  {
+    path: "/maintenances",
+    name: "Maintenances",
+    component: Maintenances,
+  },
+  {
+    path: "/maintenances/:maintenanceId",
+    name: "MaintenanceDetail",
+    component: MaintenanceDetail,
+  },
+  {
+    path: "/create-maintenance",
+    name: "CreateMaintenance",
+    component: CreateMaintenance,
+  },
+  {
+    path: "/update-maintenance/:maintenanceId",
+    name: "UpdateMaintenance",
+    component: UpdateMaintenance,
+  },
   // // Contributor vehicle list
   // {
   //   path: "/vehicles/contributor",
@@ -278,6 +314,18 @@ const routes = [
     path: "/reports/vehicles",
     name: "VehiclesReport",
     component: VehiclesReport,
+  },
+  // Vehicles reports
+  {
+    path: "/reports/schedule",
+    name: "ScheduleReport",
+    component: ScheduleReport,
+  },
+  // Contracts reports
+  {
+    path: "/reports/contracts",
+    name: "ContractReport",
+    component: ContractReport,
   },
 ];
 
