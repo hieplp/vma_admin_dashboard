@@ -230,7 +230,7 @@
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
             <!-- Search Contributor ID -->
-            <!-- <div class="col-sm-12">
+            <div class="col-sm-12">
               <label>Contributor ID</label>
               <input
                 type="text"
@@ -240,7 +240,7 @@
                 @keypress="isNumber($event)"
                 maxlength="12"
               />
-            </div> -->
+            </div>
             <div class="col-12 mt-4">
               <label>Contributor Name</label>
               <input

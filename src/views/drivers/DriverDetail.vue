@@ -41,7 +41,7 @@
     />
     <!-- Error message -->
     <MessageModal
-      title="Withdraw Vehicle Fail!"
+      :title="errTitle"
       icon="frown outline "
       :subTitle="errMsg"
       :proFunc="
@@ -184,6 +184,7 @@
                       >
                         Withdraw
                       </button>
+                      <li class="divider"></li>
                       <button
                         v-if="driver.vehicleId"
                         @click="
@@ -204,10 +205,48 @@
                         Assign
                       </button>
 
-                      <!-- <li class="divider"></li>
-                      <button class="mt-1" @click="() => {}">
+                      <li class="divider"></li>
+                      <button
+                        class="mt-1"
+                        @click="
+                          () => {
+                            this.$router.push({
+                              name: 'AssignedVehiclesHistory',
+                              params: { driverId: driver.userId },
+                            });
+                          }
+                        "
+                      >
                         Vehicles history
-                      </button> -->
+                      </button>
+                      <li class="divider"></li>
+                      <button
+                        class="mt-1"
+                        @click="
+                          () => {
+                            this.$router.push({
+                              name: 'Feedbacks',
+                              params: { driverId: driver.userId },
+                            });
+                          }
+                        "
+                      >
+                        Feedbacks
+                      </button>
+                      <li class="divider"></li>
+                      <button
+                        class="mt-1"
+                        @click="
+                          () => {
+                            this.$router.push({
+                              name: 'DriverIncomes',
+                              params: { driverId: driver.userId },
+                            });
+                          }
+                        "
+                      >
+                        Income report
+                      </button>
                     </ul>
                     <!-- <template v-if="driver.vehicleId">
                       <input
@@ -379,6 +418,7 @@ export default {
       isWithdrawVisible: false,
       isSuccess: false,
       errMsg: "",
+      errTitle: "",
       isError: "",
       media: [
         {
@@ -419,15 +459,35 @@ export default {
     },
     // Handle assgin vehicle
     handAssignVehicle() {
-      this.$router.push({
-        name: "AssignedVehicles",
-        params: {
-          driver: {
-            userId: this.driver.userId,
-            fullName: this.driver.fullName,
+      let drivingLicenseInfor = this.findDocumentByName(
+        this.driver.userDocumentList,
+        "DRIVING_LICENSE"
+      );
+      if (!drivingLicenseInfor) {
+        this.isError = !this.isError;
+        this.errMsg = "Driver doesn't have a driving license!";
+        this.errTitle = "Assign Vehicle Error!";
+      } else {
+        this.$router.push({
+          name: "AssignedVehicles",
+          params: {
+            driver: {
+              userId: this.driver.userId,
+              fullName: this.driver.fullName,
+            },
+            licenseClass: drivingLicenseInfor.otherInformation,
           },
-        },
-      });
+        });
+      }
+    },
+    // Find document
+    findDocumentByName(driverDocument, userDocumentType) {
+      for (let doc of driverDocument) {
+        if (doc.userDocumentType === userDocumentType) {
+          return doc;
+        }
+      }
+      return null;
     },
     // handle withdraw vehicle
     async handleWithdrawVehicle() {
@@ -443,7 +503,7 @@ export default {
         .catch((err) => {
           this.isError = !this.isError;
           this.errMsg = err.message;
-          console.log(err);
+          this.errTitle = "Withdraw Vehicle Fail";
         });
       this.isLoading = false;
     },

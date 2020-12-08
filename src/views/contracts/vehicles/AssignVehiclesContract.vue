@@ -8,24 +8,24 @@
       :color="'#2e5bff'"
     ></loading>
 
-    <!-- Delete confimation -->
+    <!-- Assign confimation -->
     <Confirmation
-      icon="trash alternate"
-      title="Delete Confirmation"
-      subTitle="Do you want to delete this vehicle?"
-      rightBtnTitle="Delete"
-      rightBtnIcon="trash alternate"
-      rightBtnColor="red"
+      icon="check circle"
+      title="Assign Confirmation"
+      subTitle="Do you want to assign this vehicle?"
+      rightBtnTitle="Assign"
+      rightBtnIcon="check circle"
+      rightBtnColor="blue"
       leftBtnTitle="Cancel"
       leftBtnIcon="x"
-      leftBtnColor="blue"
+      leftBtnColor="red"
       v-if="isDeleteConVisible"
       :handleLeftBtn="
         () => {
           this.isDeleteConVisible = !this.isDeleteConVisible;
         }
       "
-      :handleRightBtn="deleteVehicle"
+      :handleRightBtn="updateVehicle"
     />
 
     <!-- Error message -->
@@ -42,10 +42,10 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Delete Driver Successfully!"
+      title="Assign Vehicle Successfully!"
       icon="check circle"
       :subTitle="
-        `Vehicle with id ${this.deleteVehicleId} is deleted successfully.`
+        `Vehicle with id ${this.deleteVehicleId} is assigned successfully.`
       "
       :proFunc="
         () => {
@@ -61,14 +61,6 @@
         <router-link to="/vehicles" class="nav-link">Vehicles</router-link>
       </h3>
       <div class="dropdown">
-        <router-link
-          to="/create-vehicle"
-          class="btn btn-gradient-info btn-icon-text mr-2"
-          type="button"
-        >
-          <i class="mdi mdi-plus-box btn-icon-prepend"></i>
-          Create
-        </router-link>
         <button
           class="btn btn-gradient-info dropdown-toggle"
           type="button"
@@ -87,7 +79,7 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="vehiclesList.length > 0">
+        <div class="card" v-if="vehiclesList.length > 0 && contractVehicles">
           <div class="card-body">
             <h4 class="card-title">Vehicle List</h4>
             <p class="card-description">{{ this.totalVehicles }} total</p>
@@ -99,8 +91,8 @@
                   <th>MODEL</th>
                   <th>SEAT</th>
                   <th>TYPE</th>
-                  <th>STATUS</th>
-                  <th>TOTAL DISTANCE</th>
+                  <!-- <th>STATUS</th> -->
+                  <!-- <th>TOTAL DISTANCE</th> -->
                   <th class="text-center">ACTION</th>
                 </tr>
               </thead>
@@ -113,16 +105,14 @@
                   <td>{{ vehicle.vehicleId }}</td>
                   <td>{{ vehicle.model }}</td>
                   <td>{{ vehicle.seats }}</td>
-                  <td>{{ vehicle.vehicleTypeName }}</td>
+                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
-                  <td>
+                  <!-- <td>
                     <label
                       class="badge"
                       v-bind:class="{
                         'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
-                        'badge-danger':
-                          vehicle.vehicleStatus === 'MAINTENANCE' ||
-                          vehicle.vehicleStatus === 'NEED_REPAIR',
+                        'badge-danger': vehicle.vehicleStatus === 'MAINTENANCE',
                         'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
                         'badge-success':
                           vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
@@ -134,16 +124,8 @@
                       }"
                       >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
                     >
-                  </td>
-                  <td>{{ vehicle.vehicleDistance }}</td>
+                  </td> -->
                   <td class="row justify-content-center btn-action">
-                    <!-- <router-link
-                      :to="{
-                        name: 'VehicleDetail',
-                        params: { userId: vehicle.userId },
-                      }"
-                      >Manage</router-link
-                    > -->
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(vehicle.vehicleId)"
@@ -151,28 +133,12 @@
                       <i class="mdi mdi-train"></i>
                     </button>
                     <button
-                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      @click="updateVehicle(vehicle.vehicleId)"
-                      :disabled="
-                        vehicle.vehicleStatus === 'PENDING_APPROVAL' ||
-                          vehicle.vehicleStatus === 'DELETED' ||
-                          vehicle.vehicleStatus === 'REJECTED'
-                      "
-                    >
-                      <i class="mdi mdi-grease-pencil"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="
-                        vehicle.vehicleStatus === 'PENDING_APPROVAL' ||
-                          vehicle.vehicleStatus === 'DELETED' ||
-                          vehicle.vehicleStatus === 'REJECTED'
-                      "
+                      class="btn btn-gradient-success btn-rounded btn-icon mr-1"
                       @click="
                         handleDialog('isDeleteConVisible', vehicle.vehicleId)
                       "
                     >
-                      <i class="mdi mdi-delete-forever"></i>
+                      <i class="mdi mdi-check"></i>
                     </button>
                   </td>
                 </tr>
@@ -356,12 +322,13 @@
 </template>
 
 <script>
-import { isNumber } from "../../assets/js/input.js";
+import { mapActions } from "vuex";
+import { isNumber } from "../../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-import Confirmation from "../../components/Modal/Confirmation";
-import MessageModal from "../../components/Modal/MessageModal";
+import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
+import Confirmation from "../../../components/Modal/Confirmation";
+import MessageModal from "../../../components/Modal/MessageModal";
 const VehicleRepository = RepositoryFactory.get("vehicles");
 
 export default {
@@ -385,12 +352,14 @@ export default {
       searchPhoneNumber: "",
       searchVehicleID: "",
       searchModel: "",
-      searchStatusID: "",
+      searchStatusID: "AVAILABLE",
       searchType: "",
       vehicleMaxDis: "",
       vehicleMinDis: "",
       vehicleMaxSeat: "",
       vehicleMinSeat: "",
+      startDate: this.$route.params.startDate,
+      endDate: this.$route.params.endDate,
       ownerId: "",
 
       isLoading: true,
@@ -409,6 +378,9 @@ export default {
 
       vehicleTypes: [],
       searchTotalDistance: ["", ""],
+
+      contractId: this.$route.params.contractId,
+      contractVehicles: [],
     };
   },
   async mounted() {
@@ -422,9 +394,16 @@ export default {
     await this.initStatusList();
     await this.initVehiclesList();
     await this.initTypes();
-    this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
+    this.totalSeats = require("../../../assets/json/vehicle/totalSeat.json");
   },
   methods: {
+    // Map state
+    ...mapActions("Contract", [
+      "_assignVehicleForContract",
+      "_getVehicleRecommendations",
+      "_getVehicleRecommendationsCount",
+      "_getContractVehicle",
+    ]),
     isNumber(evt) {
       isNumber(evt);
     },
@@ -436,8 +415,24 @@ export default {
     },
     // Init data for Vehicle Status Dropdown
     async initStatusList() {
-      this.statusList = require("../../assets/json/vehicle/status.json");
+      this.statusList = require("../../../assets/json/vehicle/status.json");
     },
+    // Init data for vehicle contract list
+    async initContractVehiclesList() {
+      this.isLoading = true;
+      this.contractVehicles = await this._getContractVehicle(this.contractId);
+      this.isLoading = false;
+    },
+    // Is vehicle selected
+    isSelected(vehicleId) {
+      this.contractVehicles.forEach((vehicle) => {
+        if (vehicle.vehicleId == vehicleId) {
+          return true;
+        }
+      });
+      return false;
+    },
+
     // Clear search item value
     clearSearchValue() {
       this.searchVehicleID = "";
@@ -482,20 +477,29 @@ export default {
       }
 
       this.viewOption = this.searchStatusID !== "" ? 1 : 0;
+      this.vehiclesList = await this._getVehicleRecommendations({
+        startDate: this.startDate,
+        endDate: this.endDate,
+        seatsMin: this.vehicleMinSeat,
+        seatsMax: this.vehicleMaxSeat,
+        vehicleTypeId: this.searchType,
+        viewOption: 0,
+      });
+      // await this.initContractVehiclesList();
 
-      this.vehiclesList = await VehicleRepository.get(
-        this.page,
-        this.searchModel,
-        this.searchVehicleID,
-        this.vehicleMinDis,
-        this.vehicleMaxDis,
-        this.searchStatusID,
-        this.searchType,
-        this.vehicleMinSeat,
-        this.vehicleMaxSeat,
-        this.viewOption,
-        this.ownerId
-      );
+      // this.vehiclesList = await VehicleRepository.get(
+      //   this.page,
+      //   this.searchModel,
+      //   this.searchVehicleID,
+      //   this.vehicleMinDis,
+      //   this.vehicleMaxDis,
+      //   this.searchStatusID,
+      //   this.searchType,
+      //   this.vehicleMinSeat,
+      //   this.vehicleMaxSeat,
+      //   this.viewOption,
+      //   this.ownerId
+      // );
       this.totalVehicles = await VehicleRepository.getTotalVehicle(
         this.searchModel,
         this.searchVehicleID,
@@ -508,6 +512,7 @@ export default {
         this.viewOption,
         this.ownerId
       );
+
       this.isLoading = false;
     },
     // Init types
@@ -538,11 +543,25 @@ export default {
       });
     },
     // View vehicle detail
-    updateVehicle(vehicleId) {
-      this.$router.push({
-        name: "UpdateVehicle",
-        params: { vehicleId: vehicleId },
-      });
+    async updateVehicle() {
+      this.isLoading = true;
+      this.handleDialog("isDeleteConVisible", "");
+      let contract = {
+        contractId: this.contractId,
+        vehicleId: this.deleteVehicleId,
+      };
+      await this._assignVehicleForContract(contract)
+        .then((res) => {
+          if (res) {
+            this.isSuccess = true;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.debugMessage;
+          console.log(err);
+        });
+      this.isLoading = false;
     },
     // Delete vehicle
     async deleteVehicle() {

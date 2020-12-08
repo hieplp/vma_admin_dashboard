@@ -84,7 +84,7 @@
                   Back
                 </button>
               </div>
-              <div
+              <!-- <div
                 class="my-2 d-flex justify-content-between align-items-center"
               >
                 <div class="form-check">
@@ -96,7 +96,7 @@
                     Keep me signed in
                   </label>
                 </div>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -155,7 +155,12 @@ export default {
             this.$router.push({
               name: "Overview",
             });
-            // let fcmToken = await this.getRegistrationToken();
+            // let fcmToken = this.getRegistrationToken();
+            // console.log(
+            //   "🚀 ~ file: Login.vue ~ line 159 ~ .then ~ fcmToken",
+            //   fcmToken
+            // );
+            // localStorage.setItem("FCM_TOKEN", fcmToken);
             // if (fcmToken) {
             //   localStorage.setItem("USER", JSON.stringify(result.user));
             //   localStorage.setItem("FCM_TOKEN", fcmToken);

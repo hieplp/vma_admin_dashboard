@@ -122,18 +122,17 @@
         :title="'Vehicle registration certificate'"
         :maxImage="2"
         :isOtherInfoVisible="true"
-        :otherInfoMaxLength="8"
-        :otherInfoMinLength="7"
+        :otherInfoMaxLength="9"
         :type="2"
         :isExpiryDateVisible="true"
         :documentType="'VEHICLE_REGISTRATION_CERTIFICATE'"
-        otherInformationTitle="License Plate"
+        otherInformationTitle="ID"
         ref="vehicleRegistrationCer"
         v-if="checkDocumentSelected('VEHICLE_REGISTRATION_CERTIFICATE')"
       />
-      <!-- Civil liability insurace certificate -->
+      <!-- Civil liability insurance certificate -->
       <VehicleDocument
-        :title="'Civil liability insurace certificate'"
+        :title="'Civil liability insurance certificate'"
         :maxImage="2"
         :idMaxLength="[9]"
         :expiryMaxDate="1"
@@ -141,7 +140,6 @@
         :otherInfoMinLength="7"
         :type="1"
         :documentType="'CIVIL_LIABILITY_INSURANCE_CERTIFICATE'"
-        otherInformationTitle="License Plate"
         ref="civilLiabilityInsur"
         v-if="checkDocumentSelected('CIVIL_LIABILITY_INSURANCE_CERTIFICATE')"
       />
@@ -297,7 +295,7 @@ export default {
         this.$refs[documentRef].handleDuplicateErr(false);
         let document = this.$refs[documentRef].getData();
         this.vehicle.vehicleDocuments[this.index] = document.document;
-        // // Delete old firebase image link
+        // Delete old firebase image link
         // await this.deleteFirebaseLink(
         //   this.vehicle.vehicleDocuments[this.index].imageLinks
         // );
@@ -358,7 +356,7 @@ export default {
           );
           this.profileImage = null;
         }
-        this.vehicle.vehicleId = this.vehicle.vehicleDocuments[0].vehicleDocumentId;
+        // this.vehicle.vehicleId = this.vehicle.vehicleDocuments[0].vehicleDocumentId;
 
         if (this.vehicle.vehicleValue.value) {
           this.vehicle.vehicleValue.vehicleId = this.vehicle.vehicleId;
@@ -375,7 +373,7 @@ export default {
           .catch((ex) => {
             if (ex.debugMessage.includes("Document with ID")) {
               this.errMsg =
-                "Civil liability insurace certificate id is duplicated!";
+                "Civil liability insurance certificate id is duplicated!";
               this.$refs.civilLiabilityInsur.handleDuplicateErr(true);
               this.isError = true;
             } else if (ex.debugMessage.includes("Vehicle with ID")) {
@@ -417,6 +415,7 @@ export default {
     },
     changeTab() {
       let isValid = this.$refs.vehicleInformation.checkBasicInformation();
+      // let isValid = false;
       if (!isValid) {
         document.getElementById("app").scrollIntoView();
         this.isUserInfoVisible = !this.isUserInfoVisible;

@@ -87,9 +87,10 @@
                   <div class="title">BASIC INFORMATION</div>
                 </div>
               </button>
+              <!-- v-if="vehicle.values && vehicle.values.length > 0" -->
               <button
                 class="step"
-                v-if="vehicle.values && vehicle.values.length > 0"
+                v-if="vehicle.owner && vehicle.owner.userName !== 'Admin'"
                 v-on:click="changeTab('isContractVisible')"
                 v-bind:class="{ active: isContractVisible }"
               >
@@ -143,6 +144,19 @@
           </div>
 
           <div class="two fields mt-5">
+            <!-- Chassis Number -->
+            <div class="field">
+              <label>License Plate Number</label>
+              <div class="ui corner labeled input">
+                <input
+                  type="text"
+                  v-model="vehicle.vehicleId"
+                  placeholder="Chassis Number/ VIN"
+                  style="text-transform:uppercase"
+                  readonly
+                />
+              </div>
+            </div>
             <!-- Chassis Number -->
             <div class="field">
               <label>Chassis Number/VIN</label>
@@ -318,10 +332,12 @@
                   class="ui right labeled icon button"
                   @click="
                     () => {
-                      this.$router.push({
-                        name: 'ContributorDetail',
-                        params: { userId: vehicle.owner.userId },
-                      });
+                      if (vehicle.owner.userName !== 'Admin') {
+                        this.$router.push({
+                          name: 'ContributorDetail',
+                          params: { userId: vehicle.owner.userId },
+                        });
+                      }
                     }
                   "
                 >
@@ -342,15 +358,21 @@
               <h4 class="card-title">Contract List</h4>
               <div class="dropdown">
                 <button
-                  class="btn btn-gradient-info btn-icon-text mr-2"
+                  class="btn btn-icon-text mr-2"
                   type="button"
+                  :class="{
+                    'cus-disable': isContractActive,
+                    'btn-gradient-info': !isContractActive,
+                  }"
                   :disable="isContractActive"
                   @click="
                     () => {
-                      this.$router.push({
-                        name: 'CreateVehicleContract',
-                        params: { vehicleId: vehicle.vehicleId },
-                      });
+                      if (!isContractActive) {
+                        this.$router.push({
+                          name: 'CreateVehicleContract',
+                          params: { vehicleId: vehicle.vehicleId },
+                        });
+                      }
                     }
                   "
                 >
@@ -584,7 +606,7 @@ export default {
       let date = Number(moment(new Date()).format("YYYYMMDD"));
       let startNum = Number(startDate.replaceAll("-", ""));
       let endNum = Number(endDate.replaceAll("-", ""));
-      if (startNum >= date && endNum >= date) {
+      if (startNum <= date && endNum >= date) {
         this.isContractActive = true;
         return true;
       }

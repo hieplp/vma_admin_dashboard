@@ -52,7 +52,12 @@
             <div class="field ">
               <label>Fax</label>
               <div class="ui corner labeled input">
-                <input type="text" v-model="customer.fax" placeholder="Fax" />
+                <input
+                  type="text"
+                  v-model="customer.fax"
+                  placeholder="Fax"
+                  @keypress="isNumber($event)"
+                />
                 <!-- <div class="ui corner label">
                       <i class="asterisk icon"></i>
                     </div> -->
@@ -97,6 +102,7 @@
                   min="1"
                   step="any"
                   maxlength="10"
+                  @keypress="isNumber($event)"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -114,6 +120,7 @@
                   type="text"
                   v-model="customer.accountNumber"
                   placeholder="Account Number"
+                  @keypress="isNumber($event)"
                   step="any"
                 />
                 <div class="ui corner label">
@@ -261,6 +268,7 @@
 </template>
 
 <script>
+import { isNumber } from "../../assets/js/input.js";
 export default {
   name: "Customer",
   props: {
@@ -444,6 +452,9 @@ export default {
           this.selectedWard = { name: "" };
         }
       }
+    },
+    isNumber(evt) {
+      isNumber(evt);
     },
     // Check Phone input
     phoneInput() {

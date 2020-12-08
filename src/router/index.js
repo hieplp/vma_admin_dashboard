@@ -23,6 +23,7 @@ import ContractCanlendar from "../views/contracts/ContractCanlendar.vue";
 import CreateContract from "../views/contracts/CreateContract.vue";
 import UpdateContract from "../views/contracts/UpdateContract.vue";
 import ContractDetail from "../views/contracts/ContractDetail.vue";
+import AssignVehiclesContract from "../views/contracts/vehicles/AssignVehiclesContract.vue";
 
 // Customer
 import Customers from "../views/customers/Customers.vue";
@@ -64,6 +65,10 @@ import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail
 import VehiclesReport from "../views/reports/VehiclesReport";
 import ScheduleReport from "../views/reports/ScheduleReport";
 import ContractReport from "../views/reports/ContractReport";
+// Feedback
+import Feedbacks from "../views/feedback/Feedbacks.vue";
+// DriverIncomes
+import DriverIncomes from "../views/drivers/DriverIncomes";
 
 import Login from "../views/Login.vue";
 
@@ -165,6 +170,11 @@ const routes = [
     path: "/contracts",
     name: "Contracts",
     component: Contracts,
+  },
+  {
+    path: "/contracts/vehicles",
+    name: "AssignVehiclesContract",
+    component: AssignVehiclesContract,
   },
   {
     path: "/contract-canlendar",
@@ -272,7 +282,7 @@ const routes = [
     component: AssignedVehicles,
   },
   {
-    path: "/assign-vehicles/history",
+    path: "/assign-vehicles/history/:driverId",
     name: "AssignedVehiclesHistory",
     component: AssignedVehiclesHistory,
   },
@@ -326,6 +336,18 @@ const routes = [
     path: "/reports/contracts",
     name: "ContractReport",
     component: ContractReport,
+  },
+  // Contracts reports
+  {
+    path: "/feedbacks/:driverId",
+    name: "Feedbacks",
+    component: Feedbacks,
+  },
+  // Contracts reports
+  {
+    path: "/driver-incom/:driverId",
+    name: "DriverIncomes",
+    component: DriverIncomes,
   },
 ];
 

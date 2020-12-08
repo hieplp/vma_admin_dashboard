@@ -56,11 +56,24 @@
 
       <!-- revenue chart -->
       <div class="row">
-        <div class="col-12 grid-margin stretch-card">
+        <div class="col-6 grid-margin stretch-card">
           <div class="card">
             <div class="card-body">
-              <h4 class="card-title">Drivers</h4>
+              <h4 class="card-title mb-5">Drivers</h4>
               <canvas id="driverStatusChart" style="height: 250px"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Status pie chart -->
+        <div class="col-lg-6 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Status</h4>
+              <canvas id="trips-by-type-chart"></canvas>
+              <div
+                id="trips-by-type-chart-legend"
+                class="rounded-legend legend-vertical legend-bottom-left pt-4"
+              ></div>
             </div>
           </div>
         </div>
@@ -96,9 +109,9 @@ export default {
     this.inactiveDrivers = await this._getTotalDriverByStatus("INACTIVE");
     this.disableDrivers = await this._getTotalDriverByStatus("DISABLE");
     // Set total vehicle bar char
-    await this.initTotalDriverChart();
+    this.initTotalDriverChart();
     // this.initRevenueChart();
-    // this.initTripByTypeChart();
+    this.initDriverStatusChart();
     this.isLoading = false;
   },
   methods: {
@@ -232,20 +245,55 @@ export default {
     },
 
     // init trip by type chart
-    initTripByTypeChart() {
+    initDriverStatusChart() {
+      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
+        .get(0)
+        .getContext("2d");
+      // gradient color
+      let gradientInfo = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        500
+      );
+      gradientInfo.addColorStop(0, "rgba(144, 202, 249, 1)");
+      gradientInfo.addColorStop(1, "rgba(6, 92, 161, 1)");
+
+      let gradientDanger = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
+      gradientDanger.addColorStop(0, "rgba(255, 191, 150, 1)");
+      gradientDanger.addColorStop(1, "rgba(254, 112, 150, 1)");
+
+      let gradientDark = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
+      gradientDark.addColorStop(0, "rgba(94, 113, 136, 1)");
+      gradientDark.addColorStop(1, "rgba(62, 75, 91, 1)");
+
       var tripsByTypeChartData = {
         datasets: [
           {
-            data: [30, 30, 40, 30],
-            backgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            hoverBackgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            borderColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            legendColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
+            data: [
+              this.activeDrivers,
+              this.inactiveDrivers,
+              this.disableDrivers,
+            ],
+            backgroundColor: [gradientInfo, gradientDanger, gradientDark],
+            hoverBackgroundColor: [gradientInfo, gradientDanger, gradientDark],
+            borderColor: [gradientInfo, gradientDanger, gradientDark],
+            legendColor: ["#2496f2", "#fe7096", "#3e4b5b"],
           },
         ],
 
         // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: ["Bus", "Truck", "Minivan", "Others"],
+        labels: ["Active", "Inactive", "Disable"],
       };
       var tripsByTypeChartOptions = {
         responsive: true,
@@ -264,7 +312,7 @@ export default {
             i < tripsByTypeChartData.datasets[0].data.length;
             i++
           ) {
-            text.push('<li class="col-6" style="font-size:18px">');
+            text.push('<li class="col-4" style="font-size:18px">');
             text.push(
               '<span class="legend-dots" style="background:' +
                 tripsByTypeChartData.datasets[0].legendColor[i] +
@@ -279,14 +327,13 @@ export default {
           return text.join("");
         },
       };
-      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
-        .get(0)
-        .getContext("2d");
+
       var trafficChart = new Chart(tripsByTypeChartCanvas, {
         type: "pie",
         data: tripsByTypeChartData,
         options: tripsByTypeChartOptions,
       });
+
       $("#trips-by-type-chart-legend").html(trafficChart.generateLegend());
     },
   },

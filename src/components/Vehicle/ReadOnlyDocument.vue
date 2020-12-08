@@ -23,12 +23,7 @@
         </div>
         <div class="two fields">
           <div class="field">
-            <label>{{
-              this.document.vehicleDocumentType ===
-              "VEHICLE_REGISTRATION_CERTIFICATE"
-                ? "License Plate"
-                : "ID"
-            }}</label>
+            <label>ID</label>
             <div class="ui corner labeled input">
               <input
                 v-model="document.vehicleDocumentId"

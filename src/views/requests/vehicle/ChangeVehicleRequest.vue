@@ -8,6 +8,14 @@
       :color="'#2e5bff'"
     ></loading>
 
+    <VehiclesModal
+      v-show="isVehicleModalVisible"
+      :cancelFunction="handleVehicleModal"
+      :doneFunction="getVehicleId"
+      :vehicleId="changeVehicle"
+      propStatus="AVAILABLE_NO_DRIVER"
+      ref="vehicleModal"
+    />
     <!-- Reject confimation -->
     <Confirmation
       icon="x"
@@ -145,7 +153,7 @@
                 </div>
 
                 <!-- Vehicle  -->
-                <div class="field">
+                <div class="field" v-if="request.vehicleId">
                   <label>Vehicle</label>
                   <div class="ui action input">
                     <input
@@ -170,7 +178,7 @@
                   </div>
                 </div>
               </div>
-              <div class="three fields">
+              <div class="two fields">
                 <!-- User  -->
                 <div class="field">
                   <label>User</label>
@@ -184,10 +192,17 @@
                       class="ui right labeled blue icon button"
                       @click="
                         () => {
-                          this.$router.push({
-                            name: 'ContributorDetail',
-                            params: { userId: request.userId },
-                          });
+                          if (request.requestType === 'CHANGE_VEHICLE') {
+                            this.$router.push({
+                              name: 'DriverDetail',
+                              params: { userId: request.userId },
+                            });
+                          } else {
+                            this.$router.push({
+                              name: 'ContributorDetail',
+                              params: { userId: request.userId },
+                            });
+                          }
                         }
                       "
                     >
@@ -210,7 +225,10 @@
                   </div>
                 </div>
                 <!-- User Document Id -->
-                <div class="field">
+                <div
+                  class="field"
+                  v-if="request.requestType.includes('DOCUMENT')"
+                >
                   <label>Vehicle Document Id</label>
                   <div class="ui corner labeled input">
                     <input
@@ -219,6 +237,31 @@
                       class="form-control"
                       readonly
                     />
+                  </div>
+                </div>
+                <!-- Vehicle -->
+                <div
+                  class="field"
+                  v-if="request.requestType === 'CHANGE_VEHICLE'"
+                >
+                  <label>Vehicle Change</label>
+                  <div class="ui action input">
+                    <input
+                      v-model="changeVehicle"
+                      type="text"
+                      readonly
+                      placeholder="Pick an vehicle"
+                    />
+                    <button
+                      class="ui right labeled icon button"
+                      @click="handleVehicleModal"
+                    >
+                      <i class="bus icon"></i>
+                      Pick
+                    </button>
+                  </div>
+                  <div class="ui pointing red basic label" v-if="isVehicleErr">
+                    Vehicle is required!
                   </div>
                 </div>
               </div>
@@ -300,7 +343,7 @@ import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 import Confirmation from "../../../components/Modal/Confirmation";
 import MessageModal from "../../../components/Modal/MessageModal";
-
+import VehiclesModal from "../../../components/Modal/VehiclesModal";
 import VehicleDocument from "../../../components/Vehicle/ReadOnlyDocument";
 
 const RequestRepository = RepositoryFactory.get("requests");
@@ -314,6 +357,7 @@ export default {
     VehicleDocument,
     Confirmation,
     MessageModal,
+    VehiclesModal,
   },
   data() {
     return {
@@ -335,6 +379,7 @@ export default {
       isAcceptConVisible: false,
       // Error modal
       isError: false,
+      isVehicleErr: false,
       errTitle: "",
       errMsg: "",
       // Success modal
@@ -349,6 +394,9 @@ export default {
         },
       ],
       prevRoute: null,
+      // Change request
+      isVehicleModalVisible: false,
+      changeVehicle: "",
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -422,6 +470,14 @@ export default {
         });
       this.isLoading = false;
     },
+    // Get vehicle
+    getVehicleId() {
+      this.changeVehicle = this.$refs.vehicleModal.getSelectedVehicle();
+      this.handleVehicleModal();
+    },
+    handleVehicleModal() {
+      this.isVehicleModalVisible = !this.isVehicleModalVisible;
+    },
     openGallery(img, index) {
       this.media = img;
       this.$refs.lightbox.showImage(index);
@@ -437,5 +493,9 @@ export default {
 }
 .step i {
   color: #047edf !important;
+}
+.ui.right.labeled {
+  background-color: #3497e9;
+  color: rgb(255, 255, 255);
 }
 </style>

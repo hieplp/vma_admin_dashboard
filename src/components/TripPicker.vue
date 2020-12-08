@@ -164,10 +164,6 @@ export default {
   mounted() {
     this.maxDate = moment(new Date()).format("YYYY-MM-DDTkk:mm");
     if (this.propTrip) {
-      console.log(
-        "🚀 ~ file: TripPicker.vue ~ line 167 ~ mounted ~ this.propTrip",
-        this.propTrip
-      );
       this.initData(this.propTrip);
     }
   },
@@ -190,6 +186,7 @@ export default {
       destinationTimeErr: false,
       // trip
       trip: {
+        contractTripId: "",
         departureLocation: "",
         departureTime: "",
         destinationLocation: "",
@@ -255,26 +252,25 @@ export default {
         );
         trip.departureLocation = locations[0].location;
         trip.destinationLocation = locations[locations.length - 1].location;
-        this.$delete(locations, 0);
-        this.$delete(locations, locations.length - 1);
+        // this.$delete(locations, 0);
+        // this.$delete(locations, locations.length - 1);
         trip.locations = locations;
         return trip;
       }
     },
 
     // init data
-    initData(trip, type) {
-      this.locations = trip.locations;
-      this.locations.unshift({ location: trip.departureLocation });
-      this.locations.push({ location: trip.destinationLocation });
-      if (type == 1) {
-        this.trip.departureTime = moment(trip.departureTime).format(
-          "YYYY-MM-DDTkk:mm"
-        );
-        this.trip.destinationTime = moment(trip.destinationTime).format(
-          "YYYY-MM-DDTkk:mm"
-        );
-      }
+    initData(trip) {
+      this.firstLocations = [];
+      this.firstLocations = trip.locations;
+      // this.firstLocations.unshift({ location: trip.departureLocation });
+      // this.firstLocations.push({ location: trip.destinationLocation });
+      this.trip.departureTime = moment(trip.departureTime).format(
+        "YYYY-MM-DDTkk:mm"
+      );
+      this.trip.destinationTime = moment(trip.destinationTime).format(
+        "YYYY-MM-DDTkk:mm"
+      );
     },
   },
 };

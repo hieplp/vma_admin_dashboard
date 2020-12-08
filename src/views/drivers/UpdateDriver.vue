@@ -147,7 +147,7 @@
 
       <!-- Indentify Card -->
       <UpdateUserDocument
-        :title="'Identify card'"
+        :title="'Identity card'"
         :maxImage="2"
         :idMaxLength="[9, 12]"
         :isNumberInp="true"

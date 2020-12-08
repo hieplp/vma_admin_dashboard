@@ -23,18 +23,9 @@
                     <input
                       type="date"
                       v-model="contract.durationFrom"
-                      :min="currentDate"
                       placeholder="Duration From"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="durationFromErr"
-                  >
-                    Duration from is required!
                   </div>
                 </div>
                 <!-- Duration To-->
@@ -44,16 +35,9 @@
                     <input
                       type="date"
                       v-model="contract.durationTo"
-                      :min="contract.durationFrom"
-                      :readonly="!contract.durationFrom"
                       placeholder="Duration To"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="durationToErr">
-                    Duration to is required!
                   </div>
                 </div>
                 <!-- Signed Date-->
@@ -64,13 +48,8 @@
                       type="date"
                       v-model="contract.signedDate"
                       placeholder="Signed Date"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="signedDateErr">
-                    Signed date is required!
                   </div>
                 </div>
               </div>
@@ -83,17 +62,8 @@
                       type="text"
                       v-model="contract.estimatedPassengerCount"
                       placeholder="Estimated Passenger Count"
-                      @keypress="isNumber($event)"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="estimatedPassengerCountErr"
-                  >
-                    Estimated Passenger Count is required!
                   </div>
                 </div>
                 <!-- Estimated Vehicle Count -->
@@ -104,36 +74,19 @@
                       type="text"
                       v-model="contract.estimatedVehicleCount"
                       placeholder="Estimated Vehicle Count"
-                      @keypress="isNumber($event)"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="estimatedVehicleCountErr"
-                  >
-                    Estimated Vehicle Count is required!
                   </div>
                 </div>
                 <!-- Trip type -->
                 <div class="field">
                   <label>Type</label>
-                  <div class="ui corner labeled input ">
-                    <select v-model="contract.roundTrip" class="cus-select">
-                      <option :value="false">One-way</option>
-                      <option :value="true">Round-trip</option>
-                    </select>
-                    <div class="ui corner left label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="estimatedVehicleCountErr"
-                  >
-                    Estimated Vehicle Count is required!
+                  <div class="ui corner labeled input">
+                    <input
+                      type="text"
+                      :value="contract.roundTrip ? 'Round-trip' : 'One-way'"
+                      readonly
+                    />
                   </div>
                 </div>
               </div>
@@ -146,14 +99,8 @@
                       type="text"
                       v-model="contract.totalPrice"
                       placeholder="Total Price"
-                      @keypress="isNumber($event)"
+                      readonly
                     />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="totalPriceErr">
-                    Total price is required!
                   </div>
                 </div>
                 <!-- Owner-->
@@ -171,23 +118,9 @@
                       @click="handleVehicleOwnerModal"
                     >
                       <i class="users icon"></i>
-                      Pick
+                      View
                     </button>
                   </div>
-                  <div class="ui pointing red basic label" v-if="ownerErr">
-                    Owner is required!
-                  </div>
-                </div>
-              </div>
-              <!-- Description-->
-              <div class="field">
-                <label>Description</label>
-                <div class="ui corner labeled input">
-                  <textarea
-                    type="text"
-                    v-model="contract.otherInformation"
-                    placeholder="Description"
-                  />
                 </div>
               </div>
             </div>
@@ -348,7 +281,10 @@ export default {
     },
     // Vehicle Owner
     handleVehicleOwnerModal() {
-      this.isOwnerModalVisible = !this.isOwnerModalVisible;
+      this.$router.push({
+        name: "CustomerDetail",
+        params: { customerId: this.owner.userId },
+      });
     },
     // Get vehicle owner
     getVehicleOwner() {

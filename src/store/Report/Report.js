@@ -48,5 +48,60 @@ export default {
           });
       });
     },
+    // Get driver income report
+    _getDriversIncomesReportData(context, { quarter, year }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/driver-income/data?quarter=${quarter}&year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data.driverIncomes);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get driver income report by driver Id
+    _getDriversIncomesByDriverId(context, { quarter, year, driverId }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/driver-income/${driverId}/data?quarter=${quarter}&year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data.driverIncomes);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get driver income report by driver Id
+    _getTotalIncomesByDriverId(context, { quarter, year, driverId }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/driver-income/${driverId}/data?quarter=${quarter}&year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data.earnedValue);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    _getDriverInComeSummaryReportRes(context, { year, driverId }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/driver-income/${driverId}/summary/data?year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data.driverIncomeSummaryMonthResList);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

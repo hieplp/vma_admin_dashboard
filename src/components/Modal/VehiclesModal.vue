@@ -159,6 +159,7 @@ export default {
     cancelFunction: Function,
     doneFunction: Function,
     vehicleId: String,
+    propStatus: String,
   },
   data() {
     return {
@@ -178,6 +179,9 @@ export default {
     ...mapState("Vehicle", ["vehicles", "totalVehicles"]),
   },
   async mounted() {
+    if (this.propStatus) {
+      this.searchStatusID = this.propStatus;
+    }
     await this.initVehicles();
     this.initTypes();
     this.initStatusList();

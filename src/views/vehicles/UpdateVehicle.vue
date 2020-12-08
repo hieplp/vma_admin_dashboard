@@ -149,12 +149,11 @@
         :title="'Vehicle registration certificate'"
         :maxImage="2"
         :isOtherInfoVisible="true"
-        :otherInfoMaxLength="8"
-        :otherInfoMinLength="7"
+        :otherInfoMaxLength="9"
         :type="2"
         :isExpiryDateVisible="true"
         :documentType="'VEHICLE_REGISTRATION_CERTIFICATE'"
-        otherInformationTitle="License Plate"
+        otherInformationTitle="ID"
         ref="regisInfor"
         :propDocument="regisInfor"
         :proIsInsert="isInsertRegistration"
@@ -169,9 +168,9 @@
         "
       />
 
-      <!-- Civil liability insurace certificate -->
+      <!-- Civil liability insurance certificate -->
       <VehicleDocument
-        :title="'Civil liability insurace certificate'"
+        :title="'Civil liability insurance certificate'"
         :maxImage="2"
         :idMaxLength="[9]"
         :expiryMaxDate="1"

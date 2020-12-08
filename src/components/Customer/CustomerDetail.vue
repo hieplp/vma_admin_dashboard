@@ -92,6 +92,7 @@
 </template>
 
 <script>
+import { isNumber } from "../../assets/js/input.js";
 export default {
   name: "CustomerDetail",
   props: {
@@ -106,7 +107,11 @@ export default {
     return {};
   },
   mounted() {},
-  methods: {},
+  methods: {
+    isNumber(evt) {
+      isNumber(evt);
+    },
+  },
 };
 </script>
 

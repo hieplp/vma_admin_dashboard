@@ -15,10 +15,48 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Contract
+          Update Contract
         </span>
       </h3>
     </div>
+    <!-- Update Confirmation -->
+    <Confirmation
+      icon="edit outline"
+      title="Update Confirmation"
+      subTitle="Do you want to update this contract?"
+      rightBtnTitle="Update"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isUpdConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isUpdConVisible = !this.isUpdConVisible;
+        }
+      "
+      :handleRightBtn="updateContract"
+    />
+    <!-- Update Trip Confirmation -->
+    <Confirmation
+      icon="edit outline"
+      title="Update Trips Confirmation"
+      subTitle="Do you want to update this contract trips?"
+      rightBtnTitle="Update"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isUpdTripConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isUpdTripConVisible = !this.isUpdTripConVisible;
+        }
+      "
+      :handleRightBtn="updateTrips"
+    />
 
     <!-- Error message -->
     <MessageModal
@@ -36,13 +74,10 @@
     <MessageModal
       title="Create Contract Successfully!"
       icon="check circle"
-      :subTitle="`Contract is created successfully!`"
+      :subTitle="`Contract is updated successfully!`"
       :proFunc="
         () => {
           this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
-          this.$router.push({
-            name: 'Contracts',
-          });
         }
       "
       v-if="isCreatedSuccessfully"
@@ -86,20 +121,33 @@
       />
     </div>
 
-    <div class="row" v-show="isContractVisible">
+    <div class="row" v-if="isContractVisible && isUserLoading">
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
             <div class="ui form">
               <!-- Button group -->
               <div class="row justify-content-center">
-                <button
-                  class="btn btn-gradient-info btn-fw ml-2"
-                  type="button"
-                  v-on:click="changeTab('isTripVisible')"
-                >
-                  Next
-                </button>
+                <div class="col-4">
+                  <button
+                    class="btn btn-gradient-danger btn-fw"
+                    type="button"
+                    @click="cancelUpdate()"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    class="btn btn-gradient-info btn-fw ml-2"
+                    type="button"
+                    @click="
+                      () => {
+                        this.isUpdConVisible = true;
+                      }
+                    "
+                  >
+                    Update
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -107,38 +155,40 @@
       </div>
     </div>
 
-    <!-- FIRST TRIP -->
-    <TripPicker
-      title="FIRST TRIP"
-      ref="firstTrip"
-      :propTrip="contract.trips[0]"
-      v-show="isTripVisible"
-      :endDateChange="
-        () => {
-          this.$refs.returnTrip.trip.departureTime = '';
-          this.$refs.returnTrip.trip.destinationTime = '';
-          this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
-        }
-      "
-    />
-    <div v-if="contract.trips.length == 2">
-      <!-- RETURN TRIP -->
+    <div v-if="isUserLoading">
+      <!-- FIRST TRIP -->
       <TripPicker
-        title="RETURN TRIP"
-        ref="returnTrip"
-        v-show="isTripVisible && contract.roundTrip"
-        :propTrip="contract.trips[1]"
-        :endDateChange="() => {}"
-        :importLocation="
+        title="FIRST TRIP"
+        ref="firstTrip"
+        :propTrip="contract.trips[0]"
+        v-show="isTripVisible"
+        :endDateChange="
           () => {
-            // Reverse locations arrays
-            this.$refs.returnTrip.firstLocations = this.$refs.firstTrip.firstLocations;
-            this.$refs.returnTrip.firstLocations = []
-              .concat(this.$refs.returnTrip.firstLocations)
-              .reverse();
+            this.$refs.returnTrip.trip.departureTime = '';
+            this.$refs.returnTrip.trip.destinationTime = '';
+            this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
           }
         "
       />
+      <div v-if="contract.roundTrip">
+        <!-- RETURN TRIP -->
+        <TripPicker
+          title="RETURN TRIP"
+          ref="returnTrip"
+          v-show="isTripVisible && contract.roundTrip"
+          :propTrip="contract.trips[1]"
+          :endDateChange="() => {}"
+          :importLocation="
+            () => {
+              // Reverse locations arrays
+              this.$refs.returnTrip.firstLocations = this.$refs.firstTrip.firstLocations;
+              this.$refs.returnTrip.firstLocations = []
+                .concat(this.$refs.returnTrip.firstLocations)
+                .reverse();
+            }
+          "
+        />
+      </div>
     </div>
 
     <!-- User document -->
@@ -149,7 +199,7 @@
           <div class="card-body">
             <div class="ui form">
               <!-- Button group -->
-              <div class="row justify-content-center mt-5">
+              <div class="row justify-content-center">
                 <div class="col-4">
                   <button
                     class="btn btn-gradient-danger btn-fw"
@@ -161,9 +211,13 @@
                   <button
                     class="btn btn-gradient-info btn-fw ml-2"
                     type="button"
-                    v-on:click="create()"
+                    v-on:click="
+                      () => {
+                        this.isUpdTripConVisible = true;
+                      }
+                    "
                   >
-                    Create
+                    Update
                   </button>
                 </div>
               </div>
@@ -179,6 +233,7 @@
 import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import MessageModal from "../../components/Modal/MessageModal";
+import Confirmation from "../../components/Modal/Confirmation";
 import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
@@ -190,6 +245,7 @@ export default {
     ContractInformation,
     TripPicker,
     MessageModal,
+    Confirmation,
   },
   data() {
     return {
@@ -198,9 +254,13 @@ export default {
       isError: false,
       errMsg: "",
       contract: null,
+      cloneTrips: [],
       documentExpiryDate: [],
+      // Tab visible
       isContractVisible: true,
       isTripVisible: false,
+      isUpdConVisible: false,
+      isUpdTripConVisible: false,
 
       isUserLoading: false,
 
@@ -210,12 +270,18 @@ export default {
   async mounted() {
     this.isLoading = true;
     await this.initContract();
+    this.cloneTrips = Object.assign({}, this.contract.trips);
     this.isUserLoading = true;
     this.isLoading = false;
   },
   methods: {
     // Map state
-    ...mapActions("Contract", ["_create", "_getContractDetail"]),
+    ...mapActions("Contract", [
+      "_updateContract",
+      "_getContractDetail",
+      "_updateContractTrip",
+      "_updateContractLocation",
+    ]),
     // Init contract
     async initContract() {
       await this._getContractDetail(this.$route.params.contractId).then(
@@ -224,23 +290,30 @@ export default {
         }
       );
     },
-    // Create
-    async create() {
+    //
+    // Update
+    cancelUpdate() {
+      this.$refs.contract.initContract();
+    },
+    async updateContract() {
       this.isLoading = true;
-      let isValid = false;
-      this.contract.trips = [];
-      // Get first trip
-      let firstTrip = this.$refs.firstTrip.getData();
-      this.contract.trips.push(firstTrip);
-      isValid = firstTrip !== null;
-      // If is round-trip
-      if (this.contract.roundTrip) {
-        let returnTrip = this.$refs.returnTrip.getData();
-        this.contract.trips.push(returnTrip);
-        isValid = returnTrip !== null;
-      }
-      if (isValid) {
-        await this._create(this.contract)
+      this.isUpdConVisible = false;
+      let isValid = this.$refs.contract.checkBasicInformation();
+      // let isValid = false;
+      // this.contract.trips = [];
+      // // Get first trip
+      // let firstTrip = this.$refs.firstTrip.getData();
+      // this.contract.trips.push(firstTrip);
+      // isValid = firstTrip !== null;
+      // // If is round-trip
+      // if (this.contract.roundTrip) {
+      //   let returnTrip = this.$refs.returnTrip.getData();
+      //   this.contract.trips.push(returnTrip);
+      //   isValid = returnTrip !== null;
+      // }
+      if (!isValid) {
+        this.contract = this.$refs.contract.getData();
+        await this._updateContract(this.contract)
           .then((res) => {
             if (res) {
               this.isCreatedSuccessfully = true;
@@ -251,20 +324,107 @@ export default {
               this.isError = true;
               this.errMsg = ex.debugMessage;
             }
-            console.error(ex);
           });
       }
       this.isLoading = false;
     },
-    changeTab(step) {
-      let isValid = this.$refs.contract.checkBasicInformation();
-      // let isValid = false;
-      if (!isValid) {
-        this.contract = this.$refs.contract.getData();
-        document.getElementById("app").scrollIntoView();
-        this.isContractVisible = step === "isContractVisible" ? true : false;
-        this.isTripVisible = step === "isTripVisible" ? true : false;
+    // Update trips
+    // :TODO:
+    async updateTrips() {
+      this.isLoading = true;
+      this.isUpdTripConVisible = !this.isUpdTripConVisible;
+      // eslint-disable-next-line no-unused-vars
+      let isSuccess = true;
+
+      let firstTrip = this.$refs.firstTrip.getData();
+      console.log(
+        "🚀 ~ file: UpdateContract.vue ~ line 366 ~ updateSingleTrip ~ changeTrip",
+        firstTrip
+      );
+      let returnTrip = null;
+      let isValid = firstTrip !== null;
+      if (this.contract.roundTrip) {
+        returnTrip = this.$refs.returnTrip.getData();
+        isValid = returnTrip !== null;
       }
+      if (isValid) {
+        firstTrip.contractTripId = this.contract.trips[0].contractTripId;
+        isSuccess = await this.updateSingleTrip(
+          this.contract.trips[0],
+          firstTrip
+        );
+        if (this.contract.roundTrip) {
+          returnTrip.contractTripId = this.contract.trips[1].contractTripId;
+          isSuccess = await this.updateSingleTrip(
+            this.contract.trips[1],
+            returnTrip
+          );
+        }
+      }
+      this.isLoading = false;
+      if (isSuccess) {
+        this.isCreatedSuccessfully = true;
+      }
+    },
+    async updateSingleTrip(trip, changeTrip) {
+      // if (
+      //   trip.departureLocation !== changeTrip.departureLocation ||
+      //   trip.destinationLocation !== changeTrip.destinationLocation ||
+      //   trip.departureTime !== changeTrip.departureTime ||
+      //   trip.destinationTime !== changeTrip.destinationTime
+      // ) {
+      //   await this._updateContractTrip(changeTrip)
+      //     .then(async (res) => {
+      //       if (res) {
+      //         await this._updateContractLocation(changeTrip.locations).catch(
+      //           (ex) => {
+      //             if (ex.debugMessage) {
+      //               this.isError = true;
+      //               this.errMsg = ex.debugMessage;
+      //             }
+      //             return false;
+      //           }
+      //         );
+      //       }
+      //     })
+      //     .catch((ex) => {
+      //       if (ex.debugMessage) {
+      //         this.isError = true;
+      //         this.errMsg = ex.debugMessage;
+      //       }
+      //       return false;
+      //     });
+      // }
+      await this._updateContractTrip(changeTrip)
+        .then(async (res) => {
+          if (res) {
+            await this._updateContractLocation({
+              contractTripId: changeTrip.contractTripId,
+              locations: changeTrip.locations,
+            }).catch((ex) => {
+              if (ex.debugMessage) {
+                this.isError = true;
+                this.errMsg = ex.debugMessage;
+              }
+              return false;
+            });
+          }
+        })
+        .catch((ex) => {
+          if (ex.debugMessage) {
+            this.isError = true;
+            this.errMsg = ex.debugMessage;
+          }
+          return false;
+        });
+      return true;
+    },
+    changeTab(step) {
+      // let isValid = false;
+
+      document.getElementById("app").scrollIntoView();
+      this.isContractVisible = step === "isContractVisible" ? true : false;
+      this.isTripVisible = step === "isTripVisible" ? true : false;
     },
 
     // Vehicle Owner

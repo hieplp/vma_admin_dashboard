@@ -11,6 +11,7 @@ import Vehicle from "./Vehicle/Vehicle";
 import Request from "./Request/Request";
 import Notification from "./Notification/Notification";
 import Maintenance from "./Maintenance/Maintenance";
+import Feedback from "./Feedback/Feedback";
 
 Vue.use(Vuex);
 
@@ -29,5 +30,6 @@ export default new Vuex.Store({
     Request: Request,
     Notification: Notification,
     Maintenance: Maintenance,
+    Feedback: Feedback,
   },
 });

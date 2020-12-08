@@ -55,6 +55,26 @@
             </div>
           </div>
           <div class="two fields mt-5">
+            <!-- Licence Plate Number -->
+            <div class="field">
+              <label>Licence Plate Number</label>
+              <div class="ui corner labeled input">
+                <input
+                  type="text"
+                  v-model="vehicle.vehicleId"
+                  placeholder="Licence Plate Number"
+                  style="text-transform:uppercase"
+                  maxlength="9"
+                  :readonly="isUpdate"
+                />
+                <div class="ui corner label" v-if="!isUpdate">
+                  <i class="asterisk icon"></i>
+                </div>
+              </div>
+              <div class="ui pointing red basic label" v-if="isVehicleIdErr">
+                Licence Plate Number is required 8 - 9 chars!
+              </div>
+            </div>
             <!-- Chassis Number -->
             <div class="field">
               <label>Chassis Number/VIN</label>
@@ -421,6 +441,7 @@ export default {
       isContractVisible: true,
 
       // Basic Information Error
+      isVehicleIdErr: false,
       isChassisNumberErr: false,
       isEngineNumberErr: false,
       isModelErr: false,
@@ -548,6 +569,7 @@ export default {
     // Cheack basic information
     checkBasicInformation() {
       this.isChassisNumberErr = this.vehicle.chassisNumber.length !== 17;
+      this.isVehicleIdErr = this.vehicle.vehicleId.length < 8;
       this.isEngineNumberErr = this.vehicle.engineNumber.length !== 12;
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
@@ -576,6 +598,7 @@ export default {
 
       return (
         this.isChassisNumberErr ||
+        this.isVehicleIdErr ||
         this.isEngineNumberErr ||
         this.isModelErr ||
         this.isBrandErr ||

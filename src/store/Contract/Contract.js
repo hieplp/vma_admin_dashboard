@@ -9,9 +9,23 @@ export default {
     // Update contract
     _updateContract(context, contract) {
       return new Promise((resolve, reject) => {
-        Repository.patch(CONTRACT_URL, contract)
+        Repository.patch(`${CONTRACT_URL}`, contract)
           .then((res) => {
-            resolve(res.data);
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Update contract
+    _updateContractStatus(context, { contractId, contractStatus }) {
+      return new Promise((resolve, reject) => {
+        Repository.patch(
+          `${CONTRACT_URL}/${contractId}/status?contractStatus=${contractStatus}`
+        )
+          .then((res) => {
+            resolve(res);
           })
           .catch((err) => {
             reject(err.response.data);
@@ -23,17 +37,9 @@ export default {
       return new Promise((resolve, reject) => {
         Repository.post(CONTRACT_URL, contract)
           .then((res) => {
-            console.log(
-              "🚀 ~ file: Contract.js ~ line 28 ~ _create ~ res",
-              res
-            );
             resolve(res);
           })
           .catch((err) => {
-            console.log(
-              "🚀 ~ file: Contract.js ~ line 35 ~ _create ~ err",
-              err
-            );
             reject(err.response.data);
           });
       });
@@ -102,7 +108,6 @@ export default {
           `${CONTRACT_URL}/count?contractStatus=${contractStatus}&departureLocation=${departureLocation}&departureTime=${departureTime}&destinationLocation=${destinationLocation}&destinationTime=${destinationTime}&durationFrom=${durationFrom}&durationTo=${durationTo}&totalPriceMax=${totalPriceMax}&totalPriceMin=${totalPriceMin}&viewOption=${viewOption}`
         )
           .then((res) => {
-            console.log(res);
             resolve(res.data);
           })
           .catch((err) => {
@@ -117,6 +122,95 @@ export default {
         Repository.get(`${CONTRACT_URL}?departureTime=${departureTimeFrom}`)
           .then((res) => {
             resolve(res.data.contractList);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get contract vehicle list
+    _getContractVehicle(context, contractId) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${CONTRACT_URL}/vehicles?contractId=${contractId}`)
+          .then((res) => {
+            resolve(res.data.contractVehicleList);
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(err.response.data);
+          });
+      });
+    },
+    // Assign Vehicle For Contract
+    _assignVehicleForContract(context, contract) {
+      return new Promise((resolve, reject) => {
+        Repository.post(`${CONTRACT_URL}/vehicles`, contract)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(err.response.data);
+          });
+      });
+    },
+    // Update trip
+    _updateContractTrip(context, contract) {
+      return new Promise((resolve, reject) => {
+        Repository.patch(`${CONTRACT_URL}/trip`, contract)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Update trip
+    _updateContractLocation(context, location) {
+      return new Promise((resolve, reject) => {
+        Repository.patch(`${CONTRACT_URL}/schedule`, location)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            console.log(
+              "🚀 ~ file: Contract.js ~ line 166 ~ returnnewPromise ~ err.response.data",
+              err.response.data
+            );
+
+            reject(err.response.data);
+          });
+      });
+    },
+    // get recommendation vehicles
+    _getVehicleRecommendations(
+      context,
+      { startDate, endDate, seatsMin, seatsMax, vehicleTypeId, viewOption }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${CONTRACT_URL}/vehicles/recommendation?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+        )
+          .then((res) => {
+            resolve(res.data.vehicleList);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // get recommendation vehicles count
+    _getVehicleRecommendationsCount(
+      context,
+      { startDate, endDate, seatsMin, seatsMax, vehicleTypeId, viewOption }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${CONTRACT_URL}/vehicles/recommendation/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+        )
+          .then((res) => {
+            resolve(res.data);
           })
           .catch((err) => {
             reject(err.response.data);

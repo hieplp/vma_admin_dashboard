@@ -163,6 +163,19 @@ export default {
           });
       });
     },
+    // Get assigned vehicle history by driver id
+    _getVehicleHistoryByDriverId(context, driverId) {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${VEHICLE_URL}/history?driverId=${driverId}`)
+          .then((res) => {
+            context.commit("setAssignedDrivers", res.data.vehicleHistory);
+            resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
     // Delete contracts
     _deleteContract(context, vehicleValueId) {
       return new Promise((resolve, reject) => {

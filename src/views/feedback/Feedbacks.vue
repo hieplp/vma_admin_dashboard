@@ -12,7 +12,7 @@
     <Confirmation
       icon="trash alternate"
       title="Delete Confirmation"
-      subTitle="Do you want to delete this maintenace?"
+      subTitle="Do you want to delete this feedback?"
       rightBtnTitle="Delete"
       rightBtnIcon="trash alternate"
       rightBtnColor="red"
@@ -29,7 +29,7 @@
     />
     <!-- Error message -->
     <MessageModal
-      title="Delete maintenace Fail!"
+      title="Delete feedback Fail!"
       icon="frown outline "
       :subTitle="errMsg"
       :proFunc="handleErrorModal"
@@ -37,10 +37,10 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Delete maintenace Successfully!"
+      title="Delete feedback Successfully!"
       icon="check circle"
       :subTitle="
-        `maintenace with id ${this.deleteUserID} is deleted successfully.`
+        `feedback with id ${this.deleteUserID} is deleted successfully.`
       "
       :proFunc="handleSuccessModal"
       v-if="isSuccess"
@@ -48,12 +48,9 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/maintenanceList" class="nav-link"
-          >Maintenance List</router-link
-        >
+        <router-link to="/feedbackList" class="nav-link">Feedback</router-link>
       </h3>
-      <div class="dropdown">
-        <!-- Create new maintenace -->
+      <!-- <div class="dropdown">
         <router-link
           to="/create-maintenance"
           class="btn btn-gradient-info btn-icon-text mr-2"
@@ -61,7 +58,6 @@
           <i class="mdi mdi-plus-box btn-icon-prepend"></i>
           Create
         </router-link>
-        <!-- Filter group -->
         <button
           class="btn btn-gradient-info"
           type="button"
@@ -69,11 +65,11 @@
         >
           Filter
         </button>
-      </div>
+      </div> -->
     </div>
 
     <div class="row">
-      <!-- maintenanceList table -->
+      <!-- feedbackList table -->
       <div
         class="grid-margin stretch-card"
         v-bind:class="{
@@ -83,81 +79,35 @@
       >
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title">Maintenances List</h4>
-            <!-- Tab -->
-            <vue-tabs
-              class="mb-4"
-              active-tab-color="#047edf"
-              active-text-color="white"
-              @tab-change="handleTabChange"
-              v-model="tabValue"
-            >
-              <v-tab :title="`ALL (${this.allCount})`"> </v-tab>
-              <v-tab :title="`PERIODIC MAINTENANCE (${this.periodicCount})`">
-              </v-tab>
-              <v-tab :title="`REPAIR (${this.repairCount})`"> </v-tab>
-              <v-tab :title="`DISABLE (${this.disableCount})`"> </v-tab>
-            </vue-tabs>
-
-            <table class="table " v-if="maintenanceList.length > 0">
+            <h4 class="card-title">feedbacks List</h4>
+            <table class="table " v-if="feedbackList.length > 0">
               <thead>
                 <tr class="">
                   <th>NO.</th>
                   <!-- <th>ID</th> -->
-                  <th>START DATE</th>
-                  <th>END DATE</th>
-                  <th>COST</th>
+                  <th>RATE</th>
+                  <th>CONTRIBUTOR NAME</th>
+                  <th>DRIVER NAME</th>
                   <th>VEHICLE</th>
-                  <th>TYPE</th>
-                  <th class="text-center">ACTION</th>
+                  <th>DATE</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="(maintenace, index) in this.maintenanceList"
-                  :key="maintenace.maintenanceId"
+                  v-for="(feedback, index) in this.feedbackList"
+                  :key="feedback.feedbackId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <!-- <td>{{ maintenace.maintenanceId }}</td> -->
-                  <td>{{ maintenace.startDate }}</td>
-                  <td>{{ maintenace.endDate }}</td>
-                  <td>{{ maintenace.cost }}</td>
+                  <!-- <td>{{ feedback.maintenanceId }}</td> -->
                   <td>
-                    <p v-if="maintenace.vehicleId">
-                      {{ maintenace.vehicleId }}
-                    </p>
-                    <p v-else>N/A</p>
+                    <span v-for="index in feedback.rate" :key="index">
+                      <i class="mdi mdi-star"></i>
+                    </span>
                   </td>
-                  <td>
-                    {{ maintenace.maintenanceType }}
-                  </td>
-                  <td class="row justify-content-center btn-action">
-                    <button
-                      class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(maintenace.maintenanceId)"
-                    >
-                      <i class="mdi mdi-account-box-outline"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
-                      :disabled="viewOption === 1"
-                      @click="updateDriver(maintenace.maintenanceId)"
-                    >
-                      <i class="mdi mdi-grease-pencil"></i>
-                    </button>
-                    <button
-                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
-                      :disabled="viewOption === 1"
-                      @click="
-                        handleDialog(
-                          'isDeleteConVisible',
-                          maintenace.maintenanceId
-                        )
-                      "
-                    >
-                      <i class="mdi mdi-delete-forever"></i>
-                    </button>
-                  </td>
+                  <td>{{ feedback.contributor.userName }}</td>
+                  <td>{{ feedback.driver.userName }}</td>
+                  <td>{{ feedback.vehicleId }}</td>
+                  <td>{{ feedback.createDate }}</td>
                 </tr>
               </tbody>
             </table>
@@ -168,10 +118,10 @@
               <h3>Your list is empty.</h3>
             </div>
           </div>
-          <div v-if="this.totalMaintenance > 15">
+          <div v-if="this.totalFeebacks > 15">
             <paginate
               v-model="currentPage"
-              :page-count="Math.floor(this.totalMaintenance / 15) + 1"
+              :page-count="Math.floor(this.totalFeebacks / 15) + 1"
               :page-range="3"
               :margin-pages="1"
               :click-handler="clickCallback"
@@ -278,7 +228,7 @@
 </template>
 
 <script>
-import { mapState, mapActions } from "vuex";
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
@@ -293,36 +243,22 @@ export default {
     Confirmation,
     MessageModal,
   },
-  computed: {
-    // Map state
-    ...mapState("Maintenance", ["maintenanceList", "totalMaintenance"]),
-  },
+  computed: {},
   data() {
     return {
       isFilterVisible: false,
       isTableVisible: true,
       statusList: [],
+      feedbackList: [],
+      totalFeebacks: 0,
       // Filter
-      searchPhoneNumber: "",
-      searchDriverID: "",
-      searchDriverName: "",
-      searchStatusID: "",
-
-      costMax: "",
-      costMin: "",
-      endDate: "",
-      maintenanceType: "",
+      driverId: this.$route.params.driverId,
+      rateMax: 5,
+      rateMin: 0,
       pageNum: "",
-      startDate: "",
-      vehicleId: "",
       viewOption: "",
       tabValue: "", // current tab
       // Count
-      allCount: 0,
-      periodicCount: 0,
-      repairCount: 0,
-      disableCount: 0,
-
       isLoading: true,
       // Pagination
       page: 0,
@@ -341,63 +277,18 @@ export default {
     if (this.$route.params.status) {
       this.searchStatusID = this.$route.params.status;
     }
-    await this.initMaintenancesList();
-    await this.initCountByType();
+    await this.initFeedbacksList();
   },
   methods: {
     // Map actions
-    ...mapActions("Maintenance", [
-      "_getMaintenanceList",
-      "_getMaintenanceListCount",
-      "_getMaintenanceListCountByType",
-      "_delete",
-    ]),
-    // handle Tab Change
-    async handleTabChange(tabIndex) {
-      switch (tabIndex) {
-        case 0:
-          this.maintenanceType = "";
-          this.viewOption = 0;
-          break;
-        case 1:
-          this.maintenanceType = "PERIODIC_MAINTENANCE";
-          this.viewOption = 0;
-          break;
-        case 2:
-          this.maintenanceType = "REPAIR";
-          this.viewOption = 0;
-          break;
-        case 3:
-          this.maintenanceType = "";
-          this.viewOption = 1;
-          break;
-      }
-      await this.initMaintenancesList();
-    },
-    // Change tab
-    changeTab(tabIndex) {
-      switch (tabIndex) {
-        case 0:
-          this.tabValue = `ALL (${this.allCount})`;
-          break;
-        case 1:
-          this.tabValue = `PERIODIC MAINTENANCE (${this.periodicCount})`;
-          break;
-        case 2:
-          this.tabValue = `REPAIR (${this.repairCount})`;
-          break;
-        case 3:
-          this.tabValue = `DISABLE (${this.disableCount})`;
-          break;
-      }
-    },
+    ...mapActions("Feedback", ["_getFeedbacks", "_getFeedbackCount"]),
     // pagination handle
     async clickCallback(pageNum) {
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.initMaintenancesList();
+      this.initFeedbacksList();
     },
-    // Init data for maintenace Status Dropdown
+    // Init data for feedback Status Dropdown
     async initStatusList() {
       this.statusList = require("../../assets/json/user/driverStatus.json");
     },
@@ -409,79 +300,34 @@ export default {
       this.startDate = "";
       this.vehicleId = "";
     },
-    // Search maintenace
-    async searchMaintenances() {
-      this.page = 0;
-      this.currentPage = 1;
-      await this.initMaintenancesList();
-      await this.initCountByType();
-    },
-    // Init data for maintenace list
-    async initMaintenancesList() {
+    // Init data for feedback list
+    async initFeedbacksList() {
       this.isLoading = true;
-      await this._getMaintenanceList({
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        maintenanceType: this.maintenanceType,
+      this.feedbackList = await this._getFeedbacks({
+        driverId: this.driverId,
         pageNum: this.page,
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
+        rateMax: this.rateMax,
+        rateMin: this.rateMin,
         viewOption: this.viewOption,
       });
-      await this._getMaintenanceListCount({
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        maintenanceType: this.maintenanceType,
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
+      this.totalFeebacks = await this._getFeedbackCount({
+        driverId: this.driverId,
+        rateMax: this.rateMax,
+        rateMin: this.rateMin,
         viewOption: this.viewOption,
       });
+      // await this._getfeedbackListCount({
+      //   costMax: this.costMax,
+      //   costMin: this.costMin,
+      //   endDate: this.endDate,
+      //   maintenanceType: this.maintenanceType,
+      //   startDate: this.startDate,
+      //   vehicleId: this.vehicleId,
+      //   viewOption: this.viewOption,
+      // });
       this.isLoading = false;
     },
-    // Init maintenace count
-    async initCountByType() {
-      this.isLoading = true;
-      this.allCount = await this._getMaintenanceListCountByType({
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        maintenanceType: "",
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
-        viewOption: 0,
-      });
-      this.periodicCount = await this._getMaintenanceListCountByType({
-        maintenanceType: "PERIODIC_MAINTENANCE",
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
-        viewOption: 0,
-      });
-      this.repairCount = await this._getMaintenanceListCountByType({
-        maintenanceType: "REPAIR",
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
-        viewOption: 0,
-      });
-      this.disableCount = await this._getMaintenanceListCountByType({
-        maintenanceType: "",
-        costMax: this.costMax,
-        costMin: this.costMin,
-        endDate: this.endDate,
-        startDate: this.startDate,
-        vehicleId: this.vehicleId,
-        viewOption: 1,
-      });
-      this.isLoading = false;
-    },
-    // Delete maintenace
+    // Delete feedback
     async deleteDriver() {
       this.handleDialog("isDeleteConVisible", "");
       this.isLoading = true;
@@ -523,14 +369,14 @@ export default {
         params: { roleId: "2" },
       });
     },
-    // View maintenace detail
+    // View feedback detail
     viewDetail(maintenanceId) {
       this.$router.push({
         name: "MaintenanceDetail",
         params: { maintenanceId: maintenanceId },
       });
     },
-    // View maintenace detail
+    // View feedback detail
     updateDriver(maintenanceId) {
       this.$router.push({
         name: "UpdateMaintenance",
@@ -549,7 +395,7 @@ export default {
       this.isSuccess = !this.isSuccess;
       this.searchMaintenances();
     },
-    // Close delete maintenace confimation dialog
+    // Close delete feedback confimation dialog
     handleDialog(dialogName, maintenanceId) {
       if (maintenanceId.length !== 0) {
         this.deleteUserID = maintenanceId;
@@ -573,6 +419,10 @@ export default {
 /* Tab */
 .title {
   color: #000000 !important;
+}
+.mdi.mdi-star {
+  color: rgb(221, 245, 4);
+  font-size: 20px;
 }
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->

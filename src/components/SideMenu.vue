@@ -138,7 +138,11 @@
           active: this.$route.name.includes('Maintenance') ? true : false,
         }"
       >
-        <a
+        <router-link to="/maintenances" class="nav-link">
+          <span class="menu-title">Maintenances</span>
+          <i class="mdi mdi mdi-wrench menu-icon"></i>
+        </router-link>
+        <!-- <a
           class="nav-link"
           data-toggle="collapse"
           href="#maintenance"
@@ -148,8 +152,8 @@
           <span class="menu-title">Maintenance</span>
           <i class="menu-arrow"></i>
           <i class="mdi mdi-wrench menu-icon"></i>
-        </a>
-        <div class="collapse" id="maintenance">
+        </a> -->
+        <!-- <div class="collapse" id="maintenance">
           <ul class="nav flex-column sub-menu">
             <li class="nav-item">
               <router-link to="/vehicles/overview" class="nav-link">
@@ -162,7 +166,7 @@
               </router-link>
             </li>
           </ul>
-        </div>
+        </div> -->
       </li>
       <!-- Contracts -->
       <li
@@ -277,11 +281,11 @@
                 Schedule Reports
               </router-link>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <router-link to="/reports/contracts" class="nav-link ">
                 Contract Reports
               </router-link>
-            </li>
+            </li> -->
           </ul>
         </div>
       </li>

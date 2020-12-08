@@ -74,9 +74,12 @@
                       v-bind:class="{
                         'badge-info': request.requestType === 'ADD_NEW_VEHICLE',
                         'badge-danger':
-                          request.requestType === 'DELETE_VEHICLE_DOCUMENT',
+                          request.requestType === 'DELETE_VEHICLE_DOCUMENT' ||
+                          request.requestType === 'VEHICLE_NEEDS_REPAIR',
                         'badge-warning':
                           request.requestType === 'CHANGE_VEHICLE',
+                        'badge-dark':
+                          request.requestType === 'WITHDRAW_VEHICLE',
                       }"
                       >{{ request.requestType.replaceAll("_", " ") }}</label
                     >
@@ -381,10 +384,10 @@ export default {
     initTypes() {
       this.requestTypes = [
         "CHANGE_VEHICLE",
-        "VEHICLE_NEEDS_REPAIRED",
+        "VEHICLE_NEEDS_REPAIR",
         "NEED_BACKUP_VEHICLE",
         "ADD_NEW_VEHICLE",
-        "WITHDRAWAL_VEHICLE",
+        "WITHDRAW_VEHICLE",
       ];
     },
     // Set filter to visible

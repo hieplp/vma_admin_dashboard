@@ -190,7 +190,7 @@
                   </div>
                   <div class="ui pointing red basic label" v-if="documentIdErr">
                     {{ this.otherInformationTitle }} is required
-                    {{ this.otherInfoMinLength }} -
+                    <!-- {{ this.otherInfoMinLength }} - -->
                     {{ this.otherInfoMaxLength }} chars!
                   </div>
                   <div class="ui pointing red basic label" v-if="isDuplicated">

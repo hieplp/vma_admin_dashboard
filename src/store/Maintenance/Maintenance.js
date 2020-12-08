@@ -119,6 +119,22 @@ export default {
           });
       });
     },
+    // _delete maintenance
+    _delete(context, maintenanceId) {
+      return new Promise((resolve, reject) => {
+        Repository.delete(`${MAINTENANCE_URL}?maintenanceId=${maintenanceId}`)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            console.log(
+              "🚀 ~ file: Maintenance.js ~ line 130 ~ returnnewPromise ~ err",
+              err
+            );
+            reject(err.response.data);
+          });
+      });
+    },
     // update maintenance
     _updateMaintenance(context, { maintenance }) {
       return new Promise((resolve, reject) => {

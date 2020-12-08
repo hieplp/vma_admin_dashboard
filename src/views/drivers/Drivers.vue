@@ -198,7 +198,7 @@
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
             <!-- Search Driver ID -->
-            <!-- 
+
             <div class="col-sm-12">
               <label>Driver ID</label>
               <input
@@ -206,10 +206,9 @@
                 class="form-control form-control-sm"
                 placeholder="Driver ID"
                 v-model="searchDriverID"
-                @keypress="isNumber($event)"
                 maxlength="12"
               />
-            </div> -->
+            </div>
             <div class="col-12 mt-4">
               <label>Driver Name</label>
               <input
@@ -217,6 +216,7 @@
                 class="form-control form-control-sm"
                 v-model="searchDriverName"
                 placeholder="Driver name"
+                maxlength="50"
               />
             </div>
             <!-- Phone number dropdown-->
@@ -319,7 +319,7 @@ export default {
     };
   },
   async mounted() {
-    // await this.initStatusList();
+    await this.initStatusList();
     if (this.$route.params.status) {
       this.searchStatusID = this.$route.params.status;
     }
@@ -448,7 +448,7 @@ export default {
 </script>
 <style scoped>
 .filter {
-  max-height: 420px !important;
+  max-height: 470px !important;
 }
 .label {
   font-size: 13px;

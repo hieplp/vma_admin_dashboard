@@ -56,14 +56,27 @@
 
       <!-- revenue chart -->
       <div class="row">
-        <div class="col-12 grid-margin stretch-card">
+        <div class="col-lg-6 grid-margin stretch-card">
           <div class="card">
             <div class="card-body">
-              <h4 class="card-title">Contributors</h4>
+              <h4 class="card-title mb-5">Contributors</h4>
               <canvas
                 id="contributorStatusChart"
                 style="height: 250px"
               ></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Status pie chart -->
+        <div class="col-lg-6 grid-margin stretch-card">
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Status</h4>
+              <canvas id="trips-by-type-chart"></canvas>
+              <div
+                id="trips-by-type-chart-legend"
+                class="rounded-legend legend-vertical legend-bottom-left pt-4"
+              ></div>
             </div>
           </div>
         </div>
@@ -108,9 +121,9 @@ export default {
       "DISABLE"
     );
     // Set total vehicle bar char
-    await this.initTotalContributorChart();
+    this.initTotalContributorChart();
     // this.initRevenueChart();
-    // this.initTripByTypeChart();
+    this.initContributorStatusChart();
     this.isLoading = false;
   },
   methods: {
@@ -198,81 +211,55 @@ export default {
       });
     },
 
-    // init revenue chart
-    initRevenueChart() {
-      let contributorStatusChart = document
-        .getElementById("contributorStatusChart")
+    initContributorStatusChart() {
+      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
+        .get(0)
         .getContext("2d");
-      // Global Options
-      Chart.defaults.global.defaultFontFamily = "Lato";
-      Chart.defaults.global.defaultFontSize = 18;
-      Chart.defaults.global.defaultFontColor = "#777";
-
       // gradient color
-      let gradient = contributorStatusChart.createLinearGradient(0, 0, 0, 400);
-      gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
-      gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
+      let gradientInfo = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        500
+      );
+      gradientInfo.addColorStop(0, "rgba(144, 202, 249, 1)");
+      gradientInfo.addColorStop(1, "rgba(6, 92, 161, 1)");
 
-      new Chart(contributorStatusChart, {
-        type: "bar", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
-        data: {
-          labels: [
-            "May 1",
-            "May 2",
-            "May 3",
-            "May 4",
-            "May 5",
-            "May 6",
-            "May 7",
-          ],
-          datasets: [
-            {
-              label: "Revenue",
-              lineTension: 0,
-              data: [617594, 181045, 153060, 555555, 105162, 95072, 617594],
-              backgroundColor: gradient,
-              borderWidth: 2,
-              borderColor: "#2e5bff",
-              hoverBorderWidth: 4,
-              hoverBorderColor: "#000",
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          animation: {
-            animateScale: true,
-            animateRotate: true,
-          },
-          legend: {
-            display: true,
-            position: "top",
-            labels: {
-              fontColor: "#000",
-            },
-          },
-          tooltips: {
-            enabled: true,
-          },
-        },
-      });
-    },
+      let gradientDanger = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
+      gradientDanger.addColorStop(0, "rgba(255, 191, 150, 1)");
+      gradientDanger.addColorStop(1, "rgba(254, 112, 150, 1)");
 
-    // init trip by type chart
-    initTripByTypeChart() {
+      let gradientDark = tripsByTypeChartCanvas.createLinearGradient(
+        0,
+        0,
+        0,
+        400
+      );
+      gradientDark.addColorStop(0, "rgba(94, 113, 136, 1)");
+      gradientDark.addColorStop(1, "rgba(62, 75, 91, 1)");
+
       var tripsByTypeChartData = {
         datasets: [
           {
-            data: [30, 30, 40, 30],
-            backgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            hoverBackgroundColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            borderColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
-            legendColor: ["#2E5BFF", "#F7C137", "#8C54FF", "#00C1D4"],
+            data: [
+              this.activeContributors,
+              this.inactiveContributors,
+              this.disableContributors,
+            ],
+            backgroundColor: [gradientInfo, gradientDanger, gradientDark],
+            hoverBackgroundColor: [gradientInfo, gradientDanger, gradientDark],
+            borderColor: [gradientInfo, gradientDanger, gradientDark],
+            legendColor: ["#2496f2", "#fe7096", "#3e4b5b"],
           },
         ],
 
         // These labels appear in the legend and in the tooltips when hovering different arcs
-        labels: ["Bus", "Truck", "Minivan", "Others"],
+        labels: ["Active", "Inactive", "Disable"],
       };
       var tripsByTypeChartOptions = {
         responsive: true,
@@ -291,7 +278,7 @@ export default {
             i < tripsByTypeChartData.datasets[0].data.length;
             i++
           ) {
-            text.push('<li class="col-6" style="font-size:18px">');
+            text.push('<li class="col-4" style="font-size:18px">');
             text.push(
               '<span class="legend-dots" style="background:' +
                 tripsByTypeChartData.datasets[0].legendColor[i] +
@@ -306,14 +293,13 @@ export default {
           return text.join("");
         },
       };
-      var tripsByTypeChartCanvas = $("#trips-by-type-chart")
-        .get(0)
-        .getContext("2d");
+
       var trafficChart = new Chart(tripsByTypeChartCanvas, {
         type: "pie",
         data: tripsByTypeChartData,
         options: tripsByTypeChartOptions,
       });
+
       $("#trips-by-type-chart-legend").html(trafficChart.generateLegend());
     },
   },

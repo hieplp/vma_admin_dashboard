@@ -238,7 +238,7 @@
             </div>
 
             <!--Total seat-->
-            <div class="col-12 mt-3">
+            <!-- <div class="col-12 mt-3">
               <label>Total Seats</label>
               <div class="row">
                 <div class="col-5">
@@ -261,7 +261,7 @@
                   />
                 </div>
               </div>
-            </div>
+            </div> -->
             <!-- Vehicle Type dropdown -->
             <div class="col-12 mt-3">
               <label>Vehicle Type</label>
@@ -365,6 +365,7 @@ export default {
         userId: "",
         fullName: "",
       },
+      licenseClass: "",
     };
   },
   async mounted() {
@@ -372,6 +373,8 @@ export default {
     await this.initVehiclesList();
     await this.initTypes();
     this.totalSeats = require("../../../assets/json/vehicle/totalSeat.json");
+    let drivingLicenseClasses = require("../../../assets/json/indentify/type.json");
+    this.licenseClass = drivingLicenseClasses[this.$route.params.licenseClass];
   },
   methods: {
     isNumber(evt) {
@@ -391,8 +394,18 @@ export default {
           JSON.stringify(this.$route.params.driver)
         );
       }
+
       if (localStorage.getItem("assignDriver")) {
         this.driver = JSON.parse(localStorage.getItem("assignDriver"));
+      }
+      if (this.$route.params.licenseClass) {
+        let drivingLicenseClasses = require("../../../assets/json/indentify/type.json");
+        let licenseClass =
+          drivingLicenseClasses[this.$route.params.licenseClass];
+        localStorage.setItem("licenseClass", JSON.stringify(licenseClass));
+      }
+      if (localStorage.getItem("licenseClass")) {
+        this.licenseClass = JSON.parse(localStorage.getItem("licenseClass"));
       }
     },
     // Clear search item value
@@ -444,7 +457,7 @@ export default {
         this.searchStatusID,
         this.searchType,
         this.vehicleMinSeat,
-        this.vehicleMaxSeat,
+        this.licenseClass.seat,
         this.viewOption,
         ""
       );
@@ -456,7 +469,7 @@ export default {
         this.searchStatusID,
         this.searchType,
         this.vehicleMinSeat,
-        this.vehicleMaxSeat,
+        this.licenseClass.seat,
         this.viewOption,
         ""
       );
@@ -505,7 +518,6 @@ export default {
         .catch((err) => {
           this.isError = !this.isError;
           this.errMsg = err.debugMessage;
-          console.log(err);
         });
       this.isLoading = false;
     },

@@ -1,5 +1,5 @@
 <template>
-  <div class="content-wrapper">
+  <div>
     <loading
       :active.sync="isLoading"
       :can-cancel="false"
@@ -57,31 +57,39 @@
     />
 
     <div class="page-header">
-      <h3 class="page-title">
-        <router-link to="/vehicles" class="nav-link">Vehicles</router-link>
-      </h3>
+      <h3 class="page-title"></h3>
       <div class="dropdown">
-        <router-link
-          to="/create-vehicle"
+        <button
+          @click="
+            () => {
+              let endDate = '';
+              if (this.contract.roundTrip) {
+                endDate = this.contract.trips[1]['destinationTime'];
+              } else {
+                endDate = this.contract.trips[1]['destinationTime'];
+              }
+              this.$router.push({
+                name: 'AssignVehiclesContract',
+                params: {
+                  contractId: this.contractId,
+                  startDate: this.contract.trips[0]['departureTime'],
+                  endDate: endDate,
+                },
+              });
+            }
+          "
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
         >
           <i class="mdi mdi-plus-box btn-icon-prepend"></i>
-          Create
-        </router-link>
-        <button
-          class="btn btn-gradient-info dropdown-toggle"
-          type="button"
-          v-on:click="clickToViewFilter()"
-        >
-          Filter
+          Assign
         </button>
       </div>
     </div>
     <div class="row">
       <!-- Vehicles table -->
       <div
-        class="grid-margin stretch-card"
+        class="col-12 grid-margin stretch-card"
         v-bind:class="{
           'col-lg-12': isTableVisible,
           'col-lg-9': !isTableVisible,
@@ -90,17 +98,17 @@
         <div class="card" v-if="vehiclesList.length > 0">
           <div class="card-body">
             <h4 class="card-title">Vehicle List</h4>
-            <p class="card-description">{{ this.totalVehicles }} total</p>
+            <!-- <p class="card-description">{{ this.totalVehicles }} total</p> -->
             <table class="table ">
               <thead>
                 <tr class="">
                   <th>NO.</th>
                   <th>ID</th>
-                  <th>MODEL</th>
+                  <!-- <th>MODEL</th> -->
                   <th>SEAT</th>
                   <th>TYPE</th>
-                  <th>STATUS</th>
-                  <th>TOTAL DISTANCE</th>
+                  <!-- <th>STATUS</th> -->
+                  <!-- <th>TOTAL DISTANCE</th> -->
                   <th class="text-center">ACTION</th>
                 </tr>
               </thead>
@@ -111,18 +119,16 @@
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
                   <td>{{ vehicle.vehicleId }}</td>
-                  <td>{{ vehicle.model }}</td>
+                  <!-- <td>{{ vehicle.model }}</td> -->
                   <td>{{ vehicle.seats }}</td>
-                  <td>{{ vehicle.vehicleTypeName }}</td>
+                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
-                  <td>
+                  <!-- <td>
                     <label
                       class="badge"
                       v-bind:class="{
                         'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
-                        'badge-danger':
-                          vehicle.vehicleStatus === 'MAINTENANCE' ||
-                          vehicle.vehicleStatus === 'NEED_REPAIR',
+                        'badge-danger': vehicle.vehicleStatus === 'MAINTENANCE',
                         'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
                         'badge-success':
                           vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
@@ -134,8 +140,7 @@
                       }"
                       >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
                     >
-                  </td>
-                  <td>{{ vehicle.vehicleDistance }}</td>
+                  </td> -->
                   <td class="row justify-content-center btn-action">
                     <!-- <router-link
                       :to="{
@@ -150,7 +155,7 @@
                     >
                       <i class="mdi mdi-train"></i>
                     </button>
-                    <button
+                    <!-- <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
                       @click="updateVehicle(vehicle.vehicleId)"
                       :disabled="
@@ -173,7 +178,7 @@
                       "
                     >
                       <i class="mdi mdi-delete-forever"></i>
-                    </button>
+                    </button> -->
                   </td>
                 </tr>
               </tbody>
@@ -207,155 +212,12 @@
           <h3>Your list is empty.</h3>
         </div>
       </div>
-
-      <!-- Filter -->
-      <transition name="slide-fade">
-        <div class="col-3 card filter" v-if="isFilterVisible">
-          <div class="form-group">
-            <h4 class="card-title mt-4">Filter</h4>
-            <!-- Search Vehicle ID -->
-            <div class="col-sm-12">
-              <label>Vehicle ID</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                placeholder="Vehicle ID"
-                v-model="searchVehicleID"
-                @keypress="isNumber($event)"
-                maxlength="12"
-              />
-            </div>
-            <!-- Model -->
-            <div class="col-12 mt-3">
-              <label>Model</label>
-              <input
-                type="text"
-                class="form-control form-control-sm"
-                v-model="searchModel"
-                placeholder="Vehicle model"
-              />
-            </div>
-
-            <!-- Total vehicles-->
-            <div class="col-12 mt-4">
-              <label>Total Distance</label>
-              <div class="row">
-                <div class="col-12">
-                  <input
-                    type="text"
-                    class="form-control form-control-sm test"
-                    placeholder="Min distance"
-                    @keypress="isNumber($event)"
-                    v-model="vehicleMinDis"
-                  />
-                </div>
-                <div class="col-12 text-center">
-                  <h1>-</h1>
-                </div>
-                <div class="col-12">
-                  <input
-                    type="text"
-                    @keypress="isNumber($event)"
-                    class="form-control form-control-sm"
-                    placeholder="Max distance"
-                    v-model="vehicleMaxDis"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!--Total seat-->
-            <div class="col-12 mt-3">
-              <label>Total Seats</label>
-              <div class="row">
-                <div class="col-5">
-                  <input
-                    type="text"
-                    class="form-control form-control-sm"
-                    @keypress="isNumber($event)"
-                    v-model="vehicleMinSeat"
-                  />
-                </div>
-                <div class="col-2">
-                  <h1>-</h1>
-                </div>
-                <div class="col-5">
-                  <input
-                    type="text"
-                    @keypress="isNumber($event)"
-                    class="form-control form-control-sm"
-                    v-model="vehicleMaxSeat"
-                  />
-                </div>
-              </div>
-            </div>
-            <!-- Vehicle status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Status</label>
-
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="searchStatusID"
-              >
-                <option :value="''">
-                  Select vehicle status
-                </option>
-                <option
-                  v-for="status in this.statusList"
-                  :key="status"
-                  :value="status"
-                  >{{ status.replaceAll("_", " ") }}</option
-                >
-              </select>
-            </div>
-            <!-- Vehicle status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Vehicle Type</label>
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="searchType"
-              >
-                <option :value="''">
-                  Select vehicle type
-                </option>
-                <option
-                  v-for="vehicleType in this.vehicleTypes"
-                  :key="vehicleType.vehicleTypeId"
-                  :value="vehicleType.vehicleTypeId"
-                  >{{ vehicleType.vehicleTypeName }}</option
-                >
-              </select>
-            </div>
-
-            <br />
-            <div class="col-12 mt-3">
-              <button
-                class="btn btn-outline-info w-100"
-                type="button"
-                v-on:click="searchVehicles()"
-              >
-                Filter
-              </button>
-            </div>
-            <div class="col-12 mt-2">
-              <button
-                class="btn btn-outline-danger w-100"
-                type="button"
-                v-on:click="clearSearchValue()"
-              >
-                Clear
-              </button>
-            </div>
-          </div>
-        </div>
-      </transition>
     </div>
   </div>
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
@@ -368,6 +230,8 @@ export default {
   name: "Vehicles",
   props: {
     handleDelBtnVisible: Function,
+    contractId: Number,
+    contract: Object,
   },
   components: {
     Loading,
@@ -425,6 +289,8 @@ export default {
     this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
   },
   methods: {
+    // Map state
+    ...mapActions("Contract", ["_getContractVehicle"]),
     isNumber(evt) {
       isNumber(evt);
     },
@@ -460,54 +326,7 @@ export default {
     // Init data for vehicle list
     async initVehiclesList() {
       this.isLoading = true;
-
-      if (
-        this.vehicleMinDis.length > 0 &&
-        this.vehicleMaxDis.length > 0 &&
-        this.vehicleMinDis > this.vehicleMaxDis
-      ) {
-        let temp = this.vehicleMinDis;
-        this.vehicleMinDis = this.vehicleMaxDis;
-        this.vehicleMaxDis = temp;
-      }
-
-      if (
-        this.vehicleMaxSeat.length > 0 &&
-        this.vehicleMinSeat.length > 0 &&
-        this.vehicleMinSeat > this.vehicleMaxSeat
-      ) {
-        let temp = this.vehicleMinSeat;
-        this.vehicleMinSeat = this.vehicleMaxSeat;
-        this.vehicleMaxSeat = temp;
-      }
-
-      this.viewOption = this.searchStatusID !== "" ? 1 : 0;
-
-      this.vehiclesList = await VehicleRepository.get(
-        this.page,
-        this.searchModel,
-        this.searchVehicleID,
-        this.vehicleMinDis,
-        this.vehicleMaxDis,
-        this.searchStatusID,
-        this.searchType,
-        this.vehicleMinSeat,
-        this.vehicleMaxSeat,
-        this.viewOption,
-        this.ownerId
-      );
-      this.totalVehicles = await VehicleRepository.getTotalVehicle(
-        this.searchModel,
-        this.searchVehicleID,
-        this.vehicleMinDis,
-        this.vehicleMaxDis,
-        this.searchStatusID,
-        this.searchType,
-        this.vehicleMinSeat,
-        this.vehicleMaxSeat,
-        this.viewOption,
-        this.ownerId
-      );
+      this.vehiclesList = await this._getContractVehicle(this.contractId);
       this.isLoading = false;
     },
     // Init types

@@ -9,77 +9,42 @@
     ></loading>
 
     <!-- Delete confimation -->
-    <div
-      class="ui basic cus-modal justify-content-center"
+    <Confirmation
+      icon="trash alternate"
+      title="Delete Confirmation"
+      subTitle="Do you want to delete this contract?"
+      rightBtnTitle="Delete"
+      rightBtnIcon="trash alternate"
+      rightBtnColor="red"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="blue"
       v-if="isDeleteConVisible"
-    >
-      <div class="ui icon header col-12">
-        <i class="user times icon mb-3"></i>
-        Delete Confirmation
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>Do you want to delete contract with id {{ this.deleteUserID }}?</h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          type="button"
-          class="ui blue primary button"
-          @click="handleDialog('isDeleteConVisible', '')"
-        >
-          <i class="checkmark icon"></i>
-          Cancel
-        </button>
-        <button type="button" class="ui red  button" @click="deleteContract()">
-          <i class="trash alternate icon"></i>
-          Delete
-        </button>
-      </div>
-    </div>
+      :handleLeftBtn="
+        () => {
+          this.isDeleteConVisible = !this.isDeleteConVisible;
+        }
+      "
+      :handleRightBtn="deleteContract"
+    />
     <!-- Error message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isError">
-      <div class="ui icon header col-12">
-        <i class="frown outline icon mb-3"></i>
-        Delete Contract Fail!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          {{ this.errMsg }}
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button @click="isError = !isError" class="ui blue primary button">
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
-
+    <MessageModal
+      title="Delete contract Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="handleErrorModal"
+      v-if="isError"
+    />
     <!-- Success message -->
-    <div class="ui basic cus-modal justify-content-center" v-if="isSuccess">
-      <div class="ui icon header col-12">
-        <i class="check circle icon mb-3"></i>
-        Delete successfully!
-      </div>
-      <div class="content col-12 row justify-content-center">
-        <h4>
-          Contract with id {{ this.deleteUserID }} is deleted successfully.
-        </h4>
-      </div>
-      <div class="actions row justify-content-center mt-5">
-        <button
-          @click="
-            () => {
-              isSuccess = !isSuccess;
-              this.searchContracts();
-            }
-          "
-          class="ui blue primary button"
-        >
-          <i class="checkmark icon"></i>
-          Ok
-        </button>
-      </div>
-    </div>
+    <MessageModal
+      title="Delete contract Successfully!"
+      icon="check circle"
+      :subTitle="
+        `contract with id ${this.deleteContractId} is deleted successfully.`
+      "
+      :proFunc="handleSuccessModal"
+      v-if="isSuccess"
+    />
 
     <div class="page-header">
       <h3 class="page-title">
@@ -112,12 +77,24 @@
           'col-lg-9': !isTableVisible,
         }"
       >
-        <div class="card" v-if="contracts.length > 0">
+        <div class="card">
           <div class="card-body">
             <h4 class="card-title">Contract List</h4>
-            <p class="card-description">{{ this.totalContracts }} total</p>
-            <div class="table-scroll">
-              <table class="table">
+            <!-- Tab -->
+            <vue-tabs
+              class="mb-4"
+              active-tab-color="#047edf"
+              active-text-color="white"
+              @tab-change="handleTabChange"
+              v-model="tabValue"
+            >
+              <v-tab :title="`NOT STARTED (${this.notStartedCount})`"> </v-tab>
+              <v-tab :title="`IN PROGRESS (${this.inProgressCount})`"> </v-tab>
+              <v-tab :title="`FINISHED (${this.finishedCount})`"> </v-tab>
+              <v-tab :title="`CANCELLED (${this.cancelledCount})`"> </v-tab>
+            </vue-tabs>
+            <div>
+              <table class="table" v-if="contracts.length > 0">
                 <thead>
                   <tr class="">
                     <th>NO.</th>
@@ -153,6 +130,8 @@
                         class="badge"
                         v-bind:class="{
                           'badge-info': contract.contractStatus === 'FINISHED',
+                          'badge-success':
+                            contract.contractStatus === 'IN_PROGRESS',
                           'badge-warning':
                             contract.contractStatus === 'NOT_STARTED',
                           'badge-danger':
@@ -171,16 +150,19 @@
                       </button>
                       <button
                         class="btn btn-gradient-warning btn-rounded btn-icon mr-1 mt-1"
-                        :disabled="contract.userStatusName === 'CANCELLED'"
+                        :disabled="contract.contractStatus !== 'NOT_STARTED'"
                         @click="updateContract(contract.contractId)"
                       >
                         <i class="mdi mdi-grease-pencil"></i>
                       </button>
                       <button
                         class="btn btn-gradient-danger btn-rounded btn-icon mr-1 mt-1"
-                        :disabled="contract.userStatusName === 'CANCELLED'"
+                        :disabled="contract.contractStatus !== 'NOT_STARTED'"
                         @click="
-                          handleDialog('isDeleteConVisible', contract.userId)
+                          handleDialog(
+                            'isDeleteConVisible',
+                            contract.contractId
+                          )
                         "
                       >
                         <i class="mdi mdi-delete-forever"></i>
@@ -189,6 +171,12 @@
                   </tr>
                 </tbody>
               </table>
+              <!-- Empty list -->
+              <div class="card empty-list" v-else-if="!isLoading">
+                <i class="mdi mdi-flag-checkered"></i>
+                <h1>NOTHING</h1>
+                <h3>Your list is empty.</h3>
+              </div>
             </div>
           </div>
           <div v-if="this.totalContracts > 15">
@@ -210,12 +198,6 @@
             </paginate>
           </div>
         </div>
-        <!-- Empty list -->
-        <div class="card empty-list" v-else-if="!isLoading">
-          <i class="mdi mdi-account-off"></i>
-          <h1>NOTHING</h1>
-          <h3>Your list is empty.</h3>
-        </div>
       </div>
 
       <!-- Filter -->
@@ -224,7 +206,7 @@
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
             <!-- Departure Location -->
-            <div class="col-sm-12">
+            <!-- <div class="col-sm-12">
               <label>Departure Location</label>
               <textarea
                 type="text"
@@ -233,9 +215,9 @@
                 placeholder="Departure Location"
                 v-model="departureLocation"
               />
-            </div>
+            </div> -->
             <!-- Destination Location -->
-            <div class="col-sm-12 mt-3">
+            <!-- <div class="col-sm-12 mt-3">
               <label>Destination Location</label>
               <textarea
                 type="text"
@@ -244,9 +226,9 @@
                 placeholder="Destination Location"
                 v-model="destinationLocation"
               />
-            </div>
+            </div> -->
             <!-- Departure Time -->
-            <div class="col-12 mt-3">
+            <!-- <div class="col-12 mt-3">
               <label>Departure Time</label>
               <input
                 type="date"
@@ -254,9 +236,9 @@
                 v-model="departureTime"
                 placeholder="Departure Time"
               />
-            </div>
+            </div> -->
             <!-- Destination Time -->
-            <div class="col-12 mt-3">
+            <!-- <div class="col-12 mt-3">
               <label>Departure Time</label>
               <input
                 type="date"
@@ -264,7 +246,7 @@
                 v-model="destinationTime"
                 placeholder="Destination Time"
               />
-            </div>
+            </div> -->
             <!-- Duration From-->
             <div class="col-12 mt-3">
               <label>Duration From</label>
@@ -313,7 +295,7 @@
               </div>
             </div>
             <!-- Contract status dropdown -->
-            <div class="col-12 mt-3">
+            <!-- <div class="col-12 mt-3">
               <label>Status</label>
               <select
                 class="form-control form-control-sm"
@@ -328,7 +310,7 @@
                   >{{ status }}</option
                 >
               </select>
-            </div>
+            </div> -->
 
             <br />
             <div class="col-12 mt-3">
@@ -361,12 +343,16 @@ import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
+import Confirmation from "../../components/Modal/Confirmation";
+import MessageModal from "../../components/Modal/MessageModal";
 
 export default {
   name: "Contracts",
   props: {},
   components: {
     Loading,
+    Confirmation,
+    MessageModal,
   },
   data() {
     return {
@@ -374,7 +360,7 @@ export default {
       isTableVisible: true,
       // Filter
       statusList: [],
-      contractStatus: "",
+      contractStatus: "NOT_STARTED",
       departureLocation: "",
       departureTime: "",
       destinationLocation: "",
@@ -384,7 +370,7 @@ export default {
       pageNum: "",
       totalPriceMax: "",
       totalPriceMin: "",
-      viewOption: "",
+      viewOption: 1,
       // End of filter
       isLoading: false,
       totalContracts: 0,
@@ -394,22 +380,59 @@ export default {
       isError: false,
       isSuccess: false,
       errMsg: "",
-      deleteUserID: "",
+      deleteContractId: "",
       contracts: [],
+      // Count
+      notStartedCount: 0,
+      inProgressCount: 0,
+      finishedCount: 0,
+      cancelledCount: 0,
+      tabValue: "",
     };
   },
   async mounted() {
     this.isLoading = true;
     await this.initStatusList();
     await this.initContracts();
+    await this.initCountByStatus();
     this.isLoading = false;
   },
   methods: {
     // Map actions
-    ...mapActions("Contract", ["_getContracts", "_getContractsCount"]),
+    ...mapActions("Contract", [
+      "_getContracts",
+      "_getContractsCount",
+      "_updateContractStatus",
+    ]),
+    // Init count by status
+    async initCountByStatus() {
+      this.notStartedCount = await this.getCountByStatus("NOT_STARTED");
+      this.inProgressCount = await this.getCountByStatus("IN_PROGRESS");
+      this.finishedCount = await this.getCountByStatus("FINISHED");
+      this.cancelledCount = await this.getCountByStatus("CANCELLED");
+    },
+    // Get count by status
+    async getCountByStatus(status) {
+      let result = 0;
+      await this._getContractsCount({
+        contractStatus: status,
+        departureLocation: this.departureLocation,
+        departureTime: this.departureTime,
+        destinationLocation: this.destinationLocation,
+        destinationTime: this.destinationTime,
+        durationFrom: this.durationFrom,
+        durationTo: this.durationTo,
+        totalPriceMax: this.totalPriceMax,
+        totalPriceMin: this.totalPriceMin,
+        viewOption: 1,
+      }).then((res) => {
+        result = res;
+      });
+      return result;
+    },
     // Init contract
     async initContracts() {
-      this.viewOption = this.contractStatus !== "" ? 1 : 0;
+      // this.viewOption = this.contractStatus !== "" ? 0 : 1;
       // Get contracts
       await this._getContracts({
         contractStatus: this.contractStatus,
@@ -422,7 +445,7 @@ export default {
         pageNum: this.page,
         totalPriceMax: this.totalPriceMax,
         totalPriceMin: this.totalPriceMin,
-        viewOption: this.viewOption,
+        viewOption: 1,
       }).then((res) => {
         this.contracts = res;
       });
@@ -452,6 +475,7 @@ export default {
       this.page = 0;
       this.currentPage = 1;
       await this.initContracts();
+      await this.initCountByStatus();
       this.isLoading = false;
     },
     // Clear seach value
@@ -489,6 +513,62 @@ export default {
         name: "ContractDetail",
         params: { contractId: contractId },
       });
+    },
+    // Delete contract
+    async deleteContract() {
+      this.handleDialog("isDeleteConVisible", "");
+      this.isLoading = true;
+      await this._updateContractStatus({
+        contractId: this.deleteContractId,
+        contractStatus: "CANCELLED",
+      })
+        .then((res) => {
+          if (res) {
+            this.isSuccess = true;
+          }
+        })
+        .catch((err) => {
+          this.isError = !this.isError;
+          this.errMsg = err.debugMessage;
+        });
+      this.isLoading = false;
+    },
+    // Close delete contract confimation dialog
+    handleDialog(dialogName, contractId) {
+      if (contractId.length !== 0) {
+        this.deleteContractId = contractId;
+      }
+      this.$data[dialogName] = !this.$data[dialogName];
+    },
+    // Close Error Modal
+    handleErrorModal() {
+      this.isError = !this.isError;
+    },
+    // Close Error Modal
+    handleSuccessModal() {
+      this.isSuccess = !this.isSuccess;
+      this.initContracts();
+    },
+    // handle Tab Change
+    async handleTabChange(tabIndex) {
+      this.isLoading = true;
+      switch (tabIndex) {
+        case 0:
+          this.contractStatus = "NOT_STARTED";
+          break;
+        case 1:
+          this.contractStatus = "IN_PROGRESS";
+          break;
+        case 2:
+          this.contractStatus = "FINISHED";
+          break;
+        case 3:
+          this.contractStatus = "CANCELLED";
+          break;
+      }
+      console.log(this.contractStatus);
+      await this.initContracts();
+      this.isLoading = false;
     },
     isNumber(evt) {
       isNumber(evt);

@@ -92,8 +92,10 @@
               readonly
               no-header-edit
             >
-              <vue-excel-column field="contractId" label="ID" />
-              <vue-excel-column field="date" label="Date" />
+              <vue-excel-column field="vehicleId" label="vehicleId" />
+              <!-- <vue-excel-column field="contractId" label="ID" /> -->
+              <!-- <vue-excel-column field="date" label="Date" /> -->
+              <vue-excel-column field="departureTime" label="Date" />
               <vue-excel-column
                 field="departureLocation"
                 label="Departure Location"
@@ -102,11 +104,15 @@
                 field="destinationLocation"
                 label="Destination Location"
               />
-              <vue-excel-column field="contractValue" label="Contract Value" />
               <vue-excel-column
-                field="contractStatus"
+                field="contractVehicleStatus"
                 label="Contract Status"
               />
+              <!-- <vue-excel-column field="contractValue" label="Contract Value" /> -->
+              <!-- <vue-excel-column
+                field="contractStatus"
+                label="Contract Status"
+              /> -->
             </vue-excel-editor>
           </div>
         </div>

@@ -1,38 +1,42 @@
 {
-  "B1": {
-    "name": "B1",
-    "expiryDate": 10
-  },
   "B2": {
     "name": "B2",
-    "expiryDate": 10
+    "expiryDate": 10,
+    "seat": 9
   },
   "C": {
     "name": "C",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 9
   },
   "D": {
     "name": "D",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 30
   },
   "E": {
     "name": "E",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 1000
   },
   "FE": {
     "name": "FE",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 30
   },
   "FB2": {
     "name": "FB2",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 9
   },
   "FC": {
     "name": "FC",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 9
   },
   "FD": {
     "name": "FD",
-    "expiryDate": 5
+    "expiryDate": 5,
+    "seat": 30
   }
 }
