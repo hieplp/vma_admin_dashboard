@@ -37,13 +37,13 @@ export default {
   watch: {
     // eslint-disable-next-line no-unused-vars
     $route: async function(from, to) {
-      // await this.checkAuthUser();
-      // if (
-      //   to !== null &&
-      //   (to.name === "Login" || to.name === "DefaultOverview")
-      // ) {
-      //   window.location.reload();
-      // }
+      await this.checkAuthUser();
+      if (
+        to !== null &&
+        (to.name === "Login" || to.name === "DefaultOverview")
+      ) {
+        window.location.reload();
+      }
     },
   },
   beforeRouteEnter(to, from, next) {
@@ -55,8 +55,8 @@ export default {
     });
   },
   async mounted() {
-    // await this.checkAuthUser();
-    this.isVisible = true;
+    await this.checkAuthUser();
+    // this.isVisible = true;
   },
   data() {
     return {

@@ -26,7 +26,7 @@ Vue.use(VueSilentbox);
 Vue.use(VueLazyLoad);
 Vue.use(VueGoogleMaps, {
   load: {
-    key: "AIzaSyCTT8lvo8Jytt4ip0I1xpTdKoRF0XEY2dw",
+    key: "AIzaSyBISRHpc6qdLEdVMmpHc5R8H5kXqp-i4x0",
     libraries: "places",
   },
 });
