@@ -12,6 +12,7 @@ import Request from "./Request/Request";
 import Notification from "./Notification/Notification";
 import Maintenance from "./Maintenance/Maintenance";
 import Feedback from "./Feedback/Feedback";
+import Address from "./Address/Address";
 
 Vue.use(Vuex);
 
@@ -31,5 +32,6 @@ export default new Vuex.Store({
     Notification: Notification,
     Maintenance: Maintenance,
     Feedback: Feedback,
+    Address: Address,
   },
 });

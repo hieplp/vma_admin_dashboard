@@ -104,12 +104,44 @@
         </div>
       </div>
     </div>
-
+    <!-- Google map -->
+    <!-- <div>
+      <h2>Search and add a pin</h2>
+      <label>
+        <gmap-autocomplete
+          :options="autocompleteOptions"
+          @place_changed="setPlace"
+        >
+        </gmap-autocomplete>
+        <button @click="addMarker">Add</button>
+      </label>
+      <br />
+    </div> -->
+    <!-- <gmap-map
+      v-if="isTripVisible"
+      class="mb-5"
+      :center="center"
+      :zoom="12"
+      style="width:100%;  height: 400px;"
+    >
+      <gmap-marker
+        :key="index"
+        v-for="(m, index) in markers"
+        :position="m.position"
+        @click="center = m.position"
+      ></gmap-marker>
+      <DirectionsRenderer
+        travelMode="DRIVING"
+        :origin="origin"
+        :destination="destination"
+      />
+    </gmap-map> -->
     <!-- FIRST TRIP -->
     <TripPicker
       title="FIRST TRIP"
       ref="firstTrip"
       v-show="isTripVisible"
+      :isUpdate="true"
       :endDateChange="
         () => {
           this.$refs.returnTrip.trip.departureTime = '';
@@ -177,7 +209,7 @@ import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
 // import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 // const ContractRepository = RepositoryFactory.get("contracts");
-
+import DirectionsRenderer from "../../components/Google/DirectionsRenderer";
 export default {
   name: "CreateContract",
   components: {
@@ -185,6 +217,8 @@ export default {
     ContractInformation,
     TripPicker,
     MessageModal,
+    // eslint-disable-next-line vue/no-unused-components
+    DirectionsRenderer,
   },
   data() {
     return {
@@ -198,7 +232,32 @@ export default {
       isTripVisible: false,
 
       isAddressModalVisible: false,
+
+      // Google map,
+      center: { lat: 10.842132674640132, lng: 106.80930916858262 },
+      markers: [{ lat: 10.842132674640132, lng: 106.80930916858262 }],
+      places: [],
+      currentPlace: null,
+      autocompleteOptions: {
+        componentRestrictions: {
+          country: ["vn"],
+        },
+        fields: ["geometry", "formatted_address", "address_components"],
+      },
+
+      start: "",
+      end: "",
     };
+  },
+  computed: {
+    origin() {
+      if (!this.places[0]) return null;
+      return { query: this.places[0].formatted_address };
+    },
+    destination() {
+      if (this.places.length < 2) return null;
+      return { query: this.places[this.places.length - 1].formatted_address };
+    },
   },
   mounted() {},
   methods: {
@@ -211,13 +270,18 @@ export default {
       // Get first trip
       let firstTrip = this.$refs.firstTrip.getData();
       this.contract.trips.push(firstTrip);
-      isValid = firstTrip !== null;
+      isValid = firstTrip !== null && firstTrip !== undefined;
       // If is round-trip
       if (this.contract.roundTrip) {
         let returnTrip = this.$refs.returnTrip.getData();
         this.contract.trips.push(returnTrip);
         isValid = returnTrip !== null;
       }
+      console.log(
+        "🚀 ~ file: CreateContract.vue ~ line 279 ~ create ~ isValid",
+        this.contract
+      );
+
       if (isValid) {
         await this._create(this.contract)
           .then((res) => {
@@ -258,6 +322,31 @@ export default {
 
     isNumber(evt) {
       isNumber(evt);
+    },
+    // Google map
+    // nhận địa điểm thông qua autocomplete component
+    setPlace(place) {
+      this.currentPlace = place;
+    },
+    addMarker() {
+      if (this.currentPlace) {
+        const marker = {
+          lat: this.currentPlace.geometry.location.lat(),
+          lng: this.currentPlace.geometry.location.lng(),
+        };
+        this.markers.push({ position: marker });
+        this.places.push(this.currentPlace);
+        this.center = marker;
+        this.currentPlace = null;
+      }
+    },
+    geolocate: function() {
+      navigator.geolocation.getCurrentPosition((position) => {
+        this.center = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+      });
     },
   },
 };

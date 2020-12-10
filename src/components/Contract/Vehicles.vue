@@ -66,7 +66,7 @@
               if (this.contract.roundTrip) {
                 endDate = this.contract.trips[1]['destinationTime'];
               } else {
-                endDate = this.contract.trips[1]['destinationTime'];
+                endDate = this.contract.trips[0]['destinationTime'];
               }
               this.$router.push({
                 name: 'AssignVehiclesContract',

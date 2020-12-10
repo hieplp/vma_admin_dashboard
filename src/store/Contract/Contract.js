@@ -40,6 +40,10 @@ export default {
             resolve(res);
           })
           .catch((err) => {
+            console.log(
+              "🚀 ~ file: Contract.js ~ line 43 ~ returnnewPromise ~ err",
+              err
+            );
             reject(err.response.data);
           });
       });

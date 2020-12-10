@@ -7,6 +7,18 @@
       :is-full-page="false"
       :color="'#2e5bff'"
     ></loading>
+    <!-- Error message -->
+    <MessageModal
+      title="Login Fail!"
+      icon="frown outline "
+      :subTitle="errMsg"
+      :proFunc="
+        () => {
+          this.isError = !this.isError;
+        }
+      "
+      v-if="isError"
+    />
     <div
       class="content-wrapper d-flex align-items-center auth"
       style="background-image: require('../assets/images/login-back.jpg')"
@@ -107,13 +119,16 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
+import MessageModal from "../components/Modal/MessageModal";
 
 export default {
   name: "Login",
   components: {
     Loading,
+    MessageModal,
   },
   data() {
     return {
@@ -123,6 +138,8 @@ export default {
       isPasswordErrVisible: false,
       isOtpVisible: false,
       isLoading: false,
+      isError: false,
+      errMsg: "",
     };
   },
   mounted() {
@@ -143,35 +160,56 @@ export default {
   },
   created() {},
   methods: {
+    // Map state
+    ...mapActions("User", ["_createClientRegistrationToken"]),
     // Handle otp complete input
     async handleOnComplete(value) {
       this.isLoading = true;
       let confirmationResult = window.confirmationResult;
       await confirmationResult
         .confirm(value)
-        .then((result) => {
+        .then(async (result) => {
           if (result.user) {
+            this.isLoading = true;
             localStorage.setItem("USER", JSON.stringify(result.user));
             this.$router.push({
               name: "Overview",
             });
-            // let fcmToken = this.getRegistrationToken();
+            // let fcmToken = await this.getRegistrationToken();
+            // let FCM_TOKEN = JSON.parse(localStorage.getItem("FCM_TOKEN"));
             // console.log(
-            //   "🚀 ~ file: Login.vue ~ line 159 ~ .then ~ fcmToken",
-            //   fcmToken
+            //   "🚀 ~ file: Login.vue ~ line 180 ~ .then ~ FCM_TOKEN",
+            //   FCM_TOKEN
             // );
-            // localStorage.setItem("FCM_TOKEN", fcmToken);
+            // // localStorage.setItem("FCM_TOKEN", fcmToken);
             // if (fcmToken) {
-            //   localStorage.setItem("USER", JSON.stringify(result.user));
-            //   localStorage.setItem("FCM_TOKEN", fcmToken);
-            //   this.$router.push({
-            //     name: "Overview",
-            //   });
+            //   console.log(fcmToken);
+            //   await this._createClientRegistrationToken({
+            //     fcmToken: fcmToken,
+            //     userToken: result.user.stsTokenManager.accessToken,
+            //   })
+            //     .then(() => {
+            //       localStorage.setItem("USER", JSON.stringify(result.user));
+            //       localStorage.setItem("FCM_TOKEN", fcmToken);
+            //       this.$router.push({
+            //         name: "Overview",
+            //       });
+            //     })
+            //     .catch((err) => {
+            //       if (err) {
+            //         this.isError = true;
+            //         this.errMsg = "Something went wrong!";
+            //       }
+            //     });
             // }
+            this.isLoading = false;
           }
         })
         .catch((error) => {
-          console.log(error);
+          if (error) {
+            this.isError = true;
+            this.errMsg = "Something went wrong!";
+          }
         });
       this.isLoading = false;
     },
@@ -209,18 +247,19 @@ export default {
       }
     },
     // Get registration token.
-    getRegistrationToken() {
+    async getRegistrationToken() {
       // Retrieve Firebase Messaging object.
       const messaging = firebase.messaging();
       // Get registration token. Initially this makes a network call, once retrieved
       // subsequent calls to getToken will return from cache.
-      messaging
+      await messaging
         .getToken({
           vapidKey:
             "BNFkrBWhs0AJHgEyuTbs_Xe_hR8XD31EF0iQIa0dnT9op_S9-3H_hFUSbJ7ryyGEb6Wzkncwsh259iQ1oY76hEA",
         })
         .then((currentToken) => {
           console.log("getRegistrationToken -> currentToken", currentToken);
+          localStorage.setItem("FCM_TOKEN", currentToken);
           return currentToken;
         })
         .catch((err) => {

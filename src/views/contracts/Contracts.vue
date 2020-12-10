@@ -146,7 +146,7 @@
                         class="btn btn-gradient-info btn-rounded btn-icon mr-1 mt-1"
                         @click="viewContract(contract.contractId)"
                       >
-                        <i class="mdi mdi-account-box-outline"></i>
+                        <i class="mdi mdi-file-document"></i>
                       </button>
                       <button
                         class="btn btn-gradient-warning btn-rounded btn-icon mr-1 mt-1"

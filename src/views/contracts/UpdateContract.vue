@@ -160,6 +160,7 @@
       <TripPicker
         title="FIRST TRIP"
         ref="firstTrip"
+        :isUpdate="true"
         :propTrip="contract.trips[0]"
         v-show="isTripVisible"
         :endDateChange="
@@ -174,6 +175,7 @@
         <!-- RETURN TRIP -->
         <TripPicker
           title="RETURN TRIP"
+          :isUpdate="true"
           ref="returnTrip"
           v-show="isTripVisible && contract.roundTrip"
           :propTrip="contract.trips[1]"

@@ -121,13 +121,38 @@ export default {
       });
     },
     // Create client registration token
-    _createClientRegistrationToken(context, { user, roleId }) {
+    _createClientRegistrationToken(context, { fcmToken, userToken }) {
+      console.log(
+        "🚀 ~ file: User.js ~ line 125 ~ _createClientRegistrationToken ~ userToken",
+        userToken
+      );
+      console.log(
+        "🚀 ~ file: User.js ~ line 125 ~ _createClientRegistrationToken ~ fcmToken",
+        fcmToken
+      );
       return new Promise((resolve, reject) => {
-        Repository.post(`${USER_URL}?roleId=${roleId}`, user)
+        // let user = JSON.parse(localStorage.getItem("USER"));
+        // let token = {
+        //   idToken: user.stsTokenManager.accessToken,
+        // };
+        // let FCM_TOKEN = JSON.parse(localStorage.getItem("FCM_TOKEN"));
+        Repository.post(
+          `${USER_URL}/registration-token`,
+          {
+            token: fcmToken,
+          },
+          {
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        )
           .then((res) => {
             resolve(res);
           })
           .catch((err) => {
+            console.log(
+              "🚀 ~ file: User.js ~ line 144 ~ returnnewPromise ~ err",
+              err
+            );
             reject(err.response.data);
           });
       });

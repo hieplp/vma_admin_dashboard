@@ -140,7 +140,7 @@
       >
         <router-link to="/maintenances" class="nav-link">
           <span class="menu-title">Maintenances</span>
-          <i class="mdi mdi mdi-wrench menu-icon"></i>
+          <i class="mdi mdi-wrench menu-icon"></i>
         </router-link>
         <!-- <a
           class="nav-link"

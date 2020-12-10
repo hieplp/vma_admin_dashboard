@@ -27,7 +27,7 @@ Vue.use(VueLazyLoad);
 Vue.use(VueGoogleMaps, {
   load: {
     key: "AIzaSyBISRHpc6qdLEdVMmpHc5R8H5kXqp-i4x0",
-    libraries: "places",
+    libraries: "places, directions",
   },
 });
 

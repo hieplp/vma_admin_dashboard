@@ -15,7 +15,7 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Contract
+          Contract Detail
         </span>
       </h3>
     </div>

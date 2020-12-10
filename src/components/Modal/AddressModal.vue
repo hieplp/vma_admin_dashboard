@@ -1,11 +1,29 @@
 <template>
-  <div class="con-modal px-1">
-    <Address
+  <div class="con-modal ">
+    <div class="row">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card-body">
+          <label>Location:</label>
+          <gmap-autocomplete
+            :options="autocompleteOptions"
+            @place_changed="setPlace"
+          >
+          </gmap-autocomplete>
+          <div class="ui pointing red basic label" v-if="isAddressErr">
+            Address is required!
+          </div>
+        </div>
+      </div>
+      <div class="col-12"></div>
+    </div>
+
+    <!-- <Address
       class="mt-1"
       :propAddress="address"
       title="LOCATION"
       ref="location"
     />
+     -->
     <div class="row justify-content-center btn-group">
       <div class="col-lg-6 ml-lg-5">
         <button
@@ -29,7 +47,7 @@
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
-import Address from "../Address";
+// import Address from "../Address";
 export default {
   props: {
     cancelFunction: Function,
@@ -37,16 +55,34 @@ export default {
     address: String,
   },
   components: {
-    Address,
+    // Address,
   },
   data() {
-    return {};
+    return {
+      currentPlace: null,
+      autocompleteOptions: {
+        componentRestrictions: {
+          country: ["vn"],
+        },
+        fields: ["geometry", "formatted_address", "address_components"],
+      },
+      isAddressErr: false,
+    };
   },
   mounted() {},
   methods: {
+    // nhận địa điểm thông qua autocomplete component
+    setPlace(place) {
+      // this.currentPlace = { location: place.formatted_address };
+      this.currentPlace = place;
+    },
     // Get data
     getData() {
-      return this.$refs.location.getAdress();
+      if (this.currentPlace !== null) {
+        return this.currentPlace.formatted_address;
+      } else {
+        this.isAddressErr = true;
+      }
     },
     isNumber(evt) {
       isNumber(evt);
@@ -63,7 +99,7 @@ export default {
   padding-right: 1%;
   border-radius: 1%;
   top: 50%;
-  left: 50%;
+  left: 60%;
   transform: translate(-50%, -50%);
   background-color: rgb(255, 255, 255);
   z-index: 50;
@@ -98,6 +134,19 @@ table.tableBodyScroll tbody tr {
   position: absolute;
   bottom: 2%;
   width: 100%;
+}
+
+/* Google  */
+.pac-target-input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #c7c2c2;
+  padding-bottom: 13px;
+  display: inline-block;
+}
+.pac-target-input:focus {
+  transform: scaleX(1);
+  border-color: rgb(29, 73, 216);
 }
 
 @import "../../assets/vendors/Semantic-UI-CSS-master/semantic.min.css";

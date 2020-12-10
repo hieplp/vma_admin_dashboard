@@ -136,7 +136,7 @@
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(maintenace.maintenanceId)"
                     >
-                      <i class="mdi mdi-account-box-outline"></i>
+                      <i class="mdi mdi-wrench"></i>
                     </button>
                     <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
