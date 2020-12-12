@@ -150,11 +150,18 @@
                       >Manage</router-link
                     > -->
                     <button
+                      class="btn btn-gradient-success btn-rounded btn-icon mr-1"
+                      @click="viewPassenger(vehicle.contractVehicleId)"
+                    >
+                      <i class="mdi mdi-account-multiple-outline"></i>
+                    </button>
+                    <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(vehicle.vehicleId)"
                     >
                       <i class="mdi mdi-train"></i>
                     </button>
+
                     <!-- <button
                       class="btn btn-gradient-warning btn-rounded btn-icon mr-1"
                       @click="updateVehicle(vehicle.vehicleId)"
@@ -354,6 +361,13 @@ export default {
       this.$router.push({
         name: "VehicleDetail",
         params: { vehicleId: vehicleId },
+      });
+    },
+    // View vehicle detail
+    viewPassenger(contractVehicleId) {
+      this.$router.push({
+        name: "PassengerList",
+        params: { contractVehicleId: contractVehicleId },
       });
     },
     // View vehicle detail

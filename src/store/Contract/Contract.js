@@ -221,5 +221,20 @@ export default {
           });
       });
     },
+
+    // Get passengers list
+    _getPassengerList(context, contractVehicleId) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${CONTRACT_URL}/vehicles/passengers?contractVehicleId=${contractVehicleId}`
+        )
+          .then((res) => {
+            resolve(res.data.passengerList);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

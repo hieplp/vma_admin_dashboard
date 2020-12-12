@@ -46,7 +46,7 @@
                     :min="trip.departureTime"
                     readonly
                     placeholder=" Destination Time"
-                    @change="endDateChange()"
+                    @change="dateChange"
                   />
                   <!-- <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -162,6 +162,7 @@
         </div>
       </div>
     </div>
+    <!-- <VehiclePicker ref="vehiclePicker" /> -->
     <AddressModal
       v-if="isAddressModal"
       ref="addressModal"
@@ -183,6 +184,7 @@
 <script>
 import draggable from "vuedraggable";
 import AddressModal from "../components/Modal/AddressModal";
+// import VehiclePicker from "../components/Contract/VehiclePicker";
 import DirectionsRenderer from "../components/Google/DirectionsRenderer";
 import moment from "moment";
 export default {
@@ -197,18 +199,13 @@ export default {
     draggable,
     AddressModal,
     DirectionsRenderer,
+    // VehiclePicker,
   },
   mounted() {
     this.isLoading = true;
     this.maxDate = moment(new Date()).format("YYYY-MM-DDTkk:mm");
     if (this.propTrip) {
       this.initData(this.propTrip);
-      // this.$refs.mapRender.draw();
-      // let lastLocation = this.firstLocations[this.firstLocations.length - 1];
-      // this.firstLocations.push(lastLocation);
-      // this.$delete(this.firstLocations, this.firstLocations.length - 1);
-
-      // console.log(this.$refs.mapRender);
     }
   },
   computed: {
@@ -363,14 +360,18 @@ export default {
     initData(trip) {
       this.firstLocations = [];
       this.firstLocations = trip.locations;
-      // this.firstLocations.unshift({ location: trip.departureLocation });
-      // this.firstLocations.push({ location: trip.destinationLocation });
       this.trip.departureTime = moment(trip.departureTime).format(
         "YYYY-MM-DDTkk:mm"
       );
       // this.destinationTime = moment(trip.destinationTime).format(
       //   "YYYY-MM-DDTkk:mm"
       // );
+    },
+    // Vehicle picker
+    dateChange() {
+      this.endDateChange();
+      this.$refs.vehiclePicker.startDate = this.trip.departureTime;
+      this.$refs.vehiclePicker.endDate = this.destinationTime;
     },
   },
 };

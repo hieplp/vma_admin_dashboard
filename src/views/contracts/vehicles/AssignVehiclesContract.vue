@@ -485,21 +485,6 @@ export default {
         vehicleTypeId: this.searchType,
         viewOption: 0,
       });
-      // await this.initContractVehiclesList();
-
-      // this.vehiclesList = await VehicleRepository.get(
-      //   this.page,
-      //   this.searchModel,
-      //   this.searchVehicleID,
-      //   this.vehicleMinDis,
-      //   this.vehicleMaxDis,
-      //   this.searchStatusID,
-      //   this.searchType,
-      //   this.vehicleMinSeat,
-      //   this.vehicleMaxSeat,
-      //   this.viewOption,
-      //   this.ownerId
-      // );
       this.totalVehicles = await VehicleRepository.getTotalVehicle(
         this.searchModel,
         this.searchVehicleID,
@@ -512,7 +497,6 @@ export default {
         this.viewOption,
         this.ownerId
       );
-
       this.isLoading = false;
     },
     // Init types

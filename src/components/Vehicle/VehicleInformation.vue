@@ -64,8 +64,9 @@
                   v-model="vehicle.vehicleId"
                   placeholder="Licence Plate Number"
                   style="text-transform:uppercase"
-                  maxlength="9"
+                  maxlength="12"
                   :readonly="isUpdate"
+                  @input="licensePlateInput"
                 />
                 <div class="ui corner label" v-if="!isUpdate">
                   <i class="asterisk icon"></i>
@@ -569,7 +570,7 @@ export default {
     // Cheack basic information
     checkBasicInformation() {
       this.isChassisNumberErr = this.vehicle.chassisNumber.length !== 17;
-      this.isVehicleIdErr = this.vehicle.vehicleId.length < 8;
+      this.isVehicleIdErr = this.vehicle.vehicleId.length < 9;
       this.isEngineNumberErr = this.vehicle.engineNumber.length !== 12;
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
@@ -647,6 +648,42 @@ export default {
     },
     isNumber(evt) {
       isNumber(evt);
+    },
+    // Check license input
+    licensePlateInput() {
+      // var x = this.vehicle.vehicleId.match(/([0-9]{2})([A-Za-z]{1})/);
+      var x = this.vehicle.vehicleId
+        .replace("-", "")
+        .replace(".", "")
+        .split("");
+      console.log(
+        "🚀 ~ file: VehicleInformation.vue ~ line 656 ~ licensePlateInput ~ x",
+        x
+      );
+      // 59A1-1234.5
+
+      // 8 --> 4
+      // 0 --> 5
+      this.vehicle.vehicleId = x[0] && x[0].match(/([1-9]{1})/) ? x[0] : "";
+      // 1 --> 9
+      this.vehicle.vehicleId += x[1] && x[1].match(/(\d{1})/) ? x[1] : "";
+      // 2 --> A
+      this.vehicle.vehicleId += x[2] && x[2].match(/([A-Za-z]{1})/) ? x[2] : "";
+      // 3 --> 1
+      this.vehicle.vehicleId += x[3] && x[3].match(/([1-9]{1})/) ? x[3] : "";
+      // 4 --> 1
+      this.vehicle.vehicleId += x[4] && x[4].match(/(\d{1})/) ? "-" + x[4] : "";
+      // 5 --> 2
+      this.vehicle.vehicleId += x[5] && x[5].match(/(\d{1})/) ? x[5] : "";
+      // 6 --> 3
+      this.vehicle.vehicleId += x[6] && x[6].match(/(\d{1})/) ? x[6] : "";
+      if (x[8] && !x[8].match(/(\d{1})/)) {
+        this.$delete(x, 8);
+      }
+      // 7 --> 4
+      this.vehicle.vehicleId +=
+        x[7] && x[7].match(/(\d{1})/) ? (x[8] ? "." + x[7] : x[7]) : "";
+      this.vehicle.vehicleId += x[8] ? x[8] : "";
     },
   },
 };

@@ -80,7 +80,7 @@
               </h4>
               <h1 class="mt-5 card-large-content">
                 {{ this.vehicleOnRoute
-                }}<span class="card-small-content">vehicles</span>
+                }}<span class="card-small-content">vehicle(s)</span>
               </h1>
               <!-- <h6 class="card-text">Increased by 60%</h6> -->
             </div>
@@ -96,12 +96,13 @@
                 alt="circle-image"
               />
               <h4 class="font-weight-normal mb-3">
-                Today's Distance Driven<i
+                Not-started Contracts<i
                   class="mdi mdi-cube-unfolded mdi-24px float-right"
                 ></i>
               </h4>
               <h1 class="mt-5 card-large-content">
-                158.3<span class="card-small-content">km</span>
+                {{ this.contractCount
+                }}<span class="card-small-content">contract(s)</span>
               </h1>
               <!-- <h6 class="card-text">Decreased by 10%</h6> -->
             </div>
@@ -123,7 +124,7 @@
               </h4>
               <h1 class="mt-5 card-large-content">
                 {{ this.pendingReqCount
-                }}<span class="card-small-content">requests</span>
+                }}<span class="card-small-content">request(s)</span>
               </h1>
             </div>
           </div>
@@ -373,6 +374,7 @@ export default {
   data() {
     return {
       prevRoute: null,
+      contractCount: 0,
       // Request
       pendingReqCount: 0,
       acceptedReqCount: 0,
@@ -400,6 +402,7 @@ export default {
     await this.initVehicleCount();
     await this.initTotalVehicleTypeChart();
     await this.initRequests();
+    await this.getContractCount();
     this.initDriverStatusChart();
     this.initRequestStatusChart();
     this.isLoading = false;
@@ -414,6 +417,24 @@ export default {
     ...mapActions("Driver", ["_getTotalDriverByStatus"]),
     ...mapActions("Request", ["_getRequest", "_getRequestCount"]),
     ...mapActions("Vehicle", ["_getTotalVehicleByStatus"]),
+    ...mapActions("Contract", ["_getContractsCount"]),
+    // Get count by status
+    async getContractCount() {
+      await this._getContractsCount({
+        contractStatus: "NOT_STARTED",
+        departureLocation: "",
+        departureTime: "",
+        destinationLocation: "",
+        destinationTime: "",
+        durationFrom: "",
+        durationTo: "",
+        totalPriceMax: "",
+        totalPriceMin: "",
+        viewOption: 1,
+      }).then((res) => {
+        this.contractCount = res;
+      });
+    },
     // Init request count
     async initPendingRequestCount() {
       this.pendingReqCount = await this._getRequestCount({
@@ -446,7 +467,7 @@ export default {
         requestType: "",
         userId: "",
         page: "",
-        requestStatus: "",
+        requestStatus: "PENDING",
       }).then((res) => {
         this.requests = res;
       });

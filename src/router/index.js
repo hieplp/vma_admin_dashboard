@@ -24,6 +24,7 @@ import CreateContract from "../views/contracts/CreateContract.vue";
 import UpdateContract from "../views/contracts/UpdateContract.vue";
 import ContractDetail from "../views/contracts/ContractDetail.vue";
 import AssignVehiclesContract from "../views/contracts/vehicles/AssignVehiclesContract.vue";
+import PassengerList from "../views/contracts/passengers/PassengerList.vue"; // Passenger list
 
 // Customer
 import Customers from "../views/customers/Customers.vue";
@@ -195,6 +196,12 @@ const routes = [
     path: "/create-contract",
     name: "CreateContract",
     component: CreateContract,
+  },
+  // Passenger
+  {
+    path: "/contracts/vehicles/passenger/:contractVehicleId ",
+    name: "PassengerList",
+    component: PassengerList,
   },
   // Customer
   {
