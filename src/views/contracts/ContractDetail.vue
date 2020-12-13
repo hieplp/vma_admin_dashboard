@@ -68,37 +68,39 @@
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
-            <div class="ui three steps">
-              <button
-                class="step"
-                v-on:click="changeTab('isContractVisible')"
-                v-bind:class="{ active: isContractVisible }"
-              >
-                <i class="mdi mdi-file-document icon"></i>
-                <div class="content">
-                  <div class="title">CONTRACT</div>
-                </div>
-              </button>
-              <button
-                class="step"
-                v-on:click="changeTab('isTripVisible')"
-                v-bind:class="{ active: isTripVisible }"
-              >
-                <i class="newspaper outline icon"></i>
-                <div class="content">
-                  <div class="title">TRIP</div>
-                </div>
-              </button>
-              <button
-                class="step"
-                v-on:click="changeTab('isVehicleVisible')"
-                v-bind:class="{ active: isVehicleVisible }"
-              >
-                <i class="car icon"></i>
-                <div class="content">
-                  <div class="title">VEHICLES</div>
-                </div>
-              </button>
+            <div>
+              <div class="ui three steps">
+                <button
+                  class="step"
+                  v-on:click="changeTab('isContractVisible')"
+                  v-bind:class="{ active: isContractVisible }"
+                >
+                  <i class="mdi mdi-file-document icon"></i>
+                  <div class="content">
+                    <div class="title">CONTRACT</div>
+                  </div>
+                </button>
+                <button
+                  class="step"
+                  v-on:click="changeTab('isTripVisible')"
+                  v-bind:class="{ active: isTripVisible }"
+                >
+                  <i class="newspaper outline icon"></i>
+                  <div class="content">
+                    <div class="title">TRIP</div>
+                  </div>
+                </button>
+                <button
+                  class="step"
+                  v-on:click="changeTab('isVehicleVisible')"
+                  v-bind:class="{ active: isVehicleVisible }"
+                >
+                  <i class="car icon"></i>
+                  <div class="content">
+                    <div class="title">VEHICLES</div>
+                  </div>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -117,6 +119,8 @@
       <TripPicker
         title="FIRST TRIP"
         ref="firstTrip"
+        :isDetail="true"
+        :isUpdate="true"
         :propTrip="contract.trips[0]"
         v-show="isTripVisible"
         :endDateChange="
@@ -133,6 +137,8 @@
           title="RETURN TRIP"
           ref="returnTrip"
           v-show="isTripVisible && contract.roundTrip"
+          :isDetail="true"
+          :isUpdate="true"
           :propTrip="contract.trips[1]"
           :endDateChange="() => {}"
           :importLocation="
@@ -149,42 +155,26 @@
     </div>
 
     <Vehicles
-      :contractId="contract.contractId"
-      :contract="contract"
-      v-if="isVehicleVisible && contract && contract.contractId"
+      title="FIRST TRIP VEHICLE"
+      :vehicles="contract.trips[0].assignedVehicles"
+      v-if="
+        isVehicleVisible &&
+          contract &&
+          contract.trips &&
+          contract.trips.length > 0
+      "
     />
 
-    <!-- User document -->
-    <div class="row" v-show="isTripVisible">
-      <!-- Confirm Group -->
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <!-- Button group -->
-              <div class="row justify-content-center mt-5">
-                <div class="col-4">
-                  <button
-                    class="btn btn-gradient-danger btn-fw"
-                    type="button"
-                    v-on:click="changeTab('isContractVisible')"
-                  >
-                    Back
-                  </button>
-                  <button
-                    class="btn btn-gradient-info btn-fw ml-2"
-                    type="button"
-                    v-on:click="create()"
-                  >
-                    Create
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Vehicles
+      title="RETURN TRIP VEHICLE"
+      :vehicles="contract.trips[1].assignedVehicles"
+      v-if="
+        isVehicleVisible &&
+          contract &&
+          contract.trips &&
+          contract.trips.length >= 2
+      "
+    />
   </div>
 </template>
 

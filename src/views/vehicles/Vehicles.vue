@@ -137,13 +137,6 @@
                   </td>
                   <td>{{ vehicle.vehicleDistance }}</td>
                   <td class="row justify-content-center btn-action">
-                    <!-- <router-link
-                      :to="{
-                        name: 'VehicleDetail',
-                        params: { userId: vehicle.userId },
-                      }"
-                      >Manage</router-link
-                    > -->
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(vehicle.vehicleId)"

@@ -1,12 +1,5 @@
 <template>
   <div>
-    <CustomersModal
-      v-show="isOwnerModalVisible"
-      :cancelFunction="handleVehicleOwnerModal"
-      :doneFunction="getVehicleOwner"
-      :userId="owner.userId"
-      ref="ownerModal"
-    />
     <div class="row" v-if="isLoading">
       <!-- BASIC INFORMAION -->
       <div class="col-lg-12 grid-margin stretch-card">
@@ -123,24 +116,39 @@
                   </div>
                 </div>
               </div>
+              <!-- Description-->
+              <div class="field">
+                <label>Description</label>
+                <div class="ui corner labeled input">
+                  <textarea
+                    type="text"
+                    readonly
+                    v-model="contract.otherInformation"
+                    placeholder="Description"
+                  />
+                </div>
+              </div>
+              <div class="field">
+                <label>Signed Location</label>
+                <div class="ui corner labeled input">
+                  <input
+                    type="text"
+                    readonly
+                    v-model="contract.signedLocation"
+                    placeholder="Description"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <Address
-      title="SIGNED LOCATION"
-      :propAddress="contract.signedLocation"
-      v-if="contract.signedLocation || isCreate"
-      ref="signedLocation"
-    />
   </div>
 </template>
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
-import Address from "../Address";
-import CustomersModal from "../../components/Modal/CustomersModal";
 import moment from "moment";
 
 export default {
@@ -148,10 +156,7 @@ export default {
     propContract: Object,
     isCreate: Boolean,
   },
-  components: {
-    Address,
-    CustomersModal,
-  },
+  components: {},
   data() {
     return {
       contract: {

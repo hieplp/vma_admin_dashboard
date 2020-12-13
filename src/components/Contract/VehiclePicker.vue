@@ -1,33 +1,17 @@
 <template>
-  <div class="col-12 grid-margin stretch-card">
-    <loading
-      :active.sync="isLoading"
-      :can-cancel="false"
-      :loader="'dots'"
-      :is-full-page="false"
-      :color="'#2e5bff'"
-    ></loading>
-
-    <RecVehiclesModal
-      ref="vehicleModal"
-      v-if="isVehicleModalVisible"
-      :cancelFunction="handleVehicleModal"
-      :doneFunction="getVehicle"
-    />
-
-    <!-- Vehicles table -->
-    <div class="card">
+  <div class="row">
+    <div class="col-12 grid-margin stretch-card">
+      <!-- Vehicles table -->
       <div class="card">
         <div class="card-body">
-          <h4 class="ui dividing header">VEHICLES</h4>
-          <!-- <p class="card-description">{{ this.totalVehicles }} total</p> -->
+          <h4 class="ui dividing header">{{ this.title }}</h4>
           <table class="table" v-if="vehiclesList.length > 0">
             <thead>
               <tr class="">
                 <th>NO.</th>
                 <th>ID</th>
-                <th>SEAT</th>
-                <th>TYPE</th>
+                <!-- <th>SEAT</th>
+                <th>TYPE</th> -->
                 <th class="text-center">ACTION</th>
               </tr>
             </thead>
@@ -37,37 +21,23 @@
                 :key="vehicle.vehicleId"
               >
                 <td class="text-secondary">
-                  {{ page * 15 + index + 1 }}
+                  {{ index + 1 }}
                 </td>
                 <td>{{ vehicle.vehicleId }}</td>
-                <td>{{ vehicle.seats }}</td>
-                <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
+                <!-- <td>{{ vehicle.seats }}</td> -->
+                <!-- <td>{{ vehicle.vehicleTypeName }}</td> -->
                 <td class="row justify-content-center btn-action">
                   <button
-                    class="btn btn-gradient-success btn-rounded btn-icon mr-1"
-                    @click="viewPassenger(vehicle.contractVehicleId)"
+                    class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                    @click="removeVehicle(index)"
                   >
-                    <i class="mdi mdi-account-multiple-outline"></i>
-                  </button>
-                  <button
-                    class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                    @click="viewDetail(vehicle.vehicleId)"
-                  >
-                    <i class="mdi mdi-train"></i>
+                    <i class="mdi mdi-delete-forever"></i>
                   </button>
                 </td>
               </tr>
             </tbody>
           </table>
-          <!-- Empty list -->
-          <!-- <div class="card empty-list ">
-                <div class="mt-5">
-                  <i class="icon bus ui text-center mt-5"></i>
-                </div>
-                <h1>NOTHING</h1>
-                <h3>Your list is empty.</h3>
-              </div> -->
-          <!-- Add vehicle button -->
+
           <div
             class="row address mt-5 justify-content-center add-location"
             @click="handleVehicleModal"
@@ -77,7 +47,27 @@
               Add a vehicle
             </span>
           </div>
+          <div class="row justify-content-center">
+            <div class="ui pointing red basic label" v-if="isErr">
+              Departure and destination locations are required!
+            </div>
+          </div>
         </div>
+        <loading
+          :active.sync="isLoading"
+          :can-cancel="false"
+          :loader="'dots'"
+          :is-full-page="false"
+          :color="'#2e5bff'"
+        ></loading>
+
+        <RecVehiclesModal
+          ref="vehicleModal"
+          v-if="isVehicleModalVisible"
+          :cancelFunction="handleVehicleModal"
+          :doneFunction="getVehicle"
+          :selectedVehicleList="vehiclesList"
+        />
       </div>
     </div>
   </div>
@@ -85,12 +75,9 @@
 
 <script>
 import { mapActions } from "vuex";
-import { isNumber } from "../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 import RecVehiclesModal from "../../components/Modal/RecVehiclesModal";
-const VehicleRepository = RepositoryFactory.get("vehicles");
 
 export default {
   name: "Vehicles",
@@ -98,6 +85,8 @@ export default {
     handleDelBtnVisible: Function,
     contractId: Number,
     contract: Object,
+    title: String,
+    isDetail: Boolean,
   },
   components: {
     Loading,
@@ -105,34 +94,11 @@ export default {
   },
   data() {
     return {
-      isFilterVisible: false,
-      isTableVisible: true,
-      statusList: [],
-
+      isErr: false,
       vehiclesList: [],
-
-      // Filter
-      searchPhoneNumber: "",
-      searchVehicleID: "",
-      searchModel: "",
-      searchStatusID: "",
-      searchType: "",
-      vehicleMaxDis: "",
-      vehicleMinDis: "",
-      vehicleMaxSeat: "",
-      vehicleMinSeat: "",
-      ownerId: "",
-
       isLoading: false,
       isVehicleModalVisible: false,
-      totalVehicles: 0,
-      page: 0,
-      currentPage: 1,
-      isDeleteConVisible: false,
-      isError: false,
-      isSuccess: false,
-      errMsg: "",
-      deleteVehicleId: "",
+
       // Seat
       totalSeats: [],
 
@@ -162,9 +128,7 @@ export default {
   methods: {
     // Map state
     ...mapActions("Contract", ["_getContractVehicle"]),
-    isNumber(evt) {
-      isNumber(evt);
-    },
+
     // Handle vehicle modal
     handleVehicleModal() {
       this.isVehicleModalVisible = !this.isVehicleModalVisible;
@@ -172,115 +136,29 @@ export default {
     },
     // Get vehicle
     getVehicle() {
+      this.vehiclesList.push(this.$refs.vehicleModal.getSelectedVehicle());
       this.handleVehicleModal();
     },
-    // pagination handle
-    async clickCallback(page) {
-      this.currentPage = page;
-      this.page = page - 1;
-      this.initVehiclesList();
+    // Remove vehicle
+    removeVehicle(index) {
+      this.$delete(this.vehiclesList, index);
     },
-    // Init data for Vehicle Status Dropdown
-    async initStatusList() {
-      this.statusList = require("../../assets/json/vehicle/status.json");
-    },
-    // Clear search item value
-    clearSearchValue() {
-      this.searchVehicleID = "";
-      this.searchModel = "";
-      this.searchPhoneNumber = "";
-      this.searchStatusID = "";
-      this.vehicleMinSeat = "";
-      this.vehicleMaxSeat = "";
-      this.searchType = "";
-      this.vehicleMinDis = "";
-      this.vehicleMaxDis = "";
-    },
-    // Search vehicle
-    async searchVehicles() {
-      this.isLoading = true;
-      this.page = 0;
-      this.currentPage = 1;
-      await this.initVehiclesList();
-    },
-    // Init data for vehicle list
-    async initVehiclesList() {
-      this.isLoading = true;
-      this.vehiclesList = await this._getContractVehicle(this.contractId);
-      this.isLoading = false;
-    },
-    // Init types
-    async initTypes() {
-      await VehicleRepository.getVehicleType().then((res) => {
-        this.vehicleTypes = res;
-      });
-    },
-    // Set filter to visible
-    clickToViewFilter() {
-      if (this.isFilterVisible && !this.isTableVisible) {
-        this.isFilterVisible = !this.isFilterVisible;
-        setTimeout(() => {
-          this.isTableVisible = !this.isTableVisible;
-        }, 300);
-      } else if (!this.isFilterVisible && this.isTableVisible) {
-        this.isTableVisible = !this.isTableVisible;
-        setTimeout(() => {
-          this.isFilterVisible = !this.isFilterVisible;
-        }, 300);
-      }
-    },
-    // View vehicle detail
-    viewDetail(vehicleId) {
-      this.$router.push({
-        name: "VehicleDetail",
-        params: { vehicleId: vehicleId },
-      });
-    },
-    // View vehicle detail
-    viewPassenger(contractVehicleId) {
-      this.$router.push({
-        name: "PassengerList",
-        params: { contractVehicleId: contractVehicleId },
-      });
-    },
-    // View vehicle detail
-    updateVehicle(vehicleId) {
-      this.$router.push({
-        name: "UpdateVehicle",
-        params: { vehicleId: vehicleId },
-      });
-    },
-    // Delete vehicle
-    async deleteVehicle() {
-      this.handleDialog("isDeleteConVisible", "");
-      this.isLoading = true;
-      await VehicleRepository.delete(this.deleteVehicleId)
-        .then((res) => {
-          if (res) {
-            this.isSuccess = true;
-          }
-        })
-        .catch((err) => {
-          this.isError = !this.isError;
-          this.errMsg = err.debugMessage;
-          console.log(err);
+    // return data to parent
+    getData() {
+      this.isErr = this.vehiclesList.length === 0;
+      if (!this.isErr) {
+        let vehicles = [];
+        this.vehiclesList.forEach((vehicle) => {
+          vehicles.push(vehicle.vehicleId);
         });
-      this.isLoading = false;
-    },
-    // Close delete vehicle confimation dialog
-    handleDialog(dialogName, userId) {
-      if (userId.length !== 0) {
-        this.deleteVehicleId = userId;
+        return vehicles;
       }
-      this.$data[dialogName] = !this.$data[dialogName];
+      return null;
     },
   },
 };
 </script>
 <style scoped>
-.filter {
-  max-height: 750px !important;
-}
 .label {
   font-size: 13px;
 }

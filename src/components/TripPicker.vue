@@ -21,10 +21,11 @@
                         this.trip.destinationTime = '';
                       }
                     "
+                    :readonly="isDetail"
                     v-model="trip.departureTime"
                     placeholder="Departure Time"
                   />
-                  <div class="ui corner label">
+                  <div class="ui corner label" v-if="!isDetail">
                     <i class="asterisk icon"></i>
                   </div>
                 </div>
@@ -132,6 +133,7 @@
                 <i
                   class="delete-icon icon x"
                   @click="handleLocationClick(index, 2)"
+                  v-if="!isDetail"
                 ></i>
                 <span
                   class="col-1 location-icon-1"
@@ -148,6 +150,7 @@
           <div
             class="row address mt-4 justify-content-center add-location"
             @click="handleAddressModal(1)"
+            v-if="!isDetail"
           >
             <i class="icon plus circle"></i>
             <span>
@@ -162,7 +165,7 @@
         </div>
       </div>
     </div>
-    <!-- <VehiclePicker ref="vehiclePicker" /> -->
+
     <AddressModal
       v-if="isAddressModal"
       ref="addressModal"
@@ -184,7 +187,6 @@
 <script>
 import draggable from "vuedraggable";
 import AddressModal from "../components/Modal/AddressModal";
-// import VehiclePicker from "../components/Contract/VehiclePicker";
 import DirectionsRenderer from "../components/Google/DirectionsRenderer";
 import moment from "moment";
 export default {
@@ -194,12 +196,12 @@ export default {
     propTrip: Object,
     importLocation: Function,
     isUpdate: Boolean,
+    isDetail: Boolean,
   },
   components: {
     draggable,
     AddressModal,
     DirectionsRenderer,
-    // VehiclePicker,
   },
   mounted() {
     this.isLoading = true;
@@ -214,7 +216,6 @@ export default {
       return { query: this.firstLocations[0].location };
     },
     destination() {
-      console.log(123);
       if (
         this.firstLocations.length < 2 ||
         this.firstLocations[this.firstLocations.length - 1].location === ""
@@ -268,6 +269,7 @@ export default {
         destinationLocation: "",
         // destinationTime: "",
         locations: [],
+        assignedVehicles: [],
       },
 
       isLoading: false,

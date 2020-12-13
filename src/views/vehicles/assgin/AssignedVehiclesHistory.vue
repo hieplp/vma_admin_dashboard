@@ -8,48 +8,12 @@
       :color="'#2e5bff'"
     ></loading>
 
-    <!-- Delete confimation -->
-    <Confirmation
-      icon="user times"
-      title="Delete Confirmation"
-      subTitle="Do you want to delete this vehicle?"
-      rightBtnTitle="Delete"
-      rightBtnIcon="trash alternate"
-      rightBtnColor="red"
-      leftBtnTitle="Cancel"
-      leftBtnIcon="x"
-      leftBtnColor="blue"
-      v-if="isDeleteConVisible"
-      :handleLeftBtn="
-        () => {
-          this.isDeleteConVisible = !this.isDeleteConVisible;
-        }
-      "
-      :handleRightBtn="deleteDriver"
-    />
-    <!-- Error message -->
-    <MessageModal
-      title="Delete Driver Fail!"
-      icon="frown outline "
-      :subTitle="errMsg"
-      :proFunc="handleErrorModal"
-      v-if="isError"
-    />
-    <!-- Success message -->
-    <MessageModal
-      title="Delete Driver Successfully!"
-      icon="check circle"
-      :subTitle="`Driver with id ${this.deleteUserID} is deleted successfully.`"
-      :proFunc="handleSuccessModal"
-      v-if="isSuccess"
-    />
-
     <div class="page-header">
       <h3 class="page-title">
         <router-link :to="`/drivers/${driverId}`">Drivers Detail</router-link>
         <span class="text-secondary">/</span>
         <span>
-          Drivers History
+          Vehicles History
         </span>
       </h3>
     </div>
@@ -65,7 +29,7 @@
       >
         <div class="card" v-if="assignedDrivers.length > 0">
           <div class="card-body">
-            <h4 class="card-title">Driver List</h4>
+            <h4 class="card-title">Vehicles List</h4>
             <table class="table ">
               <thead>
                 <tr class="">
@@ -105,7 +69,7 @@
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(vehicle.vehicleId)"
                     >
-                      <i class="mdi mdi-account-box-outline"></i>
+                      <i class="mdi mdi-train"></i>
                     </button>
                   </td>
                 </tr>
@@ -129,16 +93,12 @@ import { mapState, mapActions } from "vuex";
 import { isNumber } from "../../../assets/js/input.js";
 import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import Confirmation from "../../../components/Modal/Confirmation";
-import MessageModal from "../../../components/Modal/MessageModal";
 
 export default {
   name: "Drivers",
   props: {},
   components: {
     Loading,
-    Confirmation,
-    MessageModal,
   },
   computed: {
     // Map state

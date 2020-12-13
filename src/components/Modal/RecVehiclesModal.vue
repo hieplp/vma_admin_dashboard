@@ -62,7 +62,7 @@
       </div>
     </div>
 
-    <table class="table tableBodyScroll">
+    <table class="table tableBodyScroll" v-if="!isLoading">
       <thead>
         <tr class="">
           <th>NO.</th>
@@ -100,11 +100,11 @@
             <button
               class="btn btn-outline-info btn-rounded btn-icon mr-1"
               :class="
-                selectedVehicle !== vehicle.vehicleId
+                selectedVehicle.vehicleId !== vehicle.vehicleId
                   ? 'btn-outline-info'
                   : 'btn-gradient-info'
               "
-              @click="select(vehicle.vehicleId)"
+              @click="select(vehicle)"
             >
               <i class="mdi mdi-account-check"></i>
             </button>
@@ -160,6 +160,7 @@ export default {
     doneFunction: Function,
     vehicleId: String,
     propStatus: String,
+    selectedVehicleList: Array,
   },
   data() {
     return {
@@ -167,7 +168,7 @@ export default {
       searchVehicleId: "",
       vehicleType: "",
       searchStatusID: "",
-      isLoading: false,
+      isLoading: true,
       page: 0,
       currentPage: 1,
       vehicleTypes: [],
@@ -185,7 +186,7 @@ export default {
       this.searchStatusID = this.propStatus;
     }
     await this.initVehiclesList();
-    // this.initTypes();
+    this.initTypes();
     // this.initStatusList();
     if (this.vehicleId) {
       this.selectedVehicle = this.vehicleId;
@@ -214,6 +215,21 @@ export default {
     // Init data for vehicle list
     async initVehiclesList() {
       this.isLoading = true;
+      // this.viewOption = this.searchStatusID !== "" ? 1 : 0;
+
+      await this._getVehiclesWithIdAndType({
+        pageNum: this.page,
+        vehicleId: this.searchVehicleId,
+        viewOption: 1,
+        vehicleStatus: "AVAILABLE",
+        vehicleType: this.vehicleType,
+      });
+      await this._getVehiclesWithIdAndTypeCount({
+        vehicleId: this.searchVehicleId,
+        viewOption: 1,
+        vehicleStatus: "AVAILABLE",
+        vehicleType: this.vehicleType,
+      });
 
       // if (
       //   this.vehicleMinDis.length > 0 &&
@@ -235,23 +251,30 @@ export default {
       //   this.vehicleMaxSeat = temp;
       // }
 
-      this.viewOption = this.searchStatusID !== "" ? 1 : 0;
+      // this.vehicles = await this._getVehicleRecommendations({
+      //   startDate: this.startDate,
+      //   endDate: this.endDate,
+      //   seatsMin: "",
+      //   seatsMax: "",
+      //   vehicleTypeId: this.vehicleType,
+      //   viewOption: 0,
+      // });
+      // this.totalVehicles = await this._getVehicleRecommendationsCount({
+      //   startDate: this.startDate,
+      //   endDate: this.endDate,
+      //   seatsMin: "",
+      //   seatsMax: "",
+      //   vehicleTypeId: this.vehicleType,
+      //   viewOption: 0,
+      // });
 
-      this.vehicles = await this._getVehicleRecommendations({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        seatsMin: "",
-        seatsMax: "",
-        vehicleTypeId: this.vehicleType,
-        viewOption: 0,
-      });
-      this.totalVehicles = await this._getVehicleRecommendationsCount({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        seatsMin: "",
-        seatsMax: "",
-        vehicleTypeId: this.vehicleType,
-        viewOption: 0,
+      this.selectedVehicleList.forEach((vehicle) => {
+        for (let index = 0; index < this.vehicles.length; index++) {
+          if (vehicle.vehicleId === this.vehicles[index].vehicleId) {
+            this.$delete(this.vehicles, index);
+            this.totalVehicles--;
+          }
+        }
       });
       this.isLoading = false;
     },
@@ -266,11 +289,15 @@ export default {
       this.statusList = require("../../assets/json/vehicle/status.json");
     },
     // Select vehicle
-    select(vehicleId) {
-      if (this.selectedVehicle === vehicleId) {
-        this.selectedVehicle = "";
+    select(vehicle) {
+      console.log(
+        "🚀 ~ file: RecVehiclesModal.vue ~ line 283 ~ select ~ vehicleId",
+        vehicle
+      );
+      if (this.selectedVehicle.vehicleId === vehicle.vehicleId) {
+        this.selectedVehicle = { vehicleId: "" };
       } else {
-        this.selectedVehicle = vehicleId;
+        this.selectedVehicle = vehicle;
       }
     },
     // Return select vehicle

@@ -73,6 +73,16 @@
                   <div class="title">TRIP</div>
                 </div>
               </button>
+              <button
+                class="step"
+                v-on:click="changeTab('isVehicleVisible')"
+                v-bind:class="{ active: isVehicleVisible }"
+              >
+                <i class="car icon"></i>
+                <div class="content">
+                  <div class="title">VEHICLES</div>
+                </div>
+              </button>
             </div>
           </div>
         </div>
@@ -134,8 +144,40 @@
         }
       "
     />
-    <!-- User document -->
     <div class="row" v-show="isTripVisible">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <!-- Button group -->
+              <div class="row justify-content-center">
+                <button
+                  class="btn btn-gradient-info btn-fw ml-2"
+                  type="button"
+                  v-on:click="changeTab('isVehicleVisible')"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Vehicle picker -->
+    <VehiclePicker
+      ref="firstVehiclePicker"
+      title="FIRST TRIP VEHICLES"
+      v-show="isVehicleVisible"
+    />
+    <!-- Vehicle picker  -->
+    <VehiclePicker
+      ref="returnVehiclePicker"
+      title="RETURN TRIP VEHICLES"
+      v-show="isVehicleVisible && contract.roundTrip"
+    />
+    <!-- User document -->
+    <div class="row" v-if="isVehicleVisible">
       <!-- Confirm Group -->
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
@@ -175,6 +217,7 @@ import MessageModal from "../../components/Modal/MessageModal";
 import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
+import VehiclePicker from "../../components/Contract/VehiclePicker";
 // import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 // const ContractRepository = RepositoryFactory.get("contracts");
 import DirectionsRenderer from "../../components/Google/DirectionsRenderer";
@@ -187,6 +230,7 @@ export default {
     MessageModal,
     // eslint-disable-next-line vue/no-unused-components
     DirectionsRenderer,
+    VehiclePicker,
   },
   data() {
     return {
@@ -198,19 +242,10 @@ export default {
       documentExpiryDate: [],
       isContractVisible: true,
       isTripVisible: false,
+      isVehicleVisible: false,
 
       isAddressModalVisible: false,
     };
-  },
-  computed: {
-    origin() {
-      if (!this.places[0]) return null;
-      return { query: this.places[0].formatted_address };
-    },
-    destination() {
-      if (this.places.length < 2) return null;
-      return { query: this.places[this.places.length - 1].formatted_address };
-    },
   },
   mounted() {},
   methods: {
@@ -219,19 +254,19 @@ export default {
     async create() {
       this.isLoading = true;
       let isValid = false;
-      this.contract.trips = [];
       // Get first trip
-      let firstTrip = this.$refs.firstTrip.getData();
-      this.contract.trips.push(firstTrip);
-      isValid = firstTrip !== null && firstTrip !== undefined;
+      let firstVehicles = this.$refs.firstVehiclePicker.getData();
+      isValid = firstVehicles !== null && firstVehicles !== undefined;
       // If is round-trip
       if (this.contract.roundTrip) {
-        let returnTrip = this.$refs.returnTrip.getData();
-        this.contract.trips.push(returnTrip);
-        isValid = returnTrip !== null;
+        let returnVehicles = this.$refs.returnVehiclePicker.getData();
+        this.contract.trips[1].assignedVehicles = returnVehicles;
+        isValid = returnVehicles !== null && firstVehicles !== undefined;
       }
 
       if (isValid) {
+        console.log(this.contract.trips[0]);
+        this.contract.trips[0].assignedVehicles = firstVehicles;
         await this._create(this.contract)
           .then((res) => {
             if (res) {
@@ -256,6 +291,31 @@ export default {
         document.getElementById("app").scrollIntoView();
         this.isContractVisible = step === "isContractVisible" ? true : false;
         this.isTripVisible = step === "isTripVisible" ? true : false;
+        // Check contract trip
+        if (step === "isVehicleVisible") {
+          this.contract.trips = [];
+          // Get first trip
+          let firstTrip = this.$refs.firstTrip.getData();
+          isValid = firstTrip !== null && firstTrip !== undefined;
+          // If is round-trip
+          if (this.contract.roundTrip) {
+            let returnTrip = this.$refs.returnTrip.getData();
+            isValid = returnTrip !== null && returnTrip !== undefined;
+            if (isValid) {
+              this.contract.trips.push(returnTrip);
+            }
+          }
+          // isValid = false;
+          if (isValid) {
+            this.contract.trips.push(firstTrip);
+            this.isVehicleVisible = true;
+            console.log(this.contract);
+          } else {
+            this.isTripVisible = true;
+          }
+        } else {
+          this.isVehicleVisible = false;
+        }
       }
     },
 

@@ -592,7 +592,7 @@ export default {
 </script>
 <style scoped>
 .filter {
-  max-height: 950px !important;
+  max-height: 460px !important;
 }
 .label {
   font-size: 13px;
