@@ -24,6 +24,7 @@
                       type="date"
                       v-model="contract.durationFrom"
                       :min="currentDate"
+                      @change="durationToChange"
                       placeholder="Duration From"
                     />
                     <div class="ui corner label">
@@ -44,7 +45,7 @@
                     <input
                       type="date"
                       v-model="contract.durationTo"
-                      :min="contract.durationFrom"
+                      :min="maxDurationTo"
                       :readonly="!contract.durationFrom"
                       placeholder="Duration To"
                     />
@@ -214,6 +215,8 @@ export default {
   props: {
     propContract: Object,
     isCreate: Boolean,
+    changeDurationFrom: Function,
+    changeDurationTo: Function,
   },
   components: {
     Address,
@@ -262,6 +265,7 @@ export default {
       },
       currentDate: "",
       currentDateTime: "",
+      isChange: false,
     };
   },
   mounted() {
@@ -271,6 +275,14 @@ export default {
     }
     this.isLoading = true;
   },
+  computed: {
+    maxDurationTo() {
+      return moment(this.contract.durationFrom, "YYYY-MM-DD")
+        .add(1, "days")
+        .format("YYYY-MM-DD");
+    },
+  },
+
   methods: {
     // Init contract
     initContract() {
@@ -314,6 +326,18 @@ export default {
         this.estimatedVehicleCountErr ||
         this.ownerErr
       );
+    },
+    durationToChange() {
+      this.contract.durationTo = "";
+      this.isChange = true;
+      // if (
+      //   this.$parent.contract &&
+      //   this.$parent.contract.trips[0] &&
+      //   this.$parent.contract.trips[0].departureTime
+      // ) {
+      //   this.$parent
+      //   this.$parent.$refs.firstVehiclePicker.trip.departureTime = "";
+      // }
     },
     // Get contract data
     getData() {

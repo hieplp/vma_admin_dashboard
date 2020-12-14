@@ -570,7 +570,7 @@ export default {
     // Cheack basic information
     checkBasicInformation() {
       this.isChassisNumberErr = this.vehicle.chassisNumber.length !== 17;
-      this.isVehicleIdErr = this.vehicle.vehicleId.length < 9;
+      this.isVehicleIdErr = this.vehicle.vehicleId.length < 8;
       this.isEngineNumberErr = this.vehicle.engineNumber.length !== 12;
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
@@ -627,6 +627,7 @@ export default {
     getData() {
       let vehicle = Object.assign({}, this.vehicle);
       // format phone number
+      vehicle.vehicleId = vehicle.vehicleId.toUpperCase().trim();
       vehicle.chassisNumber = vehicle.chassisNumber.toUpperCase().trim();
       vehicle.engineNumber = vehicle.engineNumber.toUpperCase().trim();
       vehicle.brandId = this.brand.brandId;
@@ -670,20 +671,20 @@ export default {
       // 2 --> A
       this.vehicle.vehicleId += x[2] && x[2].match(/([A-Za-z]{1})/) ? x[2] : "";
       // 3 --> 1
-      this.vehicle.vehicleId += x[3] && x[3].match(/([1-9]{1})/) ? x[3] : "";
+      // this.vehicle.vehicleId += x[3] && x[3].match(/([1-9]{1})/) ? x[3] : "";
       // 4 --> 1
-      this.vehicle.vehicleId += x[4] && x[4].match(/(\d{1})/) ? "-" + x[4] : "";
+      this.vehicle.vehicleId += x[3] && x[3].match(/(\d{1})/) ? "-" + x[3] : "";
       // 5 --> 2
-      this.vehicle.vehicleId += x[5] && x[5].match(/(\d{1})/) ? x[5] : "";
+      this.vehicle.vehicleId += x[4] && x[4].match(/(\d{1})/) ? x[4] : "";
       // 6 --> 3
-      this.vehicle.vehicleId += x[6] && x[6].match(/(\d{1})/) ? x[6] : "";
-      if (x[8] && !x[8].match(/(\d{1})/)) {
-        this.$delete(x, 8);
+      this.vehicle.vehicleId += x[5] && x[5].match(/(\d{1})/) ? x[5] : "";
+      if (x[7] && !x[7].match(/(\d{1})/)) {
+        this.$delete(x, 7);
       }
       // 7 --> 4
       this.vehicle.vehicleId +=
-        x[7] && x[7].match(/(\d{1})/) ? (x[8] ? "." + x[7] : x[7]) : "";
-      this.vehicle.vehicleId += x[8] ? x[8] : "";
+        x[6] && x[6].match(/(\d{1})/) ? (x[7] ? "." + x[6] : x[6]) : "";
+      this.vehicle.vehicleId += x[7] ? x[7] : "";
     },
   },
 };

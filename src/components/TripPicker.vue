@@ -15,7 +15,8 @@
                 <div class="ui corner labeled input">
                   <input
                     type="datetime-local"
-                    :min="maxDate"
+                    :min="minDateFrom"
+                    :max="maxDateFrom"
                     @change="
                       () => {
                         this.trip.destinationTime = '';
@@ -49,16 +50,7 @@
                     placeholder=" Destination Time"
                     @change="dateChange"
                   />
-                  <!-- <div class="ui corner label">
-                    <i class="asterisk icon"></i>
-                  </div> -->
                 </div>
-                <!-- <div
-                  class="ui pointing red basic label"
-                  v-if="destinationTimeErr"
-                >
-                  Destination Time is required!
-                </div> -->
               </div>
             </div>
           </div>
@@ -245,6 +237,9 @@ export default {
   },
   data() {
     return {
+      // Max day
+      maxDateFrom: "",
+      minDateFrom: "",
       // First location
       firstLocations: [],
 
@@ -342,6 +337,7 @@ export default {
       if (!isValid) {
         let locations = Object.assign([], this.firstLocations);
         let trip = Object.assign({}, this.trip);
+
         // Format date
         trip.departureTime = moment(trip.departureTime).format(
           "YYYY-MM-DD HH:mm:ssz"
@@ -362,6 +358,8 @@ export default {
     initData(trip) {
       this.firstLocations = [];
       this.firstLocations = trip.locations;
+      this.trip.assignedVehicles = trip.assignedVehicles;
+      this.trip.contractTripId = trip.contractTripId;
       this.trip.departureTime = moment(trip.departureTime).format(
         "YYYY-MM-DDTkk:mm"
       );

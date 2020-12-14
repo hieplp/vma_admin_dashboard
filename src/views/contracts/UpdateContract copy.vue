@@ -15,7 +15,7 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Contract
+          Update Contract
         </span>
       </h3>
     </div>
@@ -38,6 +38,26 @@
       "
       :handleRightBtn="updateContract"
     />
+    <!-- Update Trip Confirmation -->
+    <Confirmation
+      icon="edit outline"
+      title="Update Trips Confirmation"
+      subTitle="Do you want to update this contract trips?"
+      rightBtnTitle="Update"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isUpdTripConVisible"
+      :handleLeftBtn="
+        () => {
+          this.isUpdTripConVisible = !this.isUpdTripConVisible;
+        }
+      "
+      :handleRightBtn="updateTrips"
+    />
+
     <!-- Error message -->
     <MessageModal
       title=" Create Contract Fail!"
@@ -54,13 +74,10 @@
     <MessageModal
       title="Create Contract Successfully!"
       icon="check circle"
-      :subTitle="`Contract is created successfully!`"
+      :subTitle="`Contract is updated successfully!`"
       :proFunc="
         () => {
           this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
-          this.$router.push({
-            name: 'Contracts',
-          });
         }
       "
       v-if="isCreatedSuccessfully"
@@ -112,19 +129,33 @@
         ref="contract"
         v-show="isContractVisible && contract"
       />
-      <div class="row" v-show="isContractVisible">
-        <div class="col-lg-12 grid-margin stretch-card">
-          <div class="card">
-            <div class="card-body">
-              <div class="ui form">
-                <!-- Button group -->
-                <div class="row justify-content-center">
+    </div>
+
+    <div class="row" v-if="isContractVisible && isUserLoading">
+      <div class="col-lg-12 grid-margin stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="ui form">
+              <!-- Button group -->
+              <div class="row justify-content-center">
+                <div class="col-4">
+                  <button
+                    class="btn btn-gradient-danger btn-fw"
+                    type="button"
+                    @click="cancelUpdate()"
+                  >
+                    Cancel
+                  </button>
                   <button
                     class="btn btn-gradient-info btn-fw ml-2"
                     type="button"
-                    v-on:click="changeTab('isTripVisible')"
+                    @click="
+                      () => {
+                        this.isUpdConVisible = true;
+                      }
+                    "
                   >
-                    Next
+                    Update
                   </button>
                 </div>
               </div>
@@ -171,49 +202,27 @@
         />
       </div>
     </div>
-    <div class="row" v-show="isTripVisible">
-      <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-          <div class="card-body">
-            <div class="ui form">
-              <!-- Button group -->
-              <div class="row justify-content-center">
-                <button
-                  class="btn btn-gradient-info btn-fw ml-2"
-                  type="button"
-                  v-on:click="changeTab('isVehicleVisible')"
-                >
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     <!-- Vehicle picker -->
     <VehiclePicker
       ref="firstVehiclePicker"
       title="FIRST TRIP VEHICLES"
-      :vehicles="contract.trips[0].assignedVehicles"
-      v-if="isVehicleVisible"
+      v-show="isVehicleVisible"
     />
     <!-- Vehicle picker  -->
     <VehiclePicker
       ref="returnVehiclePicker"
       title="RETURN TRIP VEHICLES"
-      :vehicles="contract.trips[1].assignedVehicles"
-      v-if="isVehicleVisible && contract.roundTrip"
+      v-show="isVehicleVisible && contract.roundTrip"
     />
     <!-- User document -->
-    <div class="row" v-if="isVehicleVisible">
+    <div class="row" v-show="isVehicleVisible">
       <!-- Confirm Group -->
       <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
           <div class="card-body">
             <div class="ui form">
               <!-- Button group -->
-              <div class="row justify-content-center ">
+              <div class="row justify-content-center">
                 <div class="col-4">
                   <button
                     class="btn btn-gradient-danger btn-fw"
@@ -227,7 +236,7 @@
                     type="button"
                     v-on:click="
                       () => {
-                        this.isUpdConVisible = true;
+                        this.isUpdTripConVisible = true;
                       }
                     "
                   >
@@ -251,8 +260,7 @@ import Confirmation from "../../components/Modal/Confirmation";
 import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
-import VehiclePicker from "../../components/Contract/VehiclePicker";
-import moment from "moment";
+
 export default {
   name: "CreateContract",
   components: {
@@ -260,22 +268,25 @@ export default {
     ContractInformation,
     TripPicker,
     MessageModal,
-    VehiclePicker,
     Confirmation,
   },
   data() {
     return {
       isLoading: false,
       isCreatedSuccessfully: false,
-      isUpdConVisible: false,
-      isUserLoading: false,
       isError: false,
       errMsg: "",
       contract: null,
+      cloneTrips: [],
       documentExpiryDate: [],
+      // Tab visible
       isContractVisible: true,
       isTripVisible: false,
       isVehicleVisible: false,
+      isUpdConVisible: false,
+      isUpdTripConVisible: false,
+
+      isUserLoading: false,
 
       isAddressModalVisible: false,
     };
@@ -283,15 +294,17 @@ export default {
   async mounted() {
     this.isLoading = true;
     await this.initContract();
+    this.cloneTrips = Object.assign({}, this.contract.trips);
     this.isUserLoading = true;
     this.isLoading = false;
   },
   methods: {
     // Map state
     ...mapActions("Contract", [
-      "_create",
-      "_getContractDetail",
       "_updateContract",
+      "_getContractDetail",
+      "_updateContractTrip",
+      "_updateContractLocation",
     ]),
     // Init contract
     async initContract() {
@@ -301,22 +314,29 @@ export default {
         }
       );
     },
+    //
+    // Update
+    cancelUpdate() {
+      this.$refs.contract.initContract();
+    },
     async updateContract() {
       this.isLoading = true;
       this.isUpdConVisible = false;
-      let isValid = false;
-      // Get first trip
-      let firstVehicles = this.$refs.firstVehiclePicker.getData();
-      isValid = firstVehicles !== null && firstVehicles !== undefined;
-      // If is round-trip
-      if (this.contract.roundTrip) {
-        let returnVehicles = this.$refs.returnVehiclePicker.getData();
-        this.contract.trips[1].assignedVehicles = returnVehicles;
-        isValid = returnVehicles !== null && firstVehicles !== undefined;
-      }
-      if (isValid) {
-        this.contract.trips[0].assignedVehicles = firstVehicles;
-
+      let isValid = this.$refs.contract.checkBasicInformation();
+      // let isValid = false;
+      // this.contract.trips = [];
+      // // Get first trip
+      // let firstTrip = this.$refs.firstTrip.getData();
+      // this.contract.trips.push(firstTrip);
+      // isValid = firstTrip !== null;
+      // // If is round-trip
+      // if (this.contract.roundTrip) {
+      //   let returnTrip = this.$refs.returnTrip.getData();
+      //   this.contract.trips.push(returnTrip);
+      //   isValid = returnTrip !== null;
+      // }
+      if (!isValid) {
+        this.contract = this.$refs.contract.getData();
         await this._updateContract(this.contract)
           .then((res) => {
             if (res) {
@@ -328,58 +348,107 @@ export default {
               this.isError = true;
               this.errMsg = ex.debugMessage;
             }
-            console.error(ex);
           });
       }
       this.isLoading = false;
     },
-    changeTab(step) {
-      let isValid = this.$refs.contract.checkBasicInformation();
-      // let isValid = false;
-      if (!isValid) {
-        this.contract = this.$refs.contract.getData();
-        document.getElementById("app").scrollIntoView();
-        this.isContractVisible = step === "isContractVisible" ? true : false;
-        this.isTripVisible = step === "isTripVisible" ? true : false;
-        // Set max date for duration
-        this.$refs.firstTrip.minDateFrom = moment(
-          new Date(this.contract.durationFrom)
-        ).format("YYYY-MM-DDTkk:mm");
-        this.$refs.firstTrip.maxDateFrom = moment(
-          new Date(this.contract.durationTo)
-        ).format("YYYY-MM-DDTkk:mm");
-        // - - - - - - - - - - - - -
-        if (this.$refs.contract.isChange) {
-          this.$refs.firstTrip.trip.departureTime = "";
-        }
+    // Update trips
+    // :TODO:
+    async updateTrips() {
+      this.isLoading = true;
+      this.isUpdTripConVisible = !this.isUpdTripConVisible;
+      // eslint-disable-next-line no-unused-vars
+      let isSuccess = true;
 
-        // Check contract trip
-        if (step === "isVehicleVisible") {
-          this.contract.trips = [];
-          // Get first trip
-          let firstTrip = this.$refs.firstTrip.getData();
-          isValid = firstTrip !== null && firstTrip !== undefined;
-          // If is round-trip
-          if (this.contract.roundTrip) {
-            let returnTrip = this.$refs.returnTrip.getData();
-            isValid = returnTrip !== null && returnTrip !== undefined;
-            if (isValid) {
-              this.contract.trips.push(returnTrip);
-            }
-          }
-          // isValid = false;
-          if (isValid) {
-            console.log(this.contract);
-            this.contract.trips.push(firstTrip);
-            this.isVehicleVisible = true;
-            console.log(this.contract);
-          } else {
-            this.isTripVisible = true;
-          }
-        } else {
-          this.isVehicleVisible = false;
+      let firstTrip = this.$refs.firstTrip.getData();
+      console.log(
+        "🚀 ~ file: UpdateContract.vue ~ line 366 ~ updateSingleTrip ~ changeTrip",
+        firstTrip
+      );
+      let returnTrip = null;
+      let isValid = firstTrip !== null;
+      if (this.contract.roundTrip) {
+        returnTrip = this.$refs.returnTrip.getData();
+        isValid = returnTrip !== null;
+      }
+      if (isValid) {
+        firstTrip.contractTripId = this.contract.trips[0].contractTripId;
+        isSuccess = await this.updateSingleTrip(
+          this.contract.trips[0],
+          firstTrip
+        );
+        if (this.contract.roundTrip) {
+          returnTrip.contractTripId = this.contract.trips[1].contractTripId;
+          isSuccess = await this.updateSingleTrip(
+            this.contract.trips[1],
+            returnTrip
+          );
         }
       }
+      this.isLoading = false;
+      if (isSuccess) {
+        this.isCreatedSuccessfully = true;
+      }
+    },
+    async updateSingleTrip(trip, changeTrip) {
+      // if (
+      //   trip.departureLocation !== changeTrip.departureLocation ||
+      //   trip.destinationLocation !== changeTrip.destinationLocation ||
+      //   trip.departureTime !== changeTrip.departureTime ||
+      //   trip.destinationTime !== changeTrip.destinationTime
+      // ) {
+      //   await this._updateContractTrip(changeTrip)
+      //     .then(async (res) => {
+      //       if (res) {
+      //         await this._updateContractLocation(changeTrip.locations).catch(
+      //           (ex) => {
+      //             if (ex.debugMessage) {
+      //               this.isError = true;
+      //               this.errMsg = ex.debugMessage;
+      //             }
+      //             return false;
+      //           }
+      //         );
+      //       }
+      //     })
+      //     .catch((ex) => {
+      //       if (ex.debugMessage) {
+      //         this.isError = true;
+      //         this.errMsg = ex.debugMessage;
+      //       }
+      //       return false;
+      //     });
+      // }
+      await this._updateContractTrip(changeTrip)
+        .then(async (res) => {
+          if (res) {
+            await this._updateContractLocation({
+              contractTripId: changeTrip.contractTripId,
+              locations: changeTrip.locations,
+            }).catch((ex) => {
+              if (ex.debugMessage) {
+                this.isError = true;
+                this.errMsg = ex.debugMessage;
+              }
+              return false;
+            });
+          }
+        })
+        .catch((ex) => {
+          if (ex.debugMessage) {
+            this.isError = true;
+            this.errMsg = ex.debugMessage;
+          }
+          return false;
+        });
+      return true;
+    },
+    changeTab(step) {
+      // let isValid = false;
+
+      document.getElementById("app").scrollIntoView();
+      this.isContractVisible = step === "isContractVisible" ? true : false;
+      this.isTripVisible = step === "isTripVisible" ? true : false;
     },
 
     // Vehicle Owner
@@ -406,6 +475,12 @@ export default {
 }
 .asterisk.icon {
   color: red;
+}
+
+.upload-photo {
+  opacity: 0;
+  position: absolute;
+  z-index: -1;
 }
 .step i {
   color: #047edf !important;

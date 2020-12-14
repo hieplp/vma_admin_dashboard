@@ -270,7 +270,7 @@ export default {
 
       this.selectedVehicleList.forEach((vehicle) => {
         for (let index = 0; index < this.vehicles.length; index++) {
-          if (vehicle.vehicleId === this.vehicles[index].vehicleId) {
+          if (vehicle === this.vehicles[index].vehicleId) {
             this.$delete(this.vehicles, index);
             this.totalVehicles--;
           }

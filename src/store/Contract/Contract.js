@@ -9,7 +9,7 @@ export default {
     // Update contract
     _updateContract(context, contract) {
       return new Promise((resolve, reject) => {
-        Repository.patch(`${CONTRACT_URL}`, contract)
+        Repository.put(`${CONTRACT_URL}`, contract)
           .then((res) => {
             resolve(res);
           })

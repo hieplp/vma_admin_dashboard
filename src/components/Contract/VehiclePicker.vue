@@ -23,7 +23,7 @@
                 <td class="text-secondary">
                   {{ index + 1 }}
                 </td>
-                <td>{{ vehicle.vehicleId }}</td>
+                <td>{{ vehicle }}</td>
                 <!-- <td>{{ vehicle.seats }}</td> -->
                 <!-- <td>{{ vehicle.vehicleTypeName }}</td> -->
                 <td class="row justify-content-center btn-action">
@@ -87,6 +87,7 @@ export default {
     contract: Object,
     title: String,
     isDetail: Boolean,
+    vehicles: Array,
   },
   components: {
     Loading,
@@ -113,17 +114,9 @@ export default {
     };
   },
   async mounted() {
-    // if (this.$route.params.ownerId) {
-    //   this.ownerId = this.$route.params.ownerId;
-    // }
-    // if (this.$route.params.status) {
-    //   this.viewOption = 1;
-    //   this.searchStatusID = this.$route.params.status;
-    // }
-    // await this.initStatusList();
-    // await this.initVehiclesList();
-    // await this.initTypes();
-    // this.totalSeats = require("../../assets/json/vehicle/totalSeat.json");
+    if (this.vehicles) {
+      this.vehiclesList = this.vehicles;
+    }
   },
   methods: {
     // Map state
@@ -136,7 +129,9 @@ export default {
     },
     // Get vehicle
     getVehicle() {
-      this.vehiclesList.push(this.$refs.vehicleModal.getSelectedVehicle());
+      this.vehiclesList.push(
+        this.$refs.vehicleModal.getSelectedVehicle().vehicleId
+      );
       this.handleVehicleModal();
     },
     // Remove vehicle
@@ -147,11 +142,11 @@ export default {
     getData() {
       this.isErr = this.vehiclesList.length === 0;
       if (!this.isErr) {
-        let vehicles = [];
-        this.vehiclesList.forEach((vehicle) => {
-          vehicles.push(vehicle.vehicleId);
-        });
-        return vehicles;
+        // let vehicles = [];
+        // this.vehiclesList.forEach((vehicle) => {
+        //   vehicles.push(vehicle);
+        // });
+        return this.vehiclesList;
       }
       return null;
     },

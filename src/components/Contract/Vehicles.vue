@@ -55,7 +55,7 @@
                     </button>
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(vehicle.vehicleId)"
+                      @click="viewDetail(vehicle)"
                     >
                       <i class="mdi mdi-train"></i>
                     </button>

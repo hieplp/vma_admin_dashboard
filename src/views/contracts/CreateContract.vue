@@ -218,8 +218,7 @@ import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
 import VehiclePicker from "../../components/Contract/VehiclePicker";
-// import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-// const ContractRepository = RepositoryFactory.get("contracts");
+import moment from "moment";
 import DirectionsRenderer from "../../components/Google/DirectionsRenderer";
 export default {
   name: "CreateContract",
@@ -265,7 +264,6 @@ export default {
       }
 
       if (isValid) {
-        console.log(this.contract.trips[0]);
         this.contract.trips[0].assignedVehicles = firstVehicles;
         await this._create(this.contract)
           .then((res) => {
@@ -289,6 +287,13 @@ export default {
       if (!isValid) {
         this.contract = this.$refs.contract.getData();
         document.getElementById("app").scrollIntoView();
+        // Set max date for duration
+        this.$refs.firstTrip.minDateFrom = moment(
+          new Date(this.contract.durationFrom)
+        ).format("YYYY-MM-DDTkk:mm");
+        this.$refs.firstTrip.maxDateFrom = moment(
+          new Date(this.contract.durationTo)
+        ).format("YYYY-MM-DDTkk:mm");
         this.isContractVisible = step === "isContractVisible" ? true : false;
         this.isTripVisible = step === "isTripVisible" ? true : false;
         // Check contract trip
@@ -331,31 +336,6 @@ export default {
 
     isNumber(evt) {
       isNumber(evt);
-    },
-    // Google map
-    // nhận địa điểm thông qua autocomplete component
-    setPlace(place) {
-      this.currentPlace = place;
-    },
-    addMarker() {
-      if (this.currentPlace) {
-        const marker = {
-          lat: this.currentPlace.geometry.location.lat(),
-          lng: this.currentPlace.geometry.location.lng(),
-        };
-        this.markers.push({ position: marker });
-        this.places.push(this.currentPlace);
-        this.center = marker;
-        this.currentPlace = null;
-      }
-    },
-    geolocate: function() {
-      navigator.geolocation.getCurrentPosition((position) => {
-        this.center = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-      });
     },
   },
 };
