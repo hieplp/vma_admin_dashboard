@@ -281,6 +281,11 @@
                 Schedule Reports
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/reports/incomes" class="nav-link ">
+                Revenue Reports
+              </router-link>
+            </li>
             <!-- <li class="nav-item">
               <router-link to="/reports/contracts" class="nav-link ">
                 Contract Reports

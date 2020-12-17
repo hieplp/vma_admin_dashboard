@@ -360,6 +360,7 @@
 import Chart from "chart.js";
 import $ from "jquery";
 import moment from "moment";
+import * as firebase from "firebase";
 import Loading from "vue-loading-overlay";
 import { mapActions } from "vuex";
 import { RepositoryFactory } from "../repositories/RepositoryFactory";
@@ -398,6 +399,7 @@ export default {
     this.inactiveDrivers = await this._getTotalDriverByStatus("INACTIVE");
     this.disableDrivers = await this._getTotalDriverByStatus("DISABLE");
 
+    await this.getRegistrationToken();
     await this.initPendingRequestCount();
     await this.initVehicleCount();
     await this.initTotalVehicleTypeChart();
@@ -418,6 +420,7 @@ export default {
     ...mapActions("Request", ["_getRequest", "_getRequestCount"]),
     ...mapActions("Vehicle", ["_getTotalVehicleByStatus"]),
     ...mapActions("Contract", ["_getContractsCount"]),
+    ...mapActions("User", ["_createClientRegistrationToken"]),
     // Get count by status
     async getContractCount() {
       await this._getContractsCount({
@@ -848,6 +851,40 @@ export default {
         options: tripsByTypeChartOptions,
       });
       $("#driver-status-chart-legend").html(trafficChart.generateLegend());
+    },
+
+    // Get registration token.
+    async getRegistrationToken() {
+      // Retrieve Firebase Messaging object.
+      const messaging = firebase.messaging();
+      // Get registration token. Initially this makes a network call, once retrieved
+      // subsequent calls to getToken will return from cache.
+      await messaging
+        .getToken({
+          vapidKey:
+            "BNFkrBWhs0AJHgEyuTbs_Xe_hR8XD31EF0iQIa0dnT9op_S9-3H_hFUSbJ7ryyGEb6Wzkncwsh259iQ1oY76hEA",
+        })
+        .then(async (currentToken) => {
+          await this._createClientRegistrationToken({
+            fcmToken: currentToken,
+          })
+            .then(() => {
+              localStorage.setItem("FCM_TOKEN", currentToken);
+            })
+            .catch((err) => {
+              if (err) {
+                // this.isError = true;
+                // this.errMsg = "Something went wrong!";
+                console.log(err);
+              }
+            });
+
+          return currentToken;
+        })
+        .catch((err) => {
+          console.log("An error occurred while retrieving token. ", err);
+        });
+      return null;
     },
   },
 };

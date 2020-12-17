@@ -15,7 +15,7 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Create Contract
+          {{ this.$route.params.contractId }}
         </span>
       </h3>
     </div>
@@ -40,7 +40,7 @@
     />
     <!-- Error message -->
     <MessageModal
-      title=" Create Contract Fail!"
+      title="Update Contract Fail!"
       icon="frown outline "
       :subTitle="errMsg"
       :proFunc="
@@ -52,9 +52,9 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Create Contract Successfully!"
+      title="Update Contract Successfully!"
       icon="check circle"
-      :subTitle="`Contract is created successfully!`"
+      :subTitle="`Contract is updated successfully!`"
       :proFunc="
         () => {
           this.isCreatedSuccessfully = !this.isCreatedSuccessfully;
@@ -144,9 +144,7 @@
         v-show="isTripVisible"
         :endDateChange="
           () => {
-            this.$refs.returnTrip.trip.departureTime = '';
-            this.$refs.returnTrip.trip.destinationTime = '';
-            this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
+            this.handleFirstTripDateChange();
           }
         "
       />
@@ -245,7 +243,6 @@
 
 <script>
 import { mapActions } from "vuex";
-import { isNumber } from "../../assets/js/input.js";
 import MessageModal from "../../components/Modal/MessageModal";
 import Confirmation from "../../components/Modal/Confirmation";
 import Loading from "vue-loading-overlay";
@@ -369,7 +366,6 @@ export default {
           }
           // isValid = false;
           if (isValid) {
-            console.log(this.contract);
             this.contract.trips.push(firstTrip);
             this.isVehicleVisible = true;
             console.log(this.contract);
@@ -382,18 +378,40 @@ export default {
       }
     },
 
-    // Vehicle Owner
-    handleVehicleOwnerModal() {
-      this.isOwnerModalVisible = !this.isOwnerModalVisible;
+    // first trip change
+    handleFirstTripDateChange() {
+      if (this.contract.roundTrip) {
+        let firstTripDestinationTime = this.$refs.firstTrip.trip
+          .destinationTime;
+        // Set max date for duration
+        this.$refs.returnTrip.minDateFrom = firstTripDestinationTime;
+        this.$refs.returnTrip.maxDateFrom = moment(
+          new Date(this.contract.durationTo)
+        ).format("YYYY-MM-DDTkk:mm");
+      }
+      this.handleTripTimeChange(1);
     },
-    // Get vehicle owner
-    getVehicleOwner() {
-      this.owner = this.$refs.ownerModal.getSelectedCustomer();
-      this.handleVehicleOwnerModal();
-    },
-
-    isNumber(evt) {
-      isNumber(evt);
+    // Handle trip time change
+    handleTripTimeChange(trip) {
+      if (trip === 1) {
+        if (this.contract && this.contract.trips && this.contract.trips[0]) {
+          if (
+            this.contract.trips[0].destinationTime !==
+            this.$refs.firstTrip.trip.destinationTime
+          ) {
+            this.$refs.firstVehiclePicker.vehiclesList = [];
+          }
+        }
+      } else {
+        if (this.contract && this.contract.trips && this.contract.trips[1]) {
+          if (
+            this.contract.trips[0].destinationTime !==
+            this.$refs.returnVehiclePicker.trip.destinationTime
+          ) {
+            this.$refs.returnVehiclePicker.vehiclesList = [];
+          }
+        }
+      }
     },
   },
 };

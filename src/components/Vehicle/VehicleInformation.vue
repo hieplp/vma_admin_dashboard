@@ -182,14 +182,21 @@
             <!-- Year Of Manufacture -->
             <div class="field">
               <label>Year Of Manufacture</label>
-              <div class="ui corner labeled input">
-                <input
+
+              <div class=" corner labeled input">
+                <DatePicker
+                  v-model="vehicle.yearOfManufacture"
+                  :disabledDates="disabledFn"
+                  format="yyyy"
+                  minimum-view="year"
+                ></DatePicker>
+                <!-- <input
                   type="text"
                   v-model="vehicle.yearOfManufacture"
                   placeholder="Year Of Manufacture (YYYY)"
                   maxlength="4"
                   @keypress="isNumber($event)"
-                />
+                /> -->
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
                 </div>
@@ -400,13 +407,14 @@ import Multiselect from "vue-multiselect";
 import moment from "moment";
 import ContributorsModal from "../Modal/ContributorsModal";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
-
+import DatePicker from "vuejs-datepicker";
 const VehicleRepository = RepositoryFactory.get("vehicles");
 
 export default {
   components: {
     Multiselect,
     ContributorsModal,
+    DatePicker,
   },
   props: {
     propVehicle: Object,
@@ -485,6 +493,16 @@ export default {
 
       // let max date
       maxDate: "",
+
+      maxYear: "", // Max year manufacture
+      disabledFn: {
+        customPredictor(date) {
+          let maxYear = moment(new Date()).format("YYYY");
+          if (new Date(date).getFullYear() > Number(maxYear)) {
+            return true; // returns true if disabled
+          }
+        },
+      },
     };
   },
   async mounted() {
@@ -492,6 +510,7 @@ export default {
     await this.initBrands();
     await this.initTypes();
     this.maxDate = moment(new Date()).format("YYYY-MM-DD");
+    this.vehicle.yearOfManufacture = moment(new Date()).format("YYYY");
     //If there is a vehicle data
     if (this.propVehicle) {
       this.initData();
@@ -575,7 +594,7 @@ export default {
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
       this.isOriginErr = this.origin === null;
-      this.isYearOfManufactureErr = this.vehicle.yearOfManufacture.length !== 4;
+      // this.isYearOfManufactureErr = this.vehicle.yearOfManufacture.length !== 4;
       this.isSeatErr = this.vehicle.seats.length === 0;
       this.isVehicleTypeErr = this.vehicle.vehicleTypeId.length === 0;
       this.isDistanceDrivenErr = this.vehicle.distanceDriven.length === 0;
@@ -604,7 +623,7 @@ export default {
         this.isModelErr ||
         this.isBrandErr ||
         this.isOriginErr ||
-        this.isYearOfManufactureErr ||
+        // this.isYearOfManufactureErr ||
         this.isSeatErr ||
         this.isVehicleTypeErr ||
         this.isDistanceDrivenErr ||
@@ -626,6 +645,10 @@ export default {
     // Get data
     getData() {
       let vehicle = Object.assign({}, this.vehicle);
+      vehicle.yearOfManufacture = moment(this.vehicle.yearOfManufacture).format(
+        "YYYY"
+      );
+
       // format phone number
       vehicle.vehicleId = vehicle.vehicleId.toUpperCase().trim();
       vehicle.chassisNumber = vehicle.chassisNumber.toUpperCase().trim();
@@ -641,7 +664,10 @@ export default {
           vehicle.ownerId = user.uid;
         }
       }
-
+      console.log(
+        "🚀 ~ file: VehicleInformation.vue ~ line 649 ~ getData ~ vehicle",
+        vehicle
+      );
       return {
         vehicle: vehicle,
         image: this.profileImage,
@@ -760,5 +786,11 @@ export default {
 .ui.right.labeled {
   background-color: #3497e9;
   color: rgb(255, 255, 255);
+}
+
+.mx-input {
+  font-size: 18pt !important;
+  height: 42px !important;
+  color: red;
 }
 </style>

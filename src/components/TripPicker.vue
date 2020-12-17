@@ -12,8 +12,32 @@
               <!-- Departure Time -->
               <div class="field">
                 <label>Departure Time</label>
-                <div class="ui corner labeled input">
-                  <input
+                <div class=" corner labeled input">
+                  <div class="w-100 mx-datepicker" v-if="isDetail">
+                    <div class="mx-input-wrapper">
+                      <input
+                        type="text"
+                        v-model="trip.departureTime"
+                        class="mx-input"
+                        readonly
+                      />
+                    </div>
+                  </div>
+                  <date-picker
+                    v-else
+                    class="w-100"
+                    v-model="trip.departureTime"
+                    :editable="false"
+                    type="datetime"
+                    @change="
+                      () => {
+                        this.trip.destinationTime = '';
+                      }
+                    "
+                    :disabled-date="disableDepartureTime"
+                    placeholder="Select date"
+                  ></date-picker>
+                  <!-- <input
                     type="datetime-local"
                     :min="minDateFrom"
                     :max="maxDateFrom"
@@ -25,10 +49,10 @@
                     :readonly="isDetail"
                     v-model="trip.departureTime"
                     placeholder="Departure Time"
-                  />
-                  <div class="ui corner label" v-if="!isDetail">
+                  /> -->
+                  <!-- <div class="ui corner label" v-if="!isDetail">
                     <i class="asterisk icon"></i>
-                  </div>
+                  </div> -->
                 </div>
                 <div
                   class="ui pointing red basic label"
@@ -40,16 +64,25 @@
               <!-- Destination Time-->
               <div class="field ">
                 <label>Destination Time</label>
-                <div class="ui corner labeled input">
-                  <input
+                <div class="">
+                  <div class="w-100 mx-datepicker">
+                    <div class="mx-input-wrapper">
+                      <input
+                        type="text"
+                        v-model="destinationTime"
+                        class="mx-input"
+                        readonly
+                      />
+                    </div>
+                  </div>
+
+                  <!-- <input
                     type="datetime-local"
-                    name="Salary"
                     v-model="destinationTime"
                     :min="trip.departureTime"
                     readonly
                     placeholder=" Destination Time"
-                    @change="dateChange"
-                  />
+                  /> -->
                 </div>
               </div>
             </div>
@@ -181,6 +214,8 @@ import draggable from "vuedraggable";
 import AddressModal from "../components/Modal/AddressModal";
 import DirectionsRenderer from "../components/Google/DirectionsRenderer";
 import moment from "moment";
+import DatePicker from "vue2-datepicker";
+import "vue2-datepicker/index.css";
 export default {
   props: {
     title: String,
@@ -194,6 +229,7 @@ export default {
     draggable,
     AddressModal,
     DirectionsRenderer,
+    DatePicker,
   },
   mounted() {
     this.isLoading = true;
@@ -229,9 +265,15 @@ export default {
       this.routes.forEach((route) => {
         totalTime += route.duration.value;
       });
+      console.log(this.trip.departureTime);
       let destinationTime = moment(this.trip.departureTime, "YYYY-MM-DDTkk:mm")
         .add(totalTime, "seconds")
-        .format("YYYY-MM-DDTkk:mm");
+        .format("YYYY-MM-DD HH:mm:ss");
+      if (destinationTime === "Invalid date") {
+        return "Depart time";
+      }
+      this.setTripDestination(destinationTime);
+      this.endDateChange();
       return destinationTime;
     },
   },
@@ -285,6 +327,18 @@ export default {
     };
   },
   methods: {
+    // Set trip destination
+    setTripDestination(destinationTime) {
+      this.trip.destinationTime = moment(destinationTime).format(
+        "YYYY-MM-DD HH:mm:ssz"
+      );
+    },
+    // Min and max date
+    disableDepartureTime(date) {
+      return (
+        date < new Date(this.minDateFrom) || date > new Date(this.maxDateFrom)
+      );
+    },
     // Google map
     // Handle address picker
     handleAddressModal(type) {
@@ -342,7 +396,7 @@ export default {
         trip.departureTime = moment(trip.departureTime).format(
           "YYYY-MM-DD HH:mm:ssz"
         );
-        trip.destinationTime = moment(this.destinationTime).format(
+        trip.destinationTime = moment(trip.destinationTime).format(
           "YYYY-MM-DD HH:mm:ssz"
         );
         trip.departureLocation = locations[0].location;
@@ -360,9 +414,13 @@ export default {
       this.firstLocations = trip.locations;
       this.trip.assignedVehicles = trip.assignedVehicles;
       this.trip.contractTripId = trip.contractTripId;
-      this.trip.departureTime = moment(trip.departureTime).format(
-        "YYYY-MM-DDTkk:mm"
-      );
+      if (this.isDetail) {
+        this.trip.departureTime = moment(trip.departureTime).format(
+          "YYYY-MM-DD HH:mm:ss"
+        );
+      } else {
+        this.trip.departureTime = new Date(trip.departureTime);
+      }
       // this.destinationTime = moment(trip.destinationTime).format(
       //   "YYYY-MM-DDTkk:mm"
       // );

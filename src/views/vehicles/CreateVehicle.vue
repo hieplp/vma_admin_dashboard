@@ -183,7 +183,7 @@ import moment from "moment";
 import VehicleDocument from "../../components/Vehicle/VehicleDocument";
 import VehicleInformation from "../../components/Vehicle/VehicleInformation";
 import Multiselect from "vue-multiselect";
-
+import "vue2-datepicker/index.css";
 import { RepositoryFactory } from "../../repositories/RepositoryFactory";
 // eslint-disable-next-line no-unused-vars
 const VehicleRepository = RepositoryFactory.get("vehicles");

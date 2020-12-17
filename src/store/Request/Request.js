@@ -13,7 +13,7 @@ export default {
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${REQUEST_URL}?page=${page}&requestType=${requestType}&userId=${userId}&requestStatus=${requestStatus}` +
+          `${REQUEST_URL}?page=${page}&requestType=${requestType}&sort=DESC&userId=${userId}&requestStatus=${requestStatus}` +
             (fromDate.length > 0 ? `&fromDate=${fromDate}` : "") +
             (toDate.length > 0 ? `&toDate=${toDate}` : "")
         )
@@ -47,8 +47,14 @@ export default {
     // update request status
     _updateStatus(context, { requestId, requestStatus }) {
       return new Promise((resolve, reject) => {
+        let user = JSON.parse(localStorage.getItem("USER"));
+        let idToken = user.stsTokenManager.accessToken;
         Repository.patch(
-          `${REQUEST_URL}/${requestId}?requestStatus=${requestStatus}`
+          `${REQUEST_URL}/${requestId}?requestStatus=${requestStatus}`,
+          null,
+          {
+            headers: { Authorization: `Bearer ${idToken}` },
+          }
         )
           .then((res) => {
             resolve(res.data);

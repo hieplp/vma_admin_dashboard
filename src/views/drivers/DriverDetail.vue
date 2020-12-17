@@ -53,7 +53,7 @@
     />
 
     <div class="page-header">
-      <h3 class="page-title test">
+      <h3 class="page-title ">
         <a @click="$router.go(-1)" href="javascript:void(0)">
           <!-- {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }} -->
           Drivers

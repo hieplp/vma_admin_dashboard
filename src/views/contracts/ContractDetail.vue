@@ -15,7 +15,7 @@
         </router-link>
         <span class="text-secondary">/</span>
         <span>
-          Contract Detail
+          {{ this.$route.params.contractId }}
         </span>
       </h3>
     </div>
@@ -123,13 +123,7 @@
         :isUpdate="true"
         :propTrip="contract.trips[0]"
         v-show="isTripVisible"
-        :endDateChange="
-          () => {
-            this.$refs.returnTrip.trip.departureTime = '';
-            this.$refs.returnTrip.trip.destinationTime = '';
-            this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
-          }
-        "
+        :endDateChange="() => {}"
       />
       <div v-if="contract.trips.length == 2">
         <!-- RETURN TRIP -->
@@ -198,6 +192,12 @@ export default {
     Confirmation,
     Vehicles,
   },
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      3;
+      vm.prevRoute = from;
+    });
+  },
   data() {
     return {
       isLoading: false,
@@ -214,6 +214,7 @@ export default {
       isUserLoading: false,
 
       isAddressModalVisible: false,
+      prevRoute: null,
     };
   },
   async mounted() {

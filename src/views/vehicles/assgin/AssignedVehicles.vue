@@ -43,7 +43,7 @@
     />
     <!-- Success message -->
     <MessageModal
-      title="Delete Vehicle Successfully!"
+      title="Assign Vehicle Successfully!"
       icon="check circle"
       :subTitle="
         `Vehicle with id ${this.selectedVehicleId} is assigned successfully！`

@@ -103,5 +103,31 @@ export default {
           });
       });
     },
+    _getRevenueExpenseSummaryReportData(context, { year, quarter }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/revenues-expenses/summary/data?quarter=${quarter}&year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    _getRevenueExpenseReportData(context, { year, quarter }) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${REPORT_URL}/revenues-expenses/data?quarter=${quarter}&year=${year}`
+        )
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

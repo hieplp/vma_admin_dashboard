@@ -122,9 +122,7 @@
       :isUpdate="true"
       :endDateChange="
         () => {
-          this.$refs.returnTrip.trip.departureTime = '';
-          this.$refs.returnTrip.trip.destinationTime = '';
-          this.$refs.returnTrip.maxDate = this.$refs.firstTrip.trip.destinationTime;
+          this.handleFirstTripDateChange();
         }
       "
     />
@@ -133,7 +131,11 @@
       title="RETURN TRIP"
       ref="returnTrip"
       v-show="isTripVisible && contract.roundTrip"
-      :endDateChange="() => {}"
+      :endDateChange="
+        () => {
+          this.handleTripTimeChange(2);
+        }
+      "
       :importLocation="
         () => {
           // Reverse locations arrays
@@ -212,7 +214,6 @@
 
 <script>
 import { mapActions } from "vuex";
-import { isNumber } from "../../assets/js/input.js";
 import MessageModal from "../../components/Modal/MessageModal";
 import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
@@ -276,8 +277,8 @@ export default {
               this.isError = true;
               this.errMsg = ex.debugMessage;
             }
-            console.error(ex);
           });
+        console.log(this.contract);
       }
       this.isLoading = false;
     },
@@ -285,8 +286,10 @@ export default {
       let isValid = this.$refs.contract.checkBasicInformation();
       // let isValid = false;
       if (!isValid) {
-        this.contract = this.$refs.contract.getData();
         document.getElementById("app").scrollIntoView();
+        if (this.isContractVisible) {
+          this.contract = this.$refs.contract.getData();
+        }
         // Set max date for duration
         this.$refs.firstTrip.minDateFrom = moment(
           new Date(this.contract.durationFrom)
@@ -314,7 +317,6 @@ export default {
           if (isValid) {
             this.contract.trips.push(firstTrip);
             this.isVehicleVisible = true;
-            console.log(this.contract);
           } else {
             this.isTripVisible = true;
           }
@@ -323,19 +325,40 @@ export default {
         }
       }
     },
-
-    // Vehicle Owner
-    handleVehicleOwnerModal() {
-      this.isOwnerModalVisible = !this.isOwnerModalVisible;
+    // first trip change
+    handleFirstTripDateChange() {
+      if (this.contract.roundTrip) {
+        let firstTripDestinationTime = this.$refs.firstTrip.trip
+          .destinationTime;
+        // Set max date for duration
+        this.$refs.returnTrip.minDateFrom = firstTripDestinationTime;
+        this.$refs.returnTrip.maxDateFrom = moment(
+          new Date(this.contract.durationTo)
+        ).format("YYYY-MM-DDTkk:mm");
+      }
+      this.handleTripTimeChange(1);
     },
-    // Get vehicle owner
-    getVehicleOwner() {
-      this.owner = this.$refs.ownerModal.getSelectedCustomer();
-      this.handleVehicleOwnerModal();
-    },
-
-    isNumber(evt) {
-      isNumber(evt);
+    // Handle trip time change
+    handleTripTimeChange(trip) {
+      if (trip === 1) {
+        if (this.contract && this.contract.trips && this.contract.trips[0]) {
+          if (
+            this.contract.trips[0].destinationTime !==
+            this.$refs.firstTrip.trip.destinationTime
+          ) {
+            this.$refs.firstVehiclePicker.vehiclesList = [];
+          }
+        }
+      } else {
+        if (this.contract && this.contract.trips && this.contract.trips[1]) {
+          if (
+            this.contract.trips[0].destinationTime !==
+            this.$refs.returnVehiclePicker.trip.destinationTime
+          ) {
+            this.$refs.returnVehiclePicker.vehiclesList = [];
+          }
+        }
+      }
     },
   },
 };

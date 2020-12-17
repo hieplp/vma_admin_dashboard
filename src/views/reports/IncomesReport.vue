@@ -46,16 +46,40 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/drivers">Drivers</router-link>
-        <span class="text-secondary"> / </span>
-        <router-link :to="`/drivers/${this.$route.params.driverId}`">
-          {{ this.$route.params.driverId }}
-        </router-link>
+        <a href="javascript:void(0)">Reports</a>
         <span class="text-secondary"> / </span>
         <span>
-          Incomes
+          Revenue - Expense
         </span>
       </h3>
+    </div>
+    <div class="row">
+      <div class="col-md-6 stretch-card grid-margin">
+        <OverviewCard
+          title="Revenue"
+          color="bg-gradient-info"
+          :count="incomeSummary.totalRevenue"
+          countName="VND"
+          :goTo="
+            () => {
+              this.viewDrivers('ACTIVE');
+            }
+          "
+        />
+      </div>
+      <div class="col-md-6 stretch-card grid-margin">
+        <OverviewCard
+          title="Expense"
+          color="bg-gradient-danger"
+          :count="incomeSummary.totalExpense"
+          countName="VND"
+          :goTo="
+            () => {
+              this.viewDrivers('ACTIVE');
+            }
+          "
+        />
+      </div>
     </div>
     <!-- revenue chart -->
     <div class="row">
@@ -68,18 +92,19 @@
         </div>
       </div>
     </div>
-    <div class="page-header">
+    <!-- Handle this -->
+    <div class="page-header" v-if="false">
       <h3 class="page-title"></h3>
       <div class="dropdown">
         <!-- Download report -->
-        <a
+        <!-- <a
           :href="`${baseUrl}?quarter=${this.quarter}&year=${this.year}`"
           class="btn btn-gradient-info btn-icon-text mr-2"
           type="button"
         >
           <i class="mdi mdi-download btn-icon-prepend"></i>
           Download
-        </a>
+        </a> -->
 
         <!-- Filter group -->
         <button
@@ -91,7 +116,7 @@
         </button>
       </div>
     </div>
-    <div class="row">
+    <div class="row" v-if="false">
       <div
         class="grid-margin stretch-card"
         v-bind:class="{
@@ -148,6 +173,7 @@
                 type="text"
                 class="form-control form-control-sm"
                 v-model="year"
+                maxlength="4"
                 placeholder="Year"
               />
             </div>
@@ -204,6 +230,7 @@ import Confirmation from "../../components/Modal/Confirmation";
 import MessageModal from "../../components/Modal/MessageModal";
 import CONSTANT from "../../constant";
 import Chart from "chart.js";
+import OverviewCard from "../../components/OverviewCard";
 
 export default {
   name: "ContractReport",
@@ -212,6 +239,7 @@ export default {
     Loading,
     Confirmation,
     MessageModal,
+    OverviewCard,
   },
   computed: {
     // Map state
@@ -267,7 +295,7 @@ export default {
     // Map actions
     ...mapActions("Report", [
       "_getDriversIncomesByDriverId",
-      "_getDriverInComeSummaryReportRes",
+      "_getRevenueExpenseSummaryReportData",
       "_getTotalIncomesByDriverId",
     ]),
     // Init schedule data
@@ -318,13 +346,15 @@ export default {
     },
     // Get excel file
     async init12MonthIncomes() {
-      this.incomeSummary = await this._getDriverInComeSummaryReportRes({
+      this.incomeSummary = await this._getRevenueExpenseSummaryReportData({
         year: this.year,
-        driverId: this.driverId,
+        quarter: "",
       });
     },
     // init revenue chart
     initRevenueChart() {
+      let revenueSumList = this.incomeSummary.revenueExpenseSummaryMonthResList;
+
       let revenueChart = document
         .getElementById("revenueChart")
         .getContext("2d");
@@ -337,6 +367,10 @@ export default {
       let gradient = revenueChart.createLinearGradient(0, 0, 0, 400);
       gradient.addColorStop(0, "rgba(66, 135, 245, 0.4)");
       gradient.addColorStop(1, "rgba(66, 135, 245, 0.05)");
+      // gradient color
+      let redGradient = revenueChart.createLinearGradient(0, 0, 0, 400);
+      redGradient.addColorStop(0, "rgba(245, 17, 17, 1)");
+      redGradient.addColorStop(1, "rgba(242, 27, 27, 0.1)");
 
       new Chart(revenueChart, {
         type: "line", // bar, horizontalBar, pie, line, doughnut, radar, polarArea
@@ -357,25 +391,48 @@ export default {
           ],
           datasets: [
             {
-              label: "Incomes",
+              label: "Revenue",
               lineTension: 0,
               data: [
-                this.incomeSummary[0].driverIncomeRes.earnedValue,
-                this.incomeSummary[1].driverIncomeRes.earnedValue,
-                this.incomeSummary[2].driverIncomeRes.earnedValue,
-                this.incomeSummary[3].driverIncomeRes.earnedValue,
-                this.incomeSummary[4].driverIncomeRes.earnedValue,
-                this.incomeSummary[5].driverIncomeRes.earnedValue,
-                this.incomeSummary[6].driverIncomeRes.earnedValue,
-                this.incomeSummary[7].driverIncomeRes.earnedValue,
-                this.incomeSummary[8].driverIncomeRes.earnedValue,
-                this.incomeSummary[9].driverIncomeRes.earnedValue,
-                this.incomeSummary[10].driverIncomeRes.earnedValue,
-                this.incomeSummary[11].driverIncomeRes.earnedValue,
+                revenueSumList[0].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[1].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[2].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[3].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[4].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[5].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[6].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[7].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[8].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[9].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[10].revenueExpenseReportRes.totalRevenue,
+                revenueSumList[11].revenueExpenseReportRes.totalRevenue,
               ],
               backgroundColor: gradient,
               borderWidth: 2,
               borderColor: "#2e5bff",
+              hoverBorderWidth: 4,
+              hoverBorderColor: "#000",
+            },
+            {
+              label: "Expense",
+              lineTension: 0,
+              data: [
+                revenueSumList[0].revenueExpenseReportRes.totalExpense,
+                revenueSumList[1].revenueExpenseReportRes.totalExpense,
+                revenueSumList[2].revenueExpenseReportRes.totalExpense,
+                revenueSumList[3].revenueExpenseReportRes.totalExpense,
+                revenueSumList[4].revenueExpenseReportRes.totalExpense,
+                revenueSumList[5].revenueExpenseReportRes.totalExpense,
+                revenueSumList[6].revenueExpenseReportRes.totalExpense,
+                revenueSumList[7].revenueExpenseReportRes.totalExpense,
+                revenueSumList[8].revenueExpenseReportRes.totalExpense,
+                revenueSumList[9].revenueExpenseReportRes.totalExpense,
+                revenueSumList[10].revenueExpenseReportRes.totalExpense,
+                revenueSumList[11].revenueExpenseReportRes.totalExpense,
+              ],
+              backgroundColor: redGradient,
+              borderWidth: 2,
+              borderColor: "#f21b1b",
               hoverBorderWidth: 4,
               hoverBorderColor: "#000",
             },

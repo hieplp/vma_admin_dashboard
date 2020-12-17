@@ -10,10 +10,14 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link :to="`/drivers/${driverId}`">Drivers Detail</router-link>
-        <span class="text-secondary">/</span>
+        <router-link to="/drivers">Drivers</router-link>
+        <span class="text-secondary"> / </span>
+        <router-link :to="`/drivers/${this.$route.params.driverId}`">
+          {{ this.$route.params.driverId }}
+        </router-link>
+        <span class="text-secondary"> / </span>
         <span>
-          Vehicles History
+          Vehicles
         </span>
       </h3>
     </div>

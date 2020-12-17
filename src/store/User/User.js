@@ -121,20 +121,10 @@ export default {
       });
     },
     // Create client registration token
-    _createClientRegistrationToken(context, { fcmToken, userToken }) {
-      console.log(
-        "🚀 ~ file: User.js ~ line 125 ~ _createClientRegistrationToken ~ userToken",
-        userToken
-      );
-      console.log(
-        "🚀 ~ file: User.js ~ line 125 ~ _createClientRegistrationToken ~ fcmToken",
-        fcmToken
-      );
+    _createClientRegistrationToken(context, { fcmToken }) {
       return new Promise((resolve, reject) => {
-        // let user = JSON.parse(localStorage.getItem("USER"));
-        // let token = {
-        //   idToken: user.stsTokenManager.accessToken,
-        // };
+        let user = JSON.parse(localStorage.getItem("USER"));
+        let idToken = user.stsTokenManager.accessToken;
         // let FCM_TOKEN = JSON.parse(localStorage.getItem("FCM_TOKEN"));
         Repository.post(
           `${USER_URL}/registration-token`,
@@ -142,7 +132,7 @@ export default {
             token: fcmToken,
           },
           {
-            headers: { Authorization: `Bearer ${userToken}` },
+            headers: { Authorization: `Bearer ${idToken}` },
           }
         )
           .then((res) => {

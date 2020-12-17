@@ -66,6 +66,7 @@ import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail
 import VehiclesReport from "../views/reports/VehiclesReport";
 import ScheduleReport from "../views/reports/ScheduleReport";
 import ContractReport from "../views/reports/ContractReport";
+import IncomesReport from "../views/reports/IncomesReport";
 // Feedback
 import Feedbacks from "../views/feedback/Feedbacks.vue";
 // DriverIncomes
@@ -344,7 +345,12 @@ const routes = [
     name: "ContractReport",
     component: ContractReport,
   },
-  // Contracts reports
+  {
+    path: "/reports/incomes",
+    name: "IncomesReport",
+    component: IncomesReport,
+  },
+  // feedback
   {
     path: "/feedbacks/:driverId",
     name: "Feedbacks",
@@ -352,7 +358,7 @@ const routes = [
   },
   // Contracts reports
   {
-    path: "/driver-incom/:driverId",
+    path: "/drivers/:driverId/incomes",
     name: "DriverIncomes",
     component: DriverIncomes,
   },
