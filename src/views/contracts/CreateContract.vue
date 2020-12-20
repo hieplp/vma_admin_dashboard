@@ -291,12 +291,26 @@ export default {
           this.contract = this.$refs.contract.getData();
         }
         // Set max date for duration
-        this.$refs.firstTrip.minDateFrom = moment(
-          new Date(this.contract.durationFrom)
-        ).format("YYYY-MM-DDTkk:mm");
+        let currentDate = new Date();
+        let durationFrom = new Date(this.contract.durationFrom);
+        if (
+          currentDate.getFullYear() === durationFrom.getFullYear() &&
+          currentDate.getMonth() === durationFrom.getMonth() &&
+          currentDate.getDate() === durationFrom.getDate()
+        ) {
+          this.$refs.firstTrip.minDateFrom = moment(currentDate).format(
+            "YYYY-MM-DDTkk:mm"
+          );
+        } else {
+          this.$refs.firstTrip.minDateFrom = moment(durationFrom).format(
+            "YYYY-MM-DDTkk:mm"
+          );
+        }
+
         this.$refs.firstTrip.maxDateFrom = moment(
           new Date(this.contract.durationTo)
         ).format("YYYY-MM-DDTkk:mm");
+
         this.isContractVisible = step === "isContractVisible" ? true : false;
         this.isTripVisible = step === "isTripVisible" ? true : false;
         // Check contract trip
@@ -316,6 +330,21 @@ export default {
           // isValid = false;
           if (isValid) {
             this.contract.trips.push(firstTrip);
+
+            // Set min and max date for first trip vehicle picker
+            this.$refs.firstVehiclePicker.startDate = this.contract.trips[0].departureTime;
+            this.$refs.firstVehiclePicker.endDate = this.contract.trips[0].destinationTime;
+            this.$refs.firstVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+            // -----------------------------------
+
+            if (this.contract.roundTrip) {
+              // Set min and max date for return trip vehicle picker
+              this.$refs.returnVehiclePicker.startDate = this.contract.trips[1].departureTime;
+              this.$refs.returnVehiclePicker.endDate = this.contract.trips[1].destinationTime;
+              this.$refs.returnVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+              // -----------------------------------
+            }
+
             this.isVehicleVisible = true;
           } else {
             this.isTripVisible = true;
@@ -330,6 +359,7 @@ export default {
       if (this.contract.roundTrip) {
         let firstTripDestinationTime = this.$refs.firstTrip.trip
           .destinationTime;
+        this.$refs.returnTrip.trip.departureTime = "";
         // Set max date for duration
         this.$refs.returnTrip.minDateFrom = firstTripDestinationTime;
         this.$refs.returnTrip.maxDateFrom = moment(

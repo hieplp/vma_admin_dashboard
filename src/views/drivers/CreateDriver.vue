@@ -416,7 +416,6 @@ export default {
               this.isError = true;
               this.errMsg = ex.debugMessage;
             }
-            console.error(ex);
           });
         this.isLoading = false;
       }

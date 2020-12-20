@@ -202,5 +202,50 @@ export default {
           });
       });
     },
+
+    // Get vehicles
+    _getVehiclesWithIdAndTypeAndSeats(
+      context,
+      {
+        pageNum,
+        vehicleId,
+        viewOption,
+        vehicleStatus,
+        vehicleType,
+        seatsMax,
+        seatsMin,
+      }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${VEHICLE_URL}?pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleTypeId=${vehicleType}&viewOption=${viewOption}&vehicleStatus=${vehicleStatus}&seatsMax=${seatsMax}&seatsMin=${seatsMin}`
+        )
+          .then((res) => {
+            context.commit("setVehicles", res.data.vehicleList);
+            resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Get vehicles
+    _getVehiclesWithIdAndTypeAndSeatsCount(
+      context,
+      { vehicleId, viewOption, vehicleStatus, vehicleType, seatsMax, seatsMin }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${VEHICLE_URL}/count?vehicleId=${vehicleId}&vehicleTypeId=${vehicleType}&viewOption=${viewOption}&vehicleStatus=${vehicleStatus}&seatsMax=${seatsMax}&seatsMin=${seatsMin}`
+        )
+          .then((res) => {
+            context.commit("setTotalVehicles", res.data);
+            resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

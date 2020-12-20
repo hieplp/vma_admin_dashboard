@@ -314,7 +314,7 @@
                   v-model="vehicle.vehicleValue.value"
                   type="text"
                   placeholder="Shared Money"
-                  @keypress="isNumber($event)"
+                  @input="moneyInput"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -664,10 +664,11 @@ export default {
           vehicle.ownerId = user.uid;
         }
       }
-      console.log(
-        "🚀 ~ file: VehicleInformation.vue ~ line 649 ~ getData ~ vehicle",
-        vehicle
-      );
+      if (vehicle.vehicleValue && vehicle.vehicleValue.value) {
+        vehicle.vehicleValue.value = vehicle.vehicleValue.value
+          .toString()
+          .replace(/\D/g, "");
+      }
       return {
         vehicle: vehicle,
         image: this.profileImage,
@@ -683,13 +684,8 @@ export default {
         .replace("-", "")
         .replace(".", "")
         .split("");
-      console.log(
-        "🚀 ~ file: VehicleInformation.vue ~ line 656 ~ licensePlateInput ~ x",
-        x
-      );
-      // 59A1-1234.5
 
-      // 8 --> 4
+      // 59A1-1234.5
       // 0 --> 5
       this.vehicle.vehicleId = x[0] && x[0].match(/([1-9]{1})/) ? x[0] : "";
       // 1 --> 9
@@ -711,6 +707,14 @@ export default {
       this.vehicle.vehicleId +=
         x[6] && x[6].match(/(\d{1})/) ? (x[7] ? "." + x[6] : x[6]) : "";
       this.vehicle.vehicleId += x[7] ? x[7] : "";
+    },
+
+    // Money input
+    moneyInput() {
+      this.vehicle.vehicleValue.value = this.vehicle.vehicleValue.value
+        .toString()
+        .replace(/\D/g, "")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
   },
 };

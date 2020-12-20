@@ -64,6 +64,26 @@ export default {
           });
       });
     },
+    // update request status
+    _updateChangeReqStatus(context, { requestId, driverId, targetVehicleId }) {
+      return new Promise((resolve, reject) => {
+        let user = JSON.parse(localStorage.getItem("USER"));
+        let idToken = user.stsTokenManager.accessToken;
+        Repository.patch(
+          `${REQUEST_URL}/${requestId}?change?driverId=${driverId}&requestStatus=ACCEPTED&targetVehicleId=${targetVehicleId}`,
+          null,
+          {
+            headers: { Authorization: `Bearer ${idToken}` },
+          }
+        )
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
     // get request by id
     _getRequestById(context, requestId) {
       return new Promise((resolve, reject) => {

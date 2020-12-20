@@ -193,11 +193,11 @@
                 Contracts
               </router-link>
             </li>
-            <li class="nav-item">
+            <!-- <li class="nav-item">
               <router-link to="/contract-canlendar" class="nav-link">
                 Canlendar
               </router-link>
-            </li>
+            </li> -->
           </ul>
         </div>
       </li>

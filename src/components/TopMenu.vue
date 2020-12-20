@@ -38,8 +38,15 @@
             @click="showNotifications"
             data-toggle="dropdown"
           >
-            <i class="mdi mdi-bell-outline"></i>
-            <span class="count-symbol bg-danger"></span>
+            <i
+              class="mdi mdi-bell-outline"
+              @click="
+                () => {
+                  this.isNewNoti = false;
+                }
+              "
+            ></i>
+            <span class="count-symbol bg-danger" v-if="isNewNoti"></span>
           </a>
           <!-- Notification -->
           <div
@@ -49,7 +56,10 @@
             <h6 class="p-3 mb-0">Notifications</h6>
             <div class="dropdown-divider"></div>
             <div v-for="notify in notifications" :key="notify.notificationId">
-              <a class="dropdown-item preview-item">
+              <a
+                class="dropdown-item preview-item"
+                @click="handleNotificationClicks(notify.id, notify.type)"
+              >
                 <div class="preview-thumbnail">
                   <div class="preview-icon bg-success">
                     <i class="mdi mdi-calendar"></i>
@@ -120,6 +130,7 @@
 <script>
 import * as firebase from "firebase";
 import SnackingToast from "../components/SnackingToast";
+import moment from "moment";
 export default {
   components: {
     SnackingToast,
@@ -133,6 +144,7 @@ export default {
     const messaging = firebase.messaging();
     let seft = this;
     messaging.onMessage(function(payload) {
+      seft.isNewNoti = true;
       // Open indexedDB
       const request = indexedDB.open("VMA_DB", 1);
       // If not exist, create new one
@@ -145,12 +157,15 @@ export default {
       // Add new notfication
       request.onsuccess = (event) => {
         let db = event.target.result;
+        let date = moment(new Date())
+          .format("YYYY-MM-DD HH:mm:ss")
+          .replace(/\D/g, "");
         let notification = {
-          notificationId: new Date().toString(),
+          notificationId: date.toString(),
           title: payload.notification.title,
           body: payload.notification.body,
-          id: "",
-          type: "",
+          id: payload.data.id,
+          type: payload.data.requestType,
         };
         db.transaction("Notification", "readwrite")
           .objectStore("Notification")
@@ -163,6 +178,7 @@ export default {
     return {
       userName: "",
       imageLink: "",
+      isNewNoti: true,
       notifications: [],
     };
   },
@@ -241,6 +257,47 @@ export default {
           console.log("An error occurred while retrieving token. ", err);
         });
     },
+    // Handle notification clicks
+    handleNotificationClicks(id, type) {
+      switch (type) {
+        case "DELETE_VEHICLE_DOCUMENT":
+          this.$router.push({
+            name: "ChangeVehicleRequest",
+            params: { requestId: id },
+          });
+          break;
+        case "NEW_VEHICLE_DOCUMENT":
+          this.$router.push({
+            name: "ChangeVehicleRequest",
+            params: { requestId: id },
+          });
+          break;
+        case "CHANGE_VEHICLE":
+          this.$router.push({
+            name: "ChangeVehicleRequest",
+            params: { requestId: id },
+          });
+          break;
+        case "NEW_DOCUMENT":
+          this.$router.push({
+            name: "UseDocumentRequestDetail",
+            params: { requestId: id },
+          });
+          break;
+        case "UPDATE_DOCUMENT":
+          this.$router.push({
+            name: "UseDocumentRequestDetail",
+            params: { requestId: id },
+          });
+          break;
+        case "DELETE_DOCUMENT":
+          this.$router.push({
+            name: "UseDocumentRequestDetail",
+            params: { requestId: id },
+          });
+          break;
+      }
+    },
   },
 };
 </script>
@@ -253,6 +310,9 @@ export default {
   width: 80% !important;
 }
 .dropdown-menu-right {
-  width: 200px;
+  width: 300px;
+}
+.mdi.mdi-bell-outline:hover {
+  cursor: pointer;
 }
 </style>

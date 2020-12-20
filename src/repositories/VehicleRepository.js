@@ -136,6 +136,10 @@ export default {
   },
   // Create vehicle
   update(vehicle) {
+    console.log(
+      "🚀 ~ file: VehicleRepository.js ~ line 139 ~ update ~ vehicle",
+      vehicle
+    );
     return new Promise((resolve, reject) => {
       Repository.patch(resource, vehicle)
         .then((res) => {

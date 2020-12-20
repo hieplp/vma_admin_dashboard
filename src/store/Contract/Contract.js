@@ -70,7 +70,6 @@ export default {
           `${CONTRACT_URL}?contractStatus=${contractStatus}&departureLocation=${departureLocation}&departureTime=${departureTime}&destinationLocation=${destinationLocation}&destinationTime=${destinationTime}&durationFrom=${durationFrom}&durationTo=${durationTo}&pageNum=${pageNum}&totalPriceMax=${totalPriceMax}&totalPriceMin=${totalPriceMin}&viewOption=${viewOption}`
         )
           .then((res) => {
-            console.log(res);
             resolve(res.data.contractList);
           })
           .catch((err) => {
@@ -135,7 +134,9 @@ export default {
     // Get contract vehicle list
     _getContractVehicle(context, contractId) {
       return new Promise((resolve, reject) => {
-        Repository.get(`${CONTRACT_URL}/vehicles?contractId=${contractId}`)
+        Repository.get(
+          `${CONTRACT_URL}/vehicles?contractDetailId=${contractId}`
+        )
           .then((res) => {
             resolve(res.data.contractVehicleList);
           })
@@ -153,7 +154,6 @@ export default {
             resolve(res);
           })
           .catch((err) => {
-            console.log(err);
             reject(err.response.data);
           });
       });
@@ -194,7 +194,7 @@ export default {
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/recommendation?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+          `${CONTRACT_URL}/vehicles/available-vehicles?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
         )
           .then((res) => {
             resolve(res.data.vehicleList);
@@ -211,7 +211,7 @@ export default {
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/recommendation/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+          `${CONTRACT_URL}/vehicles/available-vehicles/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
         )
           .then((res) => {
             resolve(res.data);

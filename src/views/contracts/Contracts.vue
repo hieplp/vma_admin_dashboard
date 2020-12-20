@@ -98,11 +98,7 @@
                 <thead>
                   <tr class="">
                     <th>NO.</th>
-                    <!-- <th>ID</th> -->
-                    <!-- <th>DEPARTURE LOCATION</th>
-                    <th>DEPARTURE TIME</th>
-                    <th>DESTINATION LOCATION</th>
-                    <th>DESTINATION TIME</th> -->
+                    <th>ID</th>
                     <th>DURATION FROM</th>
                     <th>DURATION TO</th>
                     <th>TOTAL PRICE</th>
@@ -116,12 +112,7 @@
                     :key="contract.contractId"
                   >
                     <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-
-                    <!-- <td>{{ contract.departureLocation }}</td>
-                    <td>{{ contract.departureTime }}</td>
-                    <td>{{ contract.destinationLocation }}</td>
-                    <td>{{ contract.destinationTime }}</td> -->
-                    <!-- <td>{{ contract.contractId }}</td> -->
+                    <td>{{ contract.contractId }}</td>
                     <td>{{ contract.durationFrom }}</td>
                     <td>{{ contract.durationTo }}</td>
                     <td>{{ contract.totalPrice }}</td>
@@ -205,49 +196,6 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
-            <!-- Departure Location -->
-            <!-- <div class="col-sm-12">
-              <label>Departure Location</label>
-              <textarea
-                type="text"
-                rows="3"
-                class="form-control form-control-sm"
-                placeholder="Departure Location"
-                v-model="departureLocation"
-              />
-            </div> -->
-            <!-- Destination Location -->
-            <!-- <div class="col-sm-12 mt-3">
-              <label>Destination Location</label>
-              <textarea
-                type="text"
-                rows="3"
-                class="form-control form-control-sm"
-                placeholder="Destination Location"
-                v-model="destinationLocation"
-              />
-            </div> -->
-            <!-- Departure Time -->
-            <!-- <div class="col-12 mt-3">
-              <label>Departure Time</label>
-              <input
-                type="date"
-                class="form-control form-control-sm"
-                v-model="departureTime"
-                placeholder="Departure Time"
-              />
-            </div> -->
-            <!-- Destination Time -->
-            <!-- <div class="col-12 mt-3">
-              <label>Departure Time</label>
-              <input
-                type="date"
-                class="form-control form-control-sm"
-                v-model="destinationTime"
-                placeholder="Destination Time"
-              />
-            </div> -->
-            <!-- Duration From-->
             <div class="col-12 mt-3">
               <label>Duration From</label>
               <input
@@ -294,24 +242,6 @@
                 </div>
               </div>
             </div>
-            <!-- Contract status dropdown -->
-            <!-- <div class="col-12 mt-3">
-              <label>Status</label>
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="contractStatus"
-              >
-                <option value="" selected>NONE</option>
-                <option
-                  v-for="status in this.statusList"
-                  :key="status"
-                  :value="status"
-                  >{{ status }}</option
-                >
-              </select>
-            </div> -->
-
             <br />
             <div class="col-12 mt-3">
               <button
@@ -464,6 +394,7 @@ export default {
       }).then((res) => {
         this.totalContracts = res;
       });
+      await this.initCountByStatus();
     },
     // Init data for contract Status Dropdown
     async initStatusList() {
@@ -475,12 +406,12 @@ export default {
       this.page = 0;
       this.currentPage = 1;
       await this.initContracts();
-      await this.initCountByStatus();
+
       this.isLoading = false;
     },
     // Clear seach value
     clearSearchValue() {
-      this.contractStatus = "";
+      this.contractStatus = "NOT_STARTED";
       this.departureLocation = "";
       this.departureTime = "";
       this.destinationLocation = "";
@@ -566,7 +497,6 @@ export default {
           this.contractStatus = "CANCELLED";
           break;
       }
-      console.log(this.contractStatus);
       await this.initContracts();
       this.isLoading = false;
     },

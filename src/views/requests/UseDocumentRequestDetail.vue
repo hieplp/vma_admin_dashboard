@@ -384,7 +384,6 @@ export default {
         .catch((err) => {
           this.isError = !this.isError;
           this.errMsg = err.debugMessage;
-          console.log(err);
         });
       this.isLoading = false;
     },

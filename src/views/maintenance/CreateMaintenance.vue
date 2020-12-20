@@ -81,7 +81,7 @@ export default {
       index: 0,
     };
   },
-  mounted() {},
+  async mounted() {},
   methods: {
     // mapActions
     ...mapActions("Maintenance", ["_create"]),

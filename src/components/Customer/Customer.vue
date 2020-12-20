@@ -340,6 +340,7 @@ export default {
           "name_with_type"
         );
         this.customer.address = addressArr[0];
+        this.phoneInput();
       } else {
         this.customer = {
           customerName: "",

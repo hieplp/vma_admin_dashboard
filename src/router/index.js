@@ -23,6 +23,7 @@ import ContractCanlendar from "../views/contracts/ContractCanlendar.vue";
 import CreateContract from "../views/contracts/CreateContract.vue";
 import UpdateContract from "../views/contracts/UpdateContract.vue";
 import ContractDetail from "../views/contracts/ContractDetail.vue";
+import ContractTracking from "../views/contracts/ContractTracking.vue"; // Contract Vehicle Tracking
 import AssignVehiclesContract from "../views/contracts/vehicles/AssignVehiclesContract.vue";
 import PassengerList from "../views/contracts/passengers/PassengerList.vue"; // Passenger list
 
@@ -192,6 +193,11 @@ const routes = [
     path: "/contracts/:contractId",
     name: "ContractDetail",
     component: ContractDetail,
+  },
+  {
+    path: "/contracts/:contractId/:contractVehicleId/tracking",
+    name: "ContractTracking",
+    component: ContractTracking,
   },
   {
     path: "/create-contract",

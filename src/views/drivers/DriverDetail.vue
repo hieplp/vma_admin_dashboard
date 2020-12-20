@@ -438,6 +438,10 @@ export default {
   },
   async mounted() {
     await this.initDetailDriver();
+    this.driver.baseSalary = this.driver.baseSalary
+      .toString()
+      .replace(/\D/g, "")
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   },
   methods: {
     ...mapActions("Driver", ["_getDetailDriver"]),

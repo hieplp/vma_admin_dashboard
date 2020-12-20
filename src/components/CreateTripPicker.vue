@@ -28,7 +28,6 @@
                     class="w-100"
                     v-model="trip.departureTime"
                     :editable="false"
-                    :default-value="defaultDate"
                     type="datetime"
                     @change="
                       () => {
@@ -36,7 +35,6 @@
                       }
                     "
                     :disabled-date="disableDepartureTime"
-                    :disabled-time="notBeforeTime"
                     placeholder="Select date"
                   ></date-picker>
                   <!-- <input
@@ -96,9 +94,8 @@
       <gmap-map
         class="mb-3"
         :center="center"
-        :zoom="15"
+        :zoom="12"
         style="width:100%;  height: 400px;"
-        v-if="isMapRender"
       >
         <DirectionsRenderer
           travelMode="DRIVING"
@@ -229,23 +226,14 @@ export default {
     DirectionsRenderer,
     DatePicker,
   },
-  async mounted() {
+  mounted() {
     this.isLoading = true;
     this.maxDate = moment(new Date()).format("YYYY-MM-DDTkk:mm");
     if (this.propTrip) {
       this.initData(this.propTrip);
+      this.isMapRender = true;
     }
-    this.isMapRender = true;
-
-    let minDateFrom = new Date(this.minDateFrom);
-    this.defaultDate = new Date().setHours(
-      minDateFrom.getHours(),
-      minDateFrom.getMinutes(),
-      0,
-      0
-    );
   },
-
   computed: {
     origin() {
       if (!this.firstLocations[0]) return null;
@@ -286,7 +274,7 @@ export default {
   },
   data() {
     return {
-      isMapRender: false,
+      isMapRender: true,
       // Max day
       maxDateFrom: "",
       minDateFrom: "",
@@ -332,8 +320,6 @@ export default {
       },
 
       routes: [],
-
-      defaultDate: "",
     };
   },
   methods: {
@@ -345,23 +331,8 @@ export default {
     },
     // Min and max date
     disableDepartureTime(date) {
-      // console.log(new Date(this.minDateFrom));
-      const today = new Date(this.minDateFrom);
-      today.setHours(0, 0, 0, 0);
-      return date < today || date > new Date(this.maxDateFrom);
-    },
-    notBeforeTime(date) {
-      let minDateFrom = new Date(this.minDateFrom);
       return (
-        date <
-        new Date(
-          new Date().setHours(
-            minDateFrom.getHours(),
-            minDateFrom.getMinutes(),
-            0,
-            0
-          )
-        )
+        date < new Date(this.minDateFrom) || date > new Date(this.maxDateFrom)
       );
     },
     // Google map
@@ -507,7 +478,16 @@ export default {
   cursor: pointer;
   color: rgb(84, 112, 204);
 }
-
+.update-icon {
+  position: absolute;
+  top: 0;
+  right: 40px;
+  color: rgb(199, 194, 194);
+}
+.update-icon:hover {
+  cursor: pointer;
+  color: rgb(84, 112, 204);
+}
 /* Add location button */
 .add-location:hover {
   cursor: pointer;

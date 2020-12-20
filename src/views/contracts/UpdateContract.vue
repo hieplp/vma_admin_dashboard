@@ -156,7 +156,11 @@
           ref="returnTrip"
           v-show="isTripVisible && contract.roundTrip"
           :propTrip="contract.trips[1]"
-          :endDateChange="() => {}"
+          :endDateChange="
+            () => {
+              this.handleTripTimeChange(2);
+            }
+          "
           :importLocation="
             () => {
               // Reverse locations arrays
@@ -189,20 +193,33 @@
         </div>
       </div>
     </div>
+    <!-- <div v-if="contract.trips"> this.contract.trips[0].assignedVehicles-->
     <!-- Vehicle picker -->
-    <VehiclePicker
-      ref="firstVehiclePicker"
-      title="FIRST TRIP VEHICLES"
-      :vehicles="contract.trips[0].assignedVehicles"
-      v-if="isVehicleVisible"
-    />
-    <!-- Vehicle picker  -->
-    <VehiclePicker
-      ref="returnVehiclePicker"
-      title="RETURN TRIP VEHICLES"
-      :vehicles="contract.trips[1].assignedVehicles"
-      v-if="isVehicleVisible && contract.roundTrip"
-    />
+    <div v-if="isUserLoading">
+      <VehiclePicker
+        ref="firstVehiclePicker"
+        title="FIRST TRIP VEHICLES"
+        :contractDetailId="contract.trips[0].contractTripId"
+        :propsTotalPassengers="contract.estimatedPassengerCount.toString()"
+        v-show="isVehicleVisible"
+      />
+      <div
+        v-if="contract && contract.roundTrip"
+        :vehicles="contract.trips[0].assignedVehicles"
+      >
+        <!-- Vehicle picker  -->
+        <VehiclePicker
+          ref="returnVehiclePicker"
+          title="RETURN TRIP VEHICLES"
+          :vehicles="contract.trips[1].contractTripId"
+          :propsTotalPassengers="contract.estimatedPassengerCount.toString()"
+          v-show="isVehicleVisible"
+        />
+      </div>
+    </div>
+
+    <!-- </div> -->
+
     <!-- User document -->
     <div class="row" v-if="isVehicleVisible">
       <!-- Confirm Group -->
@@ -275,6 +292,8 @@ export default {
       isVehicleVisible: false,
 
       isAddressModalVisible: false,
+
+      timeChange1stTime: false,
     };
   },
   async mounted() {
@@ -338,10 +357,13 @@ export default {
         document.getElementById("app").scrollIntoView();
         this.isContractVisible = step === "isContractVisible" ? true : false;
         this.isTripVisible = step === "isTripVisible" ? true : false;
-        // Set max date for duration
+        // Set max date for duration  TODO:
         this.$refs.firstTrip.minDateFrom = moment(
           new Date(this.contract.durationFrom)
-        ).format("YYYY-MM-DDTkk:mm");
+        )
+          .subtract(1, "d")
+          .format("YYYY-MM-DDTkk:mm");
+
         this.$refs.firstTrip.maxDateFrom = moment(
           new Date(this.contract.durationTo)
         ).format("YYYY-MM-DDTkk:mm");
@@ -349,7 +371,6 @@ export default {
         if (this.$refs.contract.isChange) {
           this.$refs.firstTrip.trip.departureTime = "";
         }
-
         // Check contract trip
         if (step === "isVehicleVisible") {
           this.contract.trips = [];
@@ -367,8 +388,22 @@ export default {
           // isValid = false;
           if (isValid) {
             this.contract.trips.push(firstTrip);
+
+            // Set min and max date for first trip vehicle picker
+            this.$refs.firstVehiclePicker.startDate = this.contract.trips[0].departureTime;
+            this.$refs.firstVehiclePicker.endDate = this.contract.trips[0].destinationTime;
+            this.$refs.firstVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+            // -----------------------------------
+
+            if (this.contract.roundTrip) {
+              // Set min and max date for return trip vehicle picker
+              this.$refs.returnVehiclePicker.startDate = this.contract.trips[1].departureTime;
+              this.$refs.returnVehiclePicker.endDate = this.contract.trips[1].destinationTime;
+              this.$refs.returnVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+              // -----------------------------------
+            }
+
             this.isVehicleVisible = true;
-            console.log(this.contract);
           } else {
             this.isTripVisible = true;
           }
@@ -394,14 +429,21 @@ export default {
     // Handle trip time change
     handleTripTimeChange(trip) {
       if (trip === 1) {
-        if (this.contract && this.contract.trips && this.contract.trips[0]) {
-          if (
-            this.contract.trips[0].destinationTime !==
-            this.$refs.firstTrip.trip.destinationTime
-          ) {
-            this.$refs.firstVehiclePicker.vehiclesList = [];
+        if (this.timeChange1stTime) {
+          if (this.contract && this.contract.trips && this.contract.trips[0]) {
+            if (
+              this.contract.trips[0].destinationTime !==
+              this.$refs.firstTrip.trip.destinationTime
+            ) {
+              console.log(
+                this.contract.trips[0].destinationTime,
+                this.$refs.firstTrip.trip.destinationTime
+              );
+              this.$refs.firstVehiclePicker.vehiclesList = [];
+            }
           }
         }
+        this.timeChange1stTime = true;
       } else {
         if (this.contract && this.contract.trips && this.contract.trips[1]) {
           if (

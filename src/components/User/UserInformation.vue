@@ -132,7 +132,7 @@
                   type="text"
                   v-model="driver.baseSalary"
                   placeholder="Basic Salary"
-                  @keypress="isNumber($event)"
+                  @input="moneyInput"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -177,7 +177,7 @@
                   type="text"
                   v-model="driver.baseSalary"
                   placeholder="Basic Salary"
-                  @keypress="isNumber($event)"
+                  @input="moneyInput"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -532,6 +532,7 @@ export default {
       );
       this.driver.address = addressArr[0];
       this.phoneInput();
+      this.moneyInput();
     },
     // Find address
     findItemFromJson(arr, findStr, typeName) {
@@ -565,6 +566,7 @@ export default {
         this.selectedDistrict.name_with_type +
         ", " +
         this.selectedCity.name_with_type;
+      driver.baseSalary = driver.baseSalary.replace(/\D/g, "");
       return {
         driver: driver,
         image: this.profileImage,
@@ -593,6 +595,13 @@ export default {
       } else {
         password.type = "password";
       }
+    },
+    // Money input
+    moneyInput() {
+      this.driver.baseSalary = this.driver.baseSalary
+        .toString()
+        .replace(/\D/g, "")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
   },
 };

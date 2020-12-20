@@ -2,29 +2,15 @@
   <div class="con-modal">
     <div class="ui form">
       <div class="three fields mt-4">
-        <!-- Total Seats (Min) -->
+        <!--Vehicle Id -->
         <div class="field">
-          <label>Total Seats (Min)</label>
+          <label>Vehicle Id</label>
           <div class="ui corner labeled input">
             <input
               v-model="searchVehicleId"
-              type="number"
-              max="10"
-              placeholder="Total Seats (Min)"
-              @blur="initVehiclesList"
-            />
-          </div>
-        </div>
-        <!-- Total Seats (Max) -->
-        <div class="field">
-          <label>Total Seats (Max)</label>
-          <div class="ui corner labeled input">
-            <input
-              v-model="maxSeat"
-              type="number"
-              max="10"
-              placeholder="Total Seats (Max)"
-              @blur="initVehiclesList"
+              type="text"
+              placeholder="Vehicle Id"
+              @blur="initVehicles"
             />
           </div>
         </div>
@@ -37,7 +23,7 @@
               class="form-control form-control-sm"
               name="status"
               v-model="vehicleType"
-              @change="initVehiclesList"
+              @change="initVehicles"
             >
               <option :value="''">
                 Select vehicle type
@@ -51,40 +37,31 @@
             </select>
           </div>
         </div>
+
         <!-- Status -->
-        <div class="field">
-          <label>Status</label>
-          <div class="ui corner labeled input">
-            <select
-              class="form-control form-control-sm"
-              name="status"
-              v-model="searchStatusID"
-              @change="initVehiclesList"
-            >
-              <option :value="''">
-                Select vehicle status
-              </option>
-              <option
-                v-for="status in this.statusList"
-                :key="status"
-                :value="status"
-                >{{ status.replaceAll("_", " ") }}</option
-              >
-            </select>
+        <div class="field" v-if="propSeatMax">
+          <label>Seat</label>
+          <div class="pt-2">
+            <vue-slider
+              v-model="seatsMax"
+              :min="seatsMin"
+              :max="propSeatMax"
+              @change="initVehicles"
+            />
           </div>
         </div>
       </div>
     </div>
 
-    <table class="table tableBodyScroll" v-if="!isLoading">
+    <table class="table tableBodyScroll">
       <thead>
         <tr class="">
           <th>NO.</th>
           <th>ID</th>
           <th>MODEL</th>
-          <th>SEAT</th>
           <th>TYPE</th>
-          <!-- <th>STATUS</th> -->
+          <th>SEAT</th>
+          <th>STATUS</th>
           <th class="text-center">ACTION</th>
         </tr>
       </thead>
@@ -93,18 +70,34 @@
           <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
           <td>{{ vehicle.vehicleId }}</td>
           <td>{{ vehicle.model }}</td>
+          <td>{{ vehicle.vehicleTypeName }}</td>
           <td>{{ vehicle.seats }}</td>
-          <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
-
+          <td>
+            <label
+              class="badge"
+              v-bind:class="{
+                'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
+                'badge-danger': vehicle.vehicleStatus === 'MAINTENANCE',
+                'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
+                'badge-success':
+                  vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
+                'badge-warning': vehicle.vehicleStatus === 'PENDING_APPROVAL',
+                'badge-dark':
+                  vehicle.vehicleStatus === 'DELETED' ||
+                  vehicle.vehicleStatus === 'REJECTED',
+              }"
+              >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
+            >
+          </td>
           <td class="row justify-content-center btn-action">
             <button
               class="btn btn-outline-info btn-rounded btn-icon mr-1"
               :class="
-                selectedVehicle.vehicleId !== vehicle.vehicleId
+                selectedVehicle !== vehicle.vehicleId
                   ? 'btn-outline-info'
                   : 'btn-gradient-info'
               "
-              @click="select(vehicle)"
+              @click="select(vehicle.vehicleId)"
             >
               <i class="mdi mdi-account-check"></i>
             </button>
@@ -152,49 +145,48 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapState, mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
+import VueSlider from "vue-slider-component";
+import "vue-slider-component/theme/default.css";
 export default {
   props: {
     cancelFunction: Function,
     doneFunction: Function,
     vehicleId: String,
     propStatus: String,
-    selectedVehicleList: Array,
-    startDate: String,
-    endDate: String,
-    propMaxSeat: String,
+    propSeatMax: Number,
+  },
+  components: {
+    VueSlider,
   },
   data() {
     return {
       statusList: [],
       searchVehicleId: "",
       vehicleType: "",
-      searchStatusID: "",
-      isLoading: true,
+      searchStatusID: "AVAILABLE_NO_DRIVER",
+      isLoading: false,
       page: 0,
       currentPage: 1,
       vehicleTypes: [],
       selectedVehicle: "",
-      // startDate: "",
-      // endDate: "",
-      vehicles: [],
-      totalVehicles: 0,
-      maxSeat: 0,
+      seatsMin: 1,
+      seatsMax: 1,
     };
   },
   computed: {
     // Map state
-    // ...mapState("Vehicle", ["vehicles", "totalVehicles"]),
+    ...mapState("Vehicle", ["vehicles", "totalVehicles"]),
   },
   async mounted() {
     if (this.propStatus) {
       this.searchStatusID = this.propStatus;
     }
-    this.maxSeat = this.propMaxSeat <= 0 ? "" : this.propMaxSeat;
-    await this.initVehiclesList();
+    this.seatsMax = this.propSeatMax;
+    await this.initVehicles();
     this.initTypes();
-    // this.initStatusList();
+    this.initStatusList();
     if (this.vehicleId) {
       this.selectedVehicle = this.vehicleId;
       this.searchVehicleId = this.vehicleId;
@@ -203,51 +195,36 @@ export default {
   methods: {
     // Map actions
     ...mapActions("Vehicle", [
-      "_getVehiclesWithIdAndType",
+      "_getVehiclesWithIdAndTypeAndSeats",
       "_getVehicleType",
-      "_getVehiclesWithIdAndTypeCount",
-    ]),
-    ...mapActions("Contract", [
-      "_getVehicleRecommendations",
-      "_getVehicleRecommendationsCount",
+      "_getVehiclesWithIdAndTypeAndSeatsCount",
     ]),
     // pagination handle
     async clickCallback(pageNum) {
       this.isLoading = true;
       this.currentPage = pageNum;
       this.page = pageNum - 1;
-      this.initVehiclesList();
+      this.initVehicles();
       this.isLoading = false;
     },
-    // Init data for vehicle list
-    async initVehiclesList() {
-      this.isLoading = true;
-      this.vehicles = await this._getVehicleRecommendations({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        seatsMin: "",
-        seatsMax: this.maxSeat,
-        vehicleTypeId: this.vehicleType,
-        viewOption: 0,
+    async initVehicles() {
+      await this._getVehiclesWithIdAndTypeAndSeats({
+        pageNum: this.page,
+        vehicleId: this.searchVehicleId,
+        viewOption: this.searchStatusID !== "" ? 1 : 0,
+        vehicleStatus: this.searchStatusID,
+        vehicleType: this.vehicleType,
+        seatsMin: this.seatsMin,
+        seatsMax: this.seatsMax,
       });
-      this.totalVehicles = await this._getVehicleRecommendationsCount({
-        startDate: this.startDate,
-        endDate: this.endDate,
-        seatsMin: "",
-        seatsMax: this.maxSeat,
-        vehicleTypeId: this.vehicleType,
-        viewOption: 0,
+      await this._getVehiclesWithIdAndTypeAndSeatsCount({
+        vehicleId: this.searchVehicleId,
+        viewOption: this.searchStatusID !== "" ? 1 : 0,
+        vehicleStatus: this.searchStatusID,
+        vehicleType: this.vehicleType,
+        seatsMin: this.seatsMin,
+        seatsMax: this.seatsMax,
       });
-
-      this.selectedVehicleList.forEach((vehicle) => {
-        for (let index = 0; index < this.vehicles.length; index++) {
-          if (vehicle.vehicleId === this.vehicles[index].vehicleId) {
-            this.$delete(this.vehicles, index);
-            this.totalVehicles--;
-          }
-        }
-      });
-      this.isLoading = false;
     },
     // Init types
     async initTypes() {
@@ -260,11 +237,11 @@ export default {
       this.statusList = require("../../assets/json/vehicle/status.json");
     },
     // Select vehicle
-    select(vehicle) {
-      if (this.selectedVehicle.vehicleId === vehicle.vehicleId) {
-        this.selectedVehicle = { vehicleId: "" };
+    select(vehicleId) {
+      if (this.selectedVehicle === vehicleId) {
+        this.selectedVehicle = "";
       } else {
-        this.selectedVehicle = vehicle;
+        this.selectedVehicle = vehicleId;
       }
     },
     // Return select vehicle

@@ -1,5 +1,30 @@
 <template>
   <div class="row">
+    <!-- Update Confirmation -->
+    <Confirmation
+      icon="edit outline"
+      title="Total Seats Confirmation"
+      subTitle="Total seats are enough. Do you want to add another vehicle?"
+      rightBtnTitle="Add"
+      rightBtnIcon="check"
+      rightBtnColor="blue"
+      leftBtnTitle="Cancel"
+      leftBtnIcon="x"
+      leftBtnColor="red"
+      v-if="isOverPassVisible"
+      :handleLeftBtn="
+        () => {
+          this.isOverPassVisible = !this.isOverPassVisible;
+        }
+      "
+      :handleRightBtn="
+        () => {
+          this.isVehicleModalVisible = !this.isVehicleModalVisible;
+          this.isOverPassVisible = !this.isOverPassVisible;
+        }
+      "
+    />
+
     <div class="col-12 grid-margin stretch-card">
       <!-- Vehicles table -->
       <div class="card">
@@ -10,22 +35,19 @@
               <tr class="">
                 <th>NO.</th>
                 <th>ID</th>
-                <!-- <th>SEAT</th>
-                <th>TYPE</th> -->
+                <th>SEAT</th>
+                <th>TYPE</th>
                 <th class="text-center">ACTION</th>
               </tr>
             </thead>
             <tbody>
-              <tr
-                v-for="(vehicle, index) in this.vehiclesList"
-                :key="vehicle.vehicleId"
-              >
+              <tr v-for="(vehicle, index) in this.vehiclesList" :key="index">
                 <td class="text-secondary">
                   {{ index + 1 }}
                 </td>
-                <td>{{ vehicle }}</td>
-                <!-- <td>{{ vehicle.seats }}</td> -->
-                <!-- <td>{{ vehicle.vehicleTypeName }}</td> -->
+                <td>{{ vehicle.vehicleId }}</td>
+                <td>{{ vehicle.seats }}</td>
+                <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
                 <td class="row justify-content-center btn-action">
                   <button
                     class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
@@ -40,7 +62,7 @@
 
           <div
             class="row address mt-5 justify-content-center add-location"
-            @click="handleVehicleModal"
+            @click="handleVehicleModal(1)"
           >
             <i class="icon plus circle"></i>
             <span>
@@ -53,19 +75,22 @@
             </div>
           </div>
         </div>
-        <loading
+        <!-- <loading
           :active.sync="isLoading"
           :can-cancel="false"
           :loader="'dots'"
           :is-full-page="false"
           :color="'#2e5bff'"
-        ></loading>
+        ></loading> -->
 
         <RecVehiclesModal
           ref="vehicleModal"
           v-if="isVehicleModalVisible"
           :cancelFunction="handleVehicleModal"
           :doneFunction="getVehicle"
+          :startDate="startDate"
+          :endDate="endDate"
+          :propMaxSeat="totalPassengers + ''"
           :selectedVehicleList="vehiclesList"
         />
       </div>
@@ -75,9 +100,10 @@
 
 <script>
 import { mapActions } from "vuex";
-import Loading from "vue-loading-overlay";
+// import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
 import RecVehiclesModal from "../../components/Modal/RecVehiclesModal";
+import Confirmation from "../../components/Modal/Confirmation";
 
 export default {
   name: "Vehicles",
@@ -88,10 +114,13 @@ export default {
     title: String,
     isDetail: Boolean,
     vehicles: Array,
+    contractDetailId: Number,
+    propsTotalPassengers: String,
   },
   components: {
-    Loading,
+    // Loading,
     RecVehiclesModal,
+    Confirmation,
   },
   data() {
     return {
@@ -99,6 +128,7 @@ export default {
       vehiclesList: [],
       isLoading: false,
       isVehicleModalVisible: false,
+      isOverPassVisible: false,
 
       // Seat
       totalSeats: [],
@@ -111,27 +141,54 @@ export default {
       //
       startDate: "",
       endDate: "",
+      totalPassengers: 0,
+      oldTotalPassengers: 0,
     };
   },
   async mounted() {
-    if (this.vehicles) {
-      this.vehiclesList = this.vehicles;
+    // this.isLoading = false;
+    if (this.contractDetailId) {
+      await this.initVehiclesList();
+      if (this.propsTotalPassengers) {
+        this.oldTotalPassengers = this.propsTotalPassengers;
+      }
     }
+
+    // this.isLoading = true;
   },
   methods: {
     // Map state
-    ...mapActions("Contract", ["_getContractVehicle"]),
+    ...mapActions("Contract", ["_getContractVehicle", "_getContractVehicle"]),
 
     // Handle vehicle modal
-    handleVehicleModal() {
-      this.isVehicleModalVisible = !this.isVehicleModalVisible;
+    handleVehicleModal(type) {
+      if (type === 1) {
+        let newPass = this.oldTotalPassengers;
+        this.vehiclesList.forEach((vehicle) => {
+          newPass -= vehicle.seats;
+        });
+        this.totalPassengers = newPass;
+
+        if (this.totalPassengers <= 0) {
+          this.isOverPassVisible = true;
+        } else {
+          this.isVehicleModalVisible = true;
+        }
+      } else {
+        this.isVehicleModalVisible = !this.isVehicleModalVisible;
+      }
+
       // this.$refs.vehicleModal.startDate = this.
+    },
+    // Init vehicle list
+    async initVehiclesList() {
+      this.isLoading = true;
+      this.vehiclesList = await this._getContractVehicle(this.contractDetailId);
+      this.isLoading = false;
     },
     // Get vehicle
     getVehicle() {
-      this.vehiclesList.push(
-        this.$refs.vehicleModal.getSelectedVehicle().vehicleId
-      );
+      this.vehiclesList.push(this.$refs.vehicleModal.getSelectedVehicle());
       this.handleVehicleModal();
     },
     // Remove vehicle
@@ -142,11 +199,11 @@ export default {
     getData() {
       this.isErr = this.vehiclesList.length === 0;
       if (!this.isErr) {
-        // let vehicles = [];
-        // this.vehiclesList.forEach((vehicle) => {
-        //   vehicles.push(vehicle);
-        // });
-        return this.vehiclesList;
+        let vehicles = [];
+        this.vehiclesList.forEach((vehicle) => {
+          vehicles.push(vehicle.vehicleId);
+        });
+        return vehicles;
       }
       return null;
     },

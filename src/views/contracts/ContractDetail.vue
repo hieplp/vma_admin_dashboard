@@ -121,6 +121,7 @@
         ref="firstTrip"
         :isDetail="true"
         :isUpdate="true"
+        :isCreate="false"
         :propTrip="contract.trips[0]"
         v-show="isTripVisible"
         :endDateChange="() => {}"
@@ -133,6 +134,7 @@
           v-show="isTripVisible && contract.roundTrip"
           :isDetail="true"
           :isUpdate="true"
+          :isCreate="false"
           :propTrip="contract.trips[1]"
           :endDateChange="() => {}"
           :importLocation="
@@ -150,7 +152,9 @@
 
     <Vehicles
       title="FIRST TRIP VEHICLE"
-      :vehicles="contract.trips[0].assignedVehicles"
+      :contractId="contract.contractId"
+      :contractDetailId="contract.trips[0].contractTripId"
+      :contractStatus="contract.contractStatus"
       v-if="
         isVehicleVisible &&
           contract &&
@@ -161,7 +165,9 @@
 
     <Vehicles
       title="RETURN TRIP VEHICLE"
-      :vehicles="contract.trips[1].assignedVehicles"
+      :contractId="contract.contractId"
+      :contractDetailId="contract.trips[1].contractTripId"
+      :contractStatus="contract.contractStatus"
       v-if="
         isVehicleVisible &&
           contract &&

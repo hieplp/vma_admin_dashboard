@@ -130,16 +130,10 @@
                       <i class="asterisk icon"></i>
                     </div>
                   </div>
-                  <div
-                    class="ui pointing red basic label"
-                    v-if="estimatedVehicleCountErr"
-                  >
-                    Estimated Vehicle Count is required!
-                  </div>
                 </div>
               </div>
               <div class="two fields">
-                <!-- Total Price -->
+                <!-- Total Price @keypress="isNumber($event)"-->
                 <div class="field">
                   <label>Total Price</label>
                   <div class="ui corner labeled input">
@@ -147,7 +141,7 @@
                       type="text"
                       v-model="contract.totalPrice"
                       placeholder="Total Price"
-                      @keypress="isNumber($event)"
+                      @input="moneyInput"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -288,7 +282,9 @@ export default {
     initContract() {
       let cloneContract = Object.assign({}, this.propContract);
       this.contract = this.copyProperties(cloneContract, this.contract);
+
       this.initOwner(cloneContract.contractOwner);
+      this.moneyInput();
     },
     // Init owner
     initOwner(contractOwner) {
@@ -345,7 +341,7 @@ export default {
 
       contract.signedLocation = this.$refs.signedLocation.getAdress();
       contract.contractOwnerId = this.owner.userId;
-
+      contract.totalPrice = contract.totalPrice.replace(/\D/g, "");
       return contract;
     },
     // Cancel
@@ -381,6 +377,13 @@ export default {
     },
     isNumber(evt) {
       isNumber(evt);
+    },
+    // Money input
+    moneyInput() {
+      this.contract.totalPrice = this.contract.totalPrice
+        .toString()
+        .replace(/\D/g, "")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     },
   },
 };

@@ -259,8 +259,8 @@ export default {
       };
     },
     // Handle duplicate
-    handleDuplicateErr() {
-      this.isDuplicated = !this.isDuplicated;
+    handleDuplicateErr(isErr) {
+      this.isDuplicated = isErr;
     },
     // Get expiry date
     getExpiryDate(date, ex) {

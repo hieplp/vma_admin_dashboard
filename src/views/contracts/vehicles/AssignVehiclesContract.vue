@@ -50,7 +50,12 @@
       :proFunc="
         () => {
           this.isSuccess = !this.isSuccess;
-          this.searchVehicles();
+          this.$router.push({
+            name: 'ContractDetail',
+            params: {
+              contractId: this.$route.params.contractId,
+            },
+          });
         }
       "
       v-if="isSuccess"
@@ -58,7 +63,15 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/vehicles" class="nav-link">Vehicles</router-link>
+        <router-link to="/contracts"> Contracts </router-link>
+        <span class="text-secondary"> / </span>
+        <router-link :to="`/contracts/${this.$route.params.contractId}`">
+          {{ this.$route.params.contractId }}
+        </router-link>
+        <span class="text-secondary"> / </span>
+        <span>
+          Assign Vehicle
+        </span>
       </h3>
       <div class="dropdown">
         <button
@@ -107,24 +120,6 @@
                   <td>{{ vehicle.seats }}</td>
                   <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
-                  <!-- <td>
-                    <label
-                      class="badge"
-                      v-bind:class="{
-                        'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
-                        'badge-danger': vehicle.vehicleStatus === 'MAINTENANCE',
-                        'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
-                        'badge-success':
-                          vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
-                        'badge-warning':
-                          vehicle.vehicleStatus === 'PENDING_APPROVAL',
-                        'badge-dark':
-                          vehicle.vehicleStatus === 'DELETED' ||
-                          vehicle.vehicleStatus === 'REJECTED',
-                      }"
-                      >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
-                    >
-                  </td> -->
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
@@ -179,55 +174,27 @@
         <div class="col-3 card filter" v-if="isFilterVisible">
           <div class="form-group">
             <h4 class="card-title mt-4">Filter</h4>
-            <!-- Search Vehicle ID -->
+            <!-- Start Time -->
             <div class="col-sm-12">
-              <label>Vehicle ID</label>
+              <label>Start Time</label>
               <input
-                type="text"
+                type="datetime-local"
                 class="form-control form-control-sm"
                 placeholder="Vehicle ID"
-                v-model="searchVehicleID"
-                @keypress="isNumber($event)"
-                maxlength="12"
+                :min="minTime"
+                v-model="startDate"
               />
             </div>
-            <!-- Model -->
-            <div class="col-12 mt-3">
-              <label>Model</label>
+            <!-- Start Time -->
+            <div class="col-sm-12 mt-3">
+              <label>End Time</label>
               <input
-                type="text"
+                type="datetime-local"
                 class="form-control form-control-sm"
-                v-model="searchModel"
-                placeholder="Vehicle model"
+                placeholder="Vehicle ID"
+                :min="startDate"
+                v-model="endDate"
               />
-            </div>
-
-            <!-- Total vehicles-->
-            <div class="col-12 mt-4">
-              <label>Total Distance</label>
-              <div class="row">
-                <div class="col-12">
-                  <input
-                    type="text"
-                    class="form-control form-control-sm test"
-                    placeholder="Min distance"
-                    @keypress="isNumber($event)"
-                    v-model="vehicleMinDis"
-                  />
-                </div>
-                <div class="col-12 text-center">
-                  <h1>-</h1>
-                </div>
-                <div class="col-12">
-                  <input
-                    type="text"
-                    @keypress="isNumber($event)"
-                    class="form-control form-control-sm"
-                    placeholder="Max distance"
-                    v-model="vehicleMaxDis"
-                  />
-                </div>
-              </div>
             </div>
 
             <!--Total seat-->
@@ -255,26 +222,7 @@
                 </div>
               </div>
             </div>
-            <!-- Vehicle status dropdown -->
-            <div class="col-12 mt-3">
-              <label>Status</label>
 
-              <select
-                class="form-control form-control-sm"
-                name="status"
-                v-model="searchStatusID"
-              >
-                <option :value="''">
-                  Select vehicle status
-                </option>
-                <option
-                  v-for="status in this.statusList"
-                  :key="status"
-                  :value="status"
-                  >{{ status.replaceAll("_", " ") }}</option
-                >
-              </select>
-            </div>
             <!-- Vehicle status dropdown -->
             <div class="col-12 mt-3">
               <label>Vehicle Type</label>
@@ -330,7 +278,7 @@ import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
 import Confirmation from "../../../components/Modal/Confirmation";
 import MessageModal from "../../../components/Modal/MessageModal";
 const VehicleRepository = RepositoryFactory.get("vehicles");
-
+import moment from "moment";
 export default {
   name: "Vehicles",
   props: {
@@ -358,8 +306,8 @@ export default {
       vehicleMinDis: "",
       vehicleMaxSeat: "",
       vehicleMinSeat: "",
-      startDate: this.$route.params.startDate,
-      endDate: this.$route.params.endDate,
+      startDate: "",
+      endDate: "",
       ownerId: "",
 
       isLoading: true,
@@ -371,30 +319,27 @@ export default {
       isSuccess: false,
       errMsg: "",
       deleteVehicleId: "",
-      // Seat
-      totalSeats: [],
-
       viewOption: 0,
 
       vehicleTypes: [],
-      searchTotalDistance: ["", ""],
 
-      contractId: this.$route.params.contractId,
+      selectedVehicleList: this.$route.params.selectedVehicleList,
+
+      contractDetailId: this.$route.params.contractDetailId,
       contractVehicles: [],
+
+      minTime: "",
     };
   },
   async mounted() {
-    if (this.$route.params.ownerId) {
-      this.ownerId = this.$route.params.ownerId;
-    }
-    if (this.$route.params.status) {
-      this.viewOption = 1;
-      this.searchStatusID = this.$route.params.status;
-    }
-    await this.initStatusList();
+    this.startDate = moment(new Date()).format("YYYY-MM-DDTkk:mm");
+    this.minTime = this.startDate;
+    this.endDate = moment(new Date())
+      .add(6, "h")
+      .format("YYYY-MM-DDTkk:mm");
+
     await this.initVehiclesList();
     await this.initTypes();
-    this.totalSeats = require("../../../assets/json/vehicle/totalSeat.json");
   },
   methods: {
     // Map state
@@ -454,49 +399,32 @@ export default {
     },
     // Init data for vehicle list
     async initVehiclesList() {
+      console.log(this.startDate);
       this.isLoading = true;
-
-      if (
-        this.vehicleMinDis.length > 0 &&
-        this.vehicleMaxDis.length > 0 &&
-        this.vehicleMinDis > this.vehicleMaxDis
-      ) {
-        let temp = this.vehicleMinDis;
-        this.vehicleMinDis = this.vehicleMaxDis;
-        this.vehicleMaxDis = temp;
-      }
-
-      if (
-        this.vehicleMaxSeat.length > 0 &&
-        this.vehicleMinSeat.length > 0 &&
-        this.vehicleMinSeat > this.vehicleMaxSeat
-      ) {
-        let temp = this.vehicleMinSeat;
-        this.vehicleMinSeat = this.vehicleMaxSeat;
-        this.vehicleMaxSeat = temp;
-      }
-
-      this.viewOption = this.searchStatusID !== "" ? 1 : 0;
       this.vehiclesList = await this._getVehicleRecommendations({
-        startDate: this.startDate,
-        endDate: this.endDate,
+        startDate: moment(this.startDate).format("YYYY-MM-DD HH:mm:ss"),
+        endDate: moment(this.endDate).format("YYYY-MM-DD HH:mm:ss"),
         seatsMin: this.vehicleMinSeat,
         seatsMax: this.vehicleMaxSeat,
         vehicleTypeId: this.searchType,
         viewOption: 0,
       });
-      this.totalVehicles = await VehicleRepository.getTotalVehicle(
-        this.searchModel,
-        this.searchVehicleID,
-        this.vehicleMinDis,
-        this.vehicleMaxDis,
-        this.searchStatusID,
-        this.searchType,
-        this.vehicleMinSeat,
-        this.vehicleMaxSeat,
-        this.viewOption,
-        this.ownerId
-      );
+      this.totalVehicles = await this._getVehicleRecommendationsCount({
+        startDate: moment(this.startDate).format("YYYY-MM-DD HH:mm:ss"),
+        endDate: moment(this.endDate).format("YYYY-MM-DD HH:mm:ss"),
+        seatsMin: this.vehicleMinSeat,
+        seatsMax: this.vehicleMaxSeat,
+        vehicleTypeId: this.searchType,
+        viewOption: 0,
+      });
+      this.selectedVehicleList.forEach((vehicle) => {
+        for (let index = 0; index < this.vehiclesList.length; index++) {
+          if (vehicle.vehicleId === this.vehiclesList[index].vehicleId) {
+            this.$delete(this.vehiclesList, index);
+            this.totalVehicles--;
+          }
+        }
+      });
       this.isLoading = false;
     },
     // Init types
@@ -531,7 +459,7 @@ export default {
       this.isLoading = true;
       this.handleDialog("isDeleteConVisible", "");
       let contract = {
-        contractId: this.contractId,
+        contractDetailId: this.contractDetailId,
         vehicleId: this.deleteVehicleId,
       };
       await this._assignVehicleForContract(contract)

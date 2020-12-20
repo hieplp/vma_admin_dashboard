@@ -21,6 +21,12 @@ export default MapElementFactory({
   methods: {
     draw(directionsService, directionsRenderer) {
       if (!this.origin || !this.destination || !this.travelMode) return;
+      // var bounds = new google.maps.LatLngBounds();
+      // bounds.extend();
+      // console.log(
+      //   "🚀 ~ file: DirectionsRenderer.js ~ line 28 ~ draw ~ this.origin",
+      //   this.origin
+      // );
 
       directionsService.route(
         {

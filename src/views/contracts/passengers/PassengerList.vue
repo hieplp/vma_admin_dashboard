@@ -58,7 +58,15 @@
 
     <div class="page-header">
       <h3 class="page-title">
-        <router-link to="/passengers" class="nav-link">Passengers</router-link>
+        <router-link to="/contracts"> Contracts </router-link>
+        <span class="text-secondary"> / </span>
+        <router-link :to="`/contracts/${this.$route.params.contractId}`">
+          {{ this.$route.params.contractId }}
+        </router-link>
+        <span class="text-secondary"> / </span>
+        <span>
+          Passengers
+        </span>
       </h3>
     </div>
     <div class="row">

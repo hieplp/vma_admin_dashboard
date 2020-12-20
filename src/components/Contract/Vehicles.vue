@@ -19,6 +19,13 @@
       >
         <div class="card" v-if="vehiclesList.length > 0">
           <div class="card-body">
+            <button
+              class="ui icon right floated button edit-btn"
+              @click="viewAvailableVehicle"
+              v-if="contractStatus === 'IN_PROGRESS'"
+            >
+              <i class="plus square outline icon"></i>
+            </button>
             <h4 class="card-title">{{ this.title }}</h4>
             <!-- <p class="card-description">{{ this.totalVehicles }} total</p> -->
             <table class="table ">
@@ -27,9 +34,9 @@
                   <th>NO.</th>
                   <th>ID</th>
                   <!-- <th>MODEL</th> -->
-                  <!-- <th>SEAT</th>
-                  <th>TYPE</th> -->
-                  <!-- <th>STATUS</th> -->
+                  <th>SEAT</th>
+                  <th>TYPE</th>
+                  <th>STATUS</th>
                   <!-- <th>TOTAL DISTANCE</th> -->
                   <th class="text-center">ACTION</th>
                 </tr>
@@ -40,22 +47,52 @@
                   :key="vehicle.vehicleId"
                 >
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
-                  <td>{{ vehicle }}</td>
-                  <!-- <td>{{ vehicle.vehicleId }}</td> -->
+                  <!-- <td>{{ vehicle }}</td> -->
+                  <td>{{ vehicle.vehicleId }}</td>
                   <!-- <td>{{ vehicle.model }}</td> -->
-                  <!-- <td>{{ vehicle.seats }}</td>
-                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td> -->
+                  <td>{{ vehicle.seats }}</td>
+                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
+                  <td>
+                    <label
+                      class="badge"
+                      v-bind:class="{
+                        'badge-info':
+                          vehicle.contractVehicleStatus === 'COMPLETED',
+                        'badge-danger':
+                          vehicle.contractVehicleStatus === 'DROPPED',
+                        'badge-success':
+                          vehicle.contractVehicleStatus === 'IN_PROGRESS',
+                        'badge-warning':
+                          vehicle.contractVehicleStatus === 'NOT_STARTED',
+                      }"
+                      >{{
+                        vehicle.contractVehicleStatus.replaceAll("_", " ")
+                      }}</label
+                    >
+                  </td>
 
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-success btn-rounded btn-icon mr-1"
                       @click="viewPassenger(vehicle.contractVehicleId)"
+                      :disabled="
+                        vehicle.contractVehicleStatus === 'NOT_STARTED'
+                      "
                     >
                       <i class="mdi mdi-account-multiple-outline"></i>
                     </button>
                     <button
+                      class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
+                      @click="viewTracking(vehicle.contractVehicleId)"
+                      :disabled="
+                        vehicle.contractVehicleStatus === 'NOT_STARTED'
+                      "
+                    >
+                      <i class="mdi mdi-road-variant"></i>
+                    </button>
+                    <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
-                      @click="viewDetail(vehicle)"
+                      @click="viewDetail(vehicle.vehicleId)"
                     >
                       <i class="mdi mdi-train"></i>
                     </button>
@@ -89,8 +126,12 @@ export default {
     handleDelBtnVisible: Function,
     contractId: Number,
     title: String,
+    contractDetailId: Number,
     contract: Object,
     vehicles: Array,
+    endTime: String,
+    startTime: String,
+    contractStatus: String,
   },
   components: {
     Loading,
@@ -108,8 +149,8 @@ export default {
     };
   },
   async mounted() {
-    // await this.initVehiclesList();
-    this.vehiclesList = this.vehicles;
+    await this.initVehiclesList();
+    // this.vehiclesList = this.vehicles;
   },
   methods: {
     // Map state
@@ -123,7 +164,7 @@ export default {
     // Init data for vehicle list
     async initVehiclesList() {
       this.isLoading = true;
-      this.vehiclesList = await this._getContractVehicle(this.contractId);
+      this.vehiclesList = await this._getContractVehicle(this.contractDetailId);
       this.isLoading = false;
     },
 
@@ -138,7 +179,29 @@ export default {
     viewPassenger(contractVehicleId) {
       this.$router.push({
         name: "PassengerList",
-        params: { contractVehicleId: contractVehicleId },
+        params: {
+          contractVehicleId: contractVehicleId,
+          contractId: this.contractId,
+        },
+      });
+    },
+    viewTracking(contractVehicleId) {
+      this.$router.push({
+        name: "ContractTracking",
+        params: {
+          contractVehicleId: contractVehicleId,
+          contractId: this.contractId,
+        },
+      });
+    },
+    viewAvailableVehicle() {
+      this.$router.push({
+        name: "AssignVehiclesContract",
+        params: {
+          contractDetailId: this.contractDetailId,
+          contractId: this.contractId,
+          selectedVehicleList: this.vehiclesList,
+        },
       });
     },
   },

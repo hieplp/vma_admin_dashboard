@@ -9,10 +9,11 @@
     ></loading>
 
     <VehiclesModal
-      v-show="isVehicleModalVisible"
+      v-if="isVehicleModalVisible"
       :cancelFunction="handleVehicleModal"
       :doneFunction="getVehicleId"
       :vehicleId="changeVehicle"
+      :propSeatMax="licenseClass.seat"
       propStatus="AVAILABLE_NO_DRIVER"
       ref="vehicleModal"
     />
@@ -343,7 +344,7 @@ import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
 require("vue-image-lightbox/dist/vue-image-lightbox.min.css");
 import Confirmation from "../../../components/Modal/Confirmation";
 import MessageModal from "../../../components/Modal/MessageModal";
-import VehiclesModal from "../../../components/Modal/VehiclesModal";
+import VehiclesModal from "../../../components/Modal/AssignVehicleModal";
 import VehicleDocument from "../../../components/Vehicle/ReadOnlyDocument";
 
 const RequestRepository = RepositoryFactory.get("requests");
@@ -397,6 +398,9 @@ export default {
       // Change request
       isVehicleModalVisible: false,
       changeVehicle: "",
+      // For change vehicle
+      drivingLicenseInfor: null,
+      licenseClass: "",
     };
   },
   beforeRouteEnter(to, from, next) {
@@ -410,12 +414,24 @@ export default {
 
     await this.initRequest();
     await this.initDocument();
+
+    if (this.request.requestType === "CHANGE_VEHICLE") {
+      await this.initDataDocument();
+      let drivingLicenseClasses = require("../../../assets/json/indentify/type.json");
+      this.licenseClass =
+        drivingLicenseClasses[this.drivingLicenseInfor.otherInformation];
+    }
     this.isUserInfoVisible = true;
     this.isLoading = false;
   },
   methods: {
     // Map actions
-    ...mapActions("Request", ["_updateStatus", "_getRequestById"]),
+    ...mapActions("Request", [
+      "_updateStatus",
+      "_getRequestById",
+      "_updateChangeReqStatus",
+    ]),
+    ...mapActions("Document", ["_getDocuments"]),
     // Init request's information
     async initRequest() {
       await this._getRequestById(this.$route.params.requestId)
@@ -454,25 +470,49 @@ export default {
           this.isRejectConVisible = false;
           break;
       }
-      // update status
-      await RequestRepository.updateStatus(
-        this.request.requestId,
-        requestStatus
-      )
-        .then(() => {
-          this.isSuccess = true;
-          this.request.requestStatus = requestStatus;
-        })
-        .catch((err) => {
-          this.isError = !this.isError;
-          this.errMsg = err.debugMessage;
-          console.log(err);
-        });
+      if (
+        this.request.requestType === "CHANGE_VEHICLE" &&
+        requestStatus === "ACCEPTED"
+      ) {
+        if (this.changeVehicle.length > 0) {
+          await this._updateChangeReqStatus({
+            requestId: this.request.requestId,
+            driverId: this.request.userId,
+            targetVehicleId: this.changeVehicle,
+          })
+            .then(() => {
+              this.isSuccess = true;
+              this.request.requestStatus = requestStatus;
+            })
+            .catch((err) => {
+              this.isError = !this.isError;
+              this.errMsg = err.debugMessage;
+            });
+        } else {
+          this.isVehicleErr = true;
+        }
+      } else {
+        // update status
+        await RequestRepository.updateStatus(
+          this.request.requestId,
+          requestStatus
+        )
+          .then(() => {
+            this.isSuccess = true;
+            this.request.requestStatus = requestStatus;
+          })
+          .catch((err) => {
+            this.isError = !this.isError;
+            this.errMsg = err.debugMessage;
+          });
+      }
+
       this.isLoading = false;
     },
     // Get vehicle
     getVehicleId() {
       this.changeVehicle = this.$refs.vehicleModal.getSelectedVehicle();
+
       this.handleVehicleModal();
     },
     handleVehicleModal() {
@@ -481,6 +521,28 @@ export default {
     openGallery(img, index) {
       this.media = img;
       this.$refs.lightbox.showImage(index);
+    },
+
+    // Init data for document
+    async initDataDocument() {
+      let documents = await this._getDocuments({
+        userId: this.request.userId,
+        option: 0,
+      });
+
+      this.drivingLicenseInfor = this.findDocumentByName(
+        documents,
+        "DRIVING_LICENSE"
+      );
+    },
+    // Find document
+    findDocumentByName(contributorDocument, userDocumentType) {
+      for (let doc of contributorDocument) {
+        if (doc.userDocumentType === userDocumentType) {
+          return doc;
+        }
+      }
+      return null;
     },
   },
 };

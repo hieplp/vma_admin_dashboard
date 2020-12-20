@@ -112,7 +112,7 @@ export default {
   color: red;
 }
 
-. .cus-select {
+.cus-select {
   padding-left: 26px !important;
 }
 .cus-disable {
