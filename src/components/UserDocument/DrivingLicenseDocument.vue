@@ -105,6 +105,7 @@
                   type="date"
                   class="form-control"
                   v-model="document.registeredDate"
+                  :max="maxDate"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -152,6 +153,7 @@
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
+import moment from "moment";
 
 export default {
   props: {
@@ -194,6 +196,7 @@ export default {
       selectedDrivingLicenseClass: {
         name: "",
       },
+      maxDate: "",
     };
   },
   mounted() {
@@ -207,6 +210,7 @@ export default {
         this.document.otherInformation
       ];
     }
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
   },
   methods: {
     // Upload image

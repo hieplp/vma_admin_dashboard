@@ -97,6 +97,7 @@
                     type="date"
                     class="form-control"
                     v-model="document.registeredDate"
+                    :max="maxDate"
                     :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
@@ -292,6 +293,7 @@
                     type="date"
                     class="form-control"
                     v-model="document.registeredDate"
+                    :max="maxDate"
                     :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
@@ -313,7 +315,7 @@
                     class="form-control"
                     v-model="document.expiryDate"
                     :disabled="document.registeredDate === null"
-                    :min="document.registeredDate"
+                    :min="minExpiry"
                     :readonly="!isUpdBtnVisibile && !isInsert"
                   />
                   <div class="ui corner label">
@@ -372,6 +374,7 @@
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
+import moment from "moment";
 
 export default {
   components: {},
@@ -428,6 +431,8 @@ export default {
       idMaxRange: 0,
       isUpdBtnVisibile: false,
       isInsert: false,
+      maxDate: "",
+      minExpiry: "",
     };
   },
   mounted() {
@@ -435,6 +440,9 @@ export default {
     this.isInsert = this.proIsInsert;
     if (!this.isInsert) {
       this.initData();
+      this.minExpiry = moment(this.document.registeredDate).format(
+        "YYYY-MM-DD"
+      );
     }
     if (this.type !== 2) {
       this.idMaxRange = this.idMaxLength[this.idMaxLength.length - 1];
@@ -442,6 +450,7 @@ export default {
       this.initIDErrMsg();
     }
     this.document.vehicleDocumentType = this.documentType;
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
   },
   methods: {
     // Init document data

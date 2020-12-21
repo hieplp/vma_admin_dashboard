@@ -106,13 +106,13 @@
             </div>
 
             <!-- Birthdate -->
-            <div class="field">
+            <div class="field" v-if="maxBirthDate">
               <label>Birthdate</label>
               <div class="ui corner labeled input">
                 <input
                   type="date"
                   v-model="driver.dateOfBirth"
-                  max="2002-10-31"
+                  :max="maxBirthDate"
                   class="form-control"
                 />
                 <div class="ui corner label">
@@ -355,6 +355,7 @@
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
+import moment from "moment";
 
 export default {
   props: {
@@ -416,10 +417,10 @@ export default {
     if (this.propDriver) {
       this.initData();
     }
-    // Init max birthdate = current year - 18
-    let today = new Date().toISOString();
-    let year = today.split("-")[0] - 18;
-    this.maxBirthDate = today.replace(today.split("-")[0], year);
+
+    this.maxBirthDate = moment(new Date())
+      .subtract(18, "y")
+      .format("YYYY-MM-DD");
   },
   methods: {
     // Upload profile img

@@ -95,6 +95,7 @@
                 <input
                   type="date"
                   class="form-control"
+                  :max="maxDate"
                   v-model="document.registeredDate"
                   :readonly="!isUpdBtnVisibile && !isInsert"
                 />
@@ -184,6 +185,7 @@
 
 <script>
 import { isNumber } from "../../../assets/js/input.js";
+import moment from "moment";
 
 export default {
   components: {},
@@ -231,6 +233,7 @@ export default {
       // Update button visible
       isUpdBtnVisibile: false,
       isInsert: false,
+      maxDate: "",
     };
   },
   mounted() {
@@ -243,6 +246,7 @@ export default {
     // Init error message for id
     this.initIDErrMsg();
     this.document.userDocumentType = this.documentType;
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
   },
   methods: {
     // Init document data

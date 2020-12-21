@@ -77,6 +77,7 @@
                   <input
                     type="date"
                     class="form-control"
+                    :max="maxDate"
                     v-model="document.registeredDate"
                   />
                   <div class="ui corner label">
@@ -266,6 +267,7 @@
                   <input
                     type="date"
                     class="form-control"
+                    :max="maxDate"
                     v-model="document.registeredDate"
                   />
                   <div class="ui corner label">
@@ -307,6 +309,7 @@
 
 <script>
 import { isNumber } from "../../assets/js/input.js";
+import moment from "moment";
 
 export default {
   props: {
@@ -350,6 +353,7 @@ export default {
       documentImagePrev: [],
       cities: [],
       idMaxRange: 0,
+      maxDate: "",
     };
   },
   mounted() {
@@ -361,6 +365,7 @@ export default {
     }
 
     this.document.vehicleDocumentType = this.documentType;
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
   },
   methods: {
     // Init error message for id
