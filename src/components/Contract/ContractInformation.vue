@@ -64,6 +64,7 @@
                     <input
                       type="date"
                       v-model="contract.signedDate"
+                      :max="maxDate"
                       placeholder="Signed Date"
                     />
                     <div class="ui corner label">
@@ -258,6 +259,7 @@ export default {
         fullName: "",
       },
       currentDate: "",
+      maxDate: "",
       currentDateTime: "",
       isChange: false,
     };
@@ -267,6 +269,7 @@ export default {
     if (this.propContract) {
       this.initContract();
     }
+    this.maxDate = moment(new Date()).format("YYYY-MM-DD");
     this.isLoading = true;
   },
   computed: {
