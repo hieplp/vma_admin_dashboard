@@ -58,7 +58,14 @@
             <div v-for="notify in notifications" :key="notify.notificationId">
               <a
                 class="dropdown-item preview-item"
-                @click="handleNotificationClicks(notify.id, notify.type)"
+                @click="
+                  handleNotificationClicks(
+                    notify.id,
+                    notify.type,
+                    notify.title,
+                    notify.body
+                  )
+                "
               >
                 <div class="preview-thumbnail">
                   <div class="preview-icon bg-success">
@@ -258,44 +265,57 @@ export default {
         });
     },
     // Handle notification clicks
-    handleNotificationClicks(id, type) {
-      switch (type) {
-        case "DELETE_VEHICLE_DOCUMENT":
-          this.$router.push({
-            name: "ChangeVehicleRequest",
-            params: { requestId: id },
-          });
-          break;
-        case "NEW_VEHICLE_DOCUMENT":
-          this.$router.push({
-            name: "ChangeVehicleRequest",
-            params: { requestId: id },
-          });
-          break;
-        case "CHANGE_VEHICLE":
-          this.$router.push({
-            name: "ChangeVehicleRequest",
-            params: { requestId: id },
-          });
-          break;
-        case "NEW_DOCUMENT":
-          this.$router.push({
-            name: "UseDocumentRequestDetail",
-            params: { requestId: id },
-          });
-          break;
-        case "UPDATE_DOCUMENT":
-          this.$router.push({
-            name: "UseDocumentRequestDetail",
-            params: { requestId: id },
-          });
-          break;
-        case "DELETE_DOCUMENT":
-          this.$router.push({
-            name: "UseDocumentRequestDetail",
-            params: { requestId: id },
-          });
-          break;
+    handleNotificationClicks(id, type, title, body) {
+      if (title.includes("Request")) {
+        switch (type) {
+          case "DELETE_VEHICLE_DOCUMENT":
+            this.$router.push({
+              name: "ChangeVehicleRequest",
+              params: { requestId: id },
+            });
+            break;
+          case "NEW_VEHICLE_DOCUMENT":
+            this.$router.push({
+              name: "ChangeVehicleRequest",
+              params: { requestId: id },
+            });
+            break;
+          case "CHANGE_VEHICLE":
+            this.$router.push({
+              name: "ChangeVehicleRequest",
+              params: { requestId: id },
+            });
+            break;
+          case "NEW_DOCUMENT":
+            this.$router.push({
+              name: "UseDocumentRequestDetail",
+              params: { requestId: id },
+            });
+            break;
+          case "UPDATE_DOCUMENT":
+            this.$router.push({
+              name: "UseDocumentRequestDetail",
+              params: { requestId: id },
+            });
+            break;
+          case "DELETE_DOCUMENT":
+            this.$router.push({
+              name: "UseDocumentRequestDetail",
+              params: { requestId: id },
+            });
+            break;
+        }
+      } else if (title.includes("Contract Vehicle Status")) {
+        let arr = body.split("assigned to contract with ID ")[1].split(" ")[0];
+        this.$router.push({
+          name: "ContractDetail",
+          params: { contractId: arr },
+        });
+      } else if (title.includes("Contract Status")) {
+        this.$router.push({
+          name: "ContractDetail",
+          params: { contractId: id },
+        });
       }
     },
   },
