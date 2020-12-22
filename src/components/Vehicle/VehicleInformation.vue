@@ -107,14 +107,14 @@
                   placeholder="Engine Number"
                   v-model="vehicle.engineNumber"
                   style="text-transform:uppercase"
-                  maxlength="12"
+                  maxlength="10"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
                 </div>
               </div>
               <div class="ui pointing red basic label" v-if="isEngineNumberErr">
-                Engine Number is required 12 chars!
+                Engine Number is required 10 chars!
               </div>
             </div>
             <!-- Model -->
@@ -590,7 +590,7 @@ export default {
     checkBasicInformation() {
       this.isChassisNumberErr = this.vehicle.chassisNumber.length !== 17;
       this.isVehicleIdErr = this.vehicle.vehicleId.length < 8;
-      this.isEngineNumberErr = this.vehicle.engineNumber.length !== 12;
+      this.isEngineNumberErr = this.vehicle.engineNumber.length !== 10;
       this.isModelErr = this.vehicle.model.length === 0;
       this.isBrandErr = this.brand === null;
       this.isOriginErr = this.origin === null;

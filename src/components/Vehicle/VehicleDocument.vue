@@ -181,7 +181,6 @@
                       name="Name"
                       :placeholder="otherInformationTitle"
                       :maxlength="this.otherInfoMaxLength"
-                      @keypress="isNumber($event)"
                       style="text-transform:uppercase"
                       v-model="document.vehicleDocumentId"
                     />

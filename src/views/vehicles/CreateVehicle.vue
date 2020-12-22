@@ -122,7 +122,7 @@
         :title="'Vehicle registration certificate'"
         :maxImage="2"
         :isOtherInfoVisible="true"
-        :otherInfoMaxLength="9"
+        :otherInfoMaxLength="12"
         :type="2"
         :isExpiryDateVisible="true"
         :documentType="'VEHICLE_REGISTRATION_CERTIFICATE'"
