@@ -30,7 +30,7 @@
       <div class="card">
         <div class="card-body">
           <h4 class="ui dividing header">{{ this.title }}</h4>
-          <table class="table" v-if="vehiclesList.length > 0">
+          <table class="table" v-if="vehiclesList.length > 0 && isRender">
             <thead>
               <tr class="">
                 <th>NO.</th>
@@ -143,6 +143,7 @@ export default {
       endDate: "",
       totalPassengers: 0,
       oldTotalPassengers: 0,
+      isRender: false,
     };
   },
   async mounted() {
@@ -153,8 +154,8 @@ export default {
         this.oldTotalPassengers = this.propsTotalPassengers;
       }
     }
-
-    // this.isLoading = true;
+    this.isRender = true;
+    // this.isLoading = false;
   },
   methods: {
     // Map state

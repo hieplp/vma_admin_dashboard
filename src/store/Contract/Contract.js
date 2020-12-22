@@ -178,11 +178,6 @@ export default {
             resolve(res);
           })
           .catch((err) => {
-            console.log(
-              "🚀 ~ file: Contract.js ~ line 166 ~ returnnewPromise ~ err.response.data",
-              err.response.data
-            );
-
             reject(err.response.data);
           });
       });

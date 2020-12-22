@@ -58,18 +58,15 @@
             <select
               class="form-control form-control-sm"
               name="status"
-              v-model="searchStatusID"
+              v-model="viewOption"
               @change="initVehiclesList"
             >
-              <option :value="''">
-                Select vehicle status
+              <option :value="0">
+                Get avaible vehicles based on value
               </option>
-              <option
-                v-for="status in this.statusList"
-                :key="status"
-                :value="status"
-                >{{ status.replaceAll("_", " ") }}</option
-              >
+              <option :value="1">
+                Get all available vehicles
+              </option>
             </select>
           </div>
         </div>
@@ -84,6 +81,8 @@
           <th>MODEL</th>
           <th>SEAT</th>
           <th>TYPE</th>
+          <th>EXPECTED VALUE</th>
+          <th>EARNED VALUE</th>
           <!-- <th>STATUS</th> -->
           <th class="text-center">ACTION</th>
         </tr>
@@ -95,6 +94,8 @@
           <td>{{ vehicle.model }}</td>
           <td>{{ vehicle.seats }}</td>
           <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
+          <td>{{ vehicle.expectedValue }}</td>
+          <td>{{ vehicle.currentEarnedValue }}</td>
 
           <td class="row justify-content-center btn-action">
             <button
@@ -181,6 +182,7 @@ export default {
       vehicles: [],
       totalVehicles: 0,
       maxSeat: 0,
+      viewOption: 0,
     };
   },
   computed: {
@@ -228,7 +230,7 @@ export default {
         seatsMin: "",
         seatsMax: this.maxSeat,
         vehicleTypeId: this.vehicleType,
-        viewOption: 0,
+        viewOption: this.viewOption,
       });
       this.totalVehicles = await this._getVehicleRecommendationsCount({
         startDate: this.startDate,
@@ -236,7 +238,7 @@ export default {
         seatsMin: "",
         seatsMax: this.maxSeat,
         vehicleTypeId: this.vehicleType,
-        viewOption: 0,
+        viewOption: this.viewOption,
       });
 
       this.selectedVehicleList.forEach((vehicle) => {
