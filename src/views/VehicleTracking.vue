@@ -557,8 +557,11 @@ export default {
       this.isLoading = false;
     },
     sortVehicle() {
-      this.vehicles.sort((vehicle) => {
-        return 0 - vehicle.distance.rows[0].elements[0].duration.value;
+      this.vehicles.sort((aVehicle, bVehicle) => {
+        return (
+          aVehicle.distance.rows[0].elements[0].duration.value -
+          bVehicle.distance.rows[0].elements[0].duration.value
+        );
       });
     },
     isFar(distance) {
