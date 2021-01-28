@@ -19,15 +19,15 @@
         <gmap-map
           class="mb-3"
           ref="ggMap"
+          :zoom="12"
           :center="vehicleCoord"
           style="width:100%;  height: 600px;"
         >
           <DirectionsRenderer
-            v-for="(vehicle, index) in vehicles"
-            :key="index"
+            v-if="directionEndCoord"
             travelMode="DRIVING"
             ref="mapRender"
-            :origin="vehicle.position"
+            :origin="directionEndCoord"
             :destination="vehicleCoord"
           />
           <GmapMarker
@@ -213,6 +213,12 @@
                     >
                       <i class="mdi mdi-account-check"></i>
                     </button>
+                    <button
+                      class="btn btn-info btn-rounded btn-icon mr-1"
+                      @click="openInfoWindowTemplate(vehicle)"
+                    >
+                      <i class="mdi mdi-car"></i>
+                    </button>
                   </td>
                 </tr>
               </tbody>
@@ -330,6 +336,8 @@ export default {
 
       config: {},
 
+      directionEndCoord: null,
+
       isAddressModal: false, // is address modal picker visible
       // 1 - Add new location
       // 2 - Update location
@@ -407,7 +415,9 @@ export default {
       this.infoVehicle = item;
       // this.infoWindow;
       this.infoWindow.position = item.position;
+      this.directionEndCoord = item.position;
       this.infoWindow.open = true;
+      document.getElementById("app").scrollIntoView();
     },
     // Search vehicle
     async searchVehicle() {
@@ -418,6 +428,9 @@ export default {
       await this.calculateDistance();
       this.initFarVehicle();
       this.sortVehicle();
+      if (this.vehicles && this.vehicles.length > 0) {
+        this.directionEndCoord = this.vehicles[0].position;
+      }
       this.isDistanceCal = true;
       this.isLoading = false;
     },
