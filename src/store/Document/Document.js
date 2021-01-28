@@ -24,7 +24,9 @@ export default {
     // Get documents
     _getDocuments(context, { userId, option }) {
       return new Promise((resolve, reject) => {
-        Repository.get(`users/${userId}/user-documents?option=${option}`)
+        Repository.get(
+          `users/${userId}/user-documents?option=${option}&documentStatus=VALID`
+        )
           .then((res) => {
             resolve(res.data.userDocuments);
           })

@@ -63,11 +63,11 @@
             km <br />
             <b>Driving Time:</b>
             {{
-              formatDuration(
+              formatDurationTime(
                 infoVehicle.distance.rows[0].elements[0].duration.value
               )
             }}
-            hours <br />
+            <br />
           </gmap-info-window>
         </gmap-map>
       </div>
@@ -195,7 +195,7 @@
                   </td>
                   <td>
                     {{
-                      formatDuration(
+                      formatDurationTime(
                         vehicle.distance.rows[0].elements[0].duration.value
                       )
                     }}
@@ -574,6 +574,15 @@ export default {
     // format duration
     formatDuration(duration) {
       return parseFloat(duration / 60).toFixed(2);
+    },
+    formatDurationTime(duration) {
+      let formatedDuration = this.formatDuration(duration);
+      console.log(parseFloat(duration / 60) <= 60);
+      return (
+        formatedDuration +
+        " " +
+        (parseFloat(duration / 60) <= 60 ? "minute(s)" : " hour(s)")
+      );
     },
     // isSeatAvailable
     // isSeatAvailable() {},
