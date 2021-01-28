@@ -280,6 +280,12 @@ export default {
               params: { requestId: id },
             });
             break;
+          case "NEED_BACKUP_VEHICLE":
+            this.$router.push({
+              name: "ChangeVehicleRequest",
+              params: { requestId: id },
+            });
+            break;
           case "CHANGE_VEHICLE":
             this.$router.push({
               name: "ChangeVehicleRequest",

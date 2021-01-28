@@ -96,5 +96,26 @@ export default {
           });
       });
     },
+    // handle back up vehicle request
+    _handleBackUpReq(context, request) {
+      return new Promise((resolve, reject) => {
+        let user = JSON.parse(localStorage.getItem("USER"));
+        let idToken = user.stsTokenManager.accessToken;
+        Repository.post(`${REQUEST_URL}/vehicles/issue/handler`, request, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        })
+          .then((res) => {
+            console.log("🚀 ~ file: Request.js ~ line 60 ~ .then ~ res", res);
+            resolve(res.data);
+          })
+          .catch((err) => {
+            console.log(
+              "🚀 ~ file: Request.js ~ line 64 ~ returnnewPromise ~ err",
+              err
+            );
+            reject(err.response.data);
+          });
+      });
+    },
   },
 };

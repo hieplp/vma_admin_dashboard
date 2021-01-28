@@ -92,10 +92,7 @@
 
     <div class="page-header">
       <h3 class="page-title test">
-        <a @click="$router.go(-1)" href="javascript:void(0)">
-          <!-- {{ this.prevRoute === null ? "Drivers" : this.prevRoute.name }} -->
-          Vehicle Requests
-        </a>
+        <router-link to="/requests/vehicles"> Vehicle Request </router-link>
         <span class="text-secondary">/</span>
         <span>
           {{ this.$route.params.requestId }}
@@ -225,6 +222,45 @@
                     />
                   </div>
                 </div>
+
+                <!-- Vehicle  -->
+                <div
+                  class="field"
+                  v-if="request.requestType === 'NEED_BACKUP_VEHICLE'"
+                >
+                  <label>Vehicle</label>
+                  <div class="ui action input">
+                    <input
+                      type="text"
+                      :value="vehicleData.vehiclesId"
+                      readonly
+                    />
+                    <button
+                      class="ui right labeled blue icon button"
+                      @click="
+                        () => {
+                          this.$router.push({
+                            name: 'VehicleTracking',
+                            params: {
+                              vehicleId: request.vehicleId,
+                              coordinates: request.coordinates,
+                              minSeat: vehicle.seatsModel.seats,
+                              requestId: request.requestId,
+                              vehiclesId: vehicleData.vehiclesId,
+                            },
+                          });
+                        }
+                      "
+                    >
+                      <i class="bus icon"></i>
+                      Pick
+                    </button>
+                  </div>
+                  <div class="ui pointing red basic label" v-if="isVehicleErr">
+                    Vehicle is required!
+                  </div>
+                </div>
+
                 <!-- User Document Id -->
                 <div
                   class="field"
@@ -373,6 +409,7 @@ export default {
         description: "",
         createDate: "",
       },
+      vehicle: null,
       document: null,
       isUserInfoVisible: true,
       isLoading: false,
@@ -387,7 +424,14 @@ export default {
       isSuccess: false,
       successSubTitle: "",
       successTitle: "",
-
+      // data for vehicle backup request
+      vehicleData: {
+        brokenVehicleLocation: "",
+        far: true,
+        requestId: this.$route.params.requestId,
+        requestStatus: "ACCEPTED",
+        vehiclesId: [],
+      },
       media: [
         {
           thumb: "",
@@ -413,13 +457,19 @@ export default {
     this.isLoading = true;
 
     await this.initRequest();
-    await this.initDocument();
 
     if (this.request.requestType === "CHANGE_VEHICLE") {
       await this.initDataDocument();
       let drivingLicenseClasses = require("../../../assets/json/indentify/type.json");
       this.licenseClass =
         drivingLicenseClasses[this.drivingLicenseInfor.otherInformation];
+    } else if (this.request.requestType === "NEED_BACKUP_VEHICLE") {
+      await this.initVehicle();
+      if (this.$route.params.vehicleData) {
+        this.vehicleData = this.$route.params.vehicleData;
+      }
+    } else {
+      await this.initDocument();
     }
     this.isUserInfoVisible = true;
     this.isLoading = false;
@@ -430,8 +480,17 @@ export default {
       "_updateStatus",
       "_getRequestById",
       "_updateChangeReqStatus",
+      "_handleBackUpReq",
     ]),
     ...mapActions("Document", ["_getDocuments"]),
+    ...mapActions("Vehicle", ["_getDetailVehicle"]),
+    // Init vehicle information
+    async initVehicle() {
+      await this._getDetailVehicle(this.request.vehicleId).then((res) => {
+        this.vehicle = res;
+        this.isVehiclenfoLoading = true;
+      });
+    },
     // Init request's information
     async initRequest() {
       await this._getRequestById(this.$route.params.requestId)
@@ -491,6 +550,27 @@ export default {
         } else {
           this.isVehicleErr = true;
         }
+      } else if (this.request.requestType === "NEED_BACKUP_VEHICLE") {
+        this.vehicleData.requestStatus = requestStatus;
+        if (requestStatus === "DENIED") {
+          this.vehicleData.vehiclesId = [];
+        } else {
+          this.isVehicleErr = this.vehicleData.vehiclesId.length === 0;
+          if (this.isVehicleErr) {
+            this.isLoading = false;
+            return;
+          }
+        }
+
+        await this._handleBackUpReq(this.vehicleData)
+          .then(() => {
+            this.isSuccess = true;
+            this.request.requestStatus = requestStatus;
+          })
+          .catch((err) => {
+            this.isError = !this.isError;
+            this.errMsg = err.debugMessage;
+          });
       } else {
         // update status
         await RequestRepository.updateStatus(

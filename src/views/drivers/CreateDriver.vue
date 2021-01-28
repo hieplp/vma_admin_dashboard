@@ -360,6 +360,7 @@ export default {
           this.profileImage = null;
         }
         // Call api to create new driver
+        console.log(this.driver);
         await this._create({ user: this.driver, roleId: 3 })
           .then((res) => {
             if (res) {
@@ -409,8 +410,6 @@ export default {
             ) {
               this.isError = true;
               this.errMsg = "Identity ID is duplicated!";
-              // this.identity.documentDupErr = true;
-              // this.$refs.identityID.focus();
               this.$refs.identityCard.handleDuplicateErr(true);
             } else {
               this.isError = true;

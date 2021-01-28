@@ -21,9 +21,6 @@ export default MapElementFactory({
   methods: {
     draw(directionsService, directionsRenderer) {
       if (!this.origin || !this.destination || !this.travelMode) return;
-      directionsRenderer.setOptions({
-        preserveViewport: true,
-      });
 
       directionsService.route(
         {
@@ -52,6 +49,9 @@ export default MapElementFactory({
 
   afterCreate(directionsRenderer) {
     let directionsService = new google.maps.DirectionsService();
+    directionsRenderer.setOptions({
+      suppressMarkers: true,
+    });
     this.draw(directionsService, directionsRenderer);
     this.$watch(
       () => [this.origin, this.destination, this.travelMode, this.waypoints],
@@ -66,6 +66,9 @@ export default MapElementFactory({
             waypoints: waypoints,
             travelMode: travelMode,
             optimizeWaypoints: true,
+            transitOptions: {
+              departureTime: new Date(),
+            },
           },
           (response, status) => {
             if (status !== "OK") return;

@@ -119,6 +119,7 @@
       title="FIRST TRIP"
       ref="firstTrip"
       v-show="isTripVisible"
+      :config="config"
       :isUpdate="true"
       :endDateChange="
         () => {
@@ -130,6 +131,7 @@
     <TripPicker
       title="RETURN TRIP"
       ref="returnTrip"
+      :config="config"
       v-show="isTripVisible && contract.roundTrip"
       :endDateChange="
         () => {
@@ -170,15 +172,27 @@
     <VehiclePicker
       ref="firstVehiclePicker"
       title="FIRST TRIP VEHICLES"
+      :config="config"
       v-show="isVehicleVisible"
     />
     <!-- Vehicle picker  -->
     <VehiclePicker
       ref="returnVehiclePicker"
       title="RETURN TRIP VEHICLES"
+      :config="config"
       v-show="isVehicleVisible && contract.roundTrip"
     />
-    <!-- User document -->
+
+    <ContractConfirmModal
+      v-if="isContractConfVisible"
+      :propContract="contract"
+      :cancel="
+        () => {
+          this.isContractConfVisible = false;
+        }
+      "
+      :create="createContract"
+    />
     <div class="row" v-if="isVehicleVisible">
       <!-- Confirm Group -->
       <div class="col-lg-12 grid-margin stretch-card">
@@ -213,14 +227,18 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
 import MessageModal from "../../components/Modal/MessageModal";
-import Loading from "vue-loading-overlay";
 import ContractInformation from "../../components/Contract/ContractInformation";
 import TripPicker from "../../components/TripPicker";
 import VehiclePicker from "../../components/Contract/VehiclePicker";
-import moment from "moment";
+import ContractConfirmModal from "../../components/Contract/ContractConfirmModal";
 import DirectionsRenderer from "../../components/Google/DirectionsRenderer";
+
+import moment from "moment";
+import * as firebase from "firebase";
+import Loading from "vue-loading-overlay";
+import { mapActions } from "vuex";
+
 export default {
   name: "CreateContract",
   components: {
@@ -231,6 +249,7 @@ export default {
     // eslint-disable-next-line vue/no-unused-components
     DirectionsRenderer,
     VehiclePicker,
+    ContractConfirmModal,
   },
   data() {
     return {
@@ -243,45 +262,76 @@ export default {
       isContractVisible: true,
       isTripVisible: false,
       isVehicleVisible: false,
+      isContractConfVisible: false,
+
+      // Config
+      config: {},
+      isFromVehicleTab: false,
 
       isAddressModalVisible: false,
     };
   },
-  mounted() {},
+  async mounted() {
+    this.isLoading = true;
+    await this.initConfig();
+    this.isLoading = false;
+  },
   methods: {
     // Map state
     ...mapActions("Contract", ["_create"]),
+    // Init config
+    async initConfig() {
+      const db = firebase.firestore();
+      const config = db.collection("Config").doc("Contract");
+      let seft = this;
+      await config.get().then((doc) => {
+        seft.config = doc.data();
+      });
+    },
+    // Create
     async create() {
       this.isLoading = true;
       let isValid = false;
+      this.isContractConfVisible = false;
       // Get first trip
       let firstVehicles = this.$refs.firstVehiclePicker.getData();
+
       isValid = firstVehicles !== null && firstVehicles !== undefined;
       // If is round-trip
       if (this.contract.roundTrip) {
         let returnVehicles = this.$refs.returnVehiclePicker.getData();
-        this.contract.trips[1].assignedVehicles = returnVehicles;
-        isValid = returnVehicles !== null && firstVehicles !== undefined;
+        isValid = returnVehicles !== null && returnVehicles !== undefined;
+        if (isValid) {
+          this.contract.trips[1].assignedVehicles = returnVehicles;
+        }
       }
-
       if (isValid) {
         this.contract.trips[0].assignedVehicles = firstVehicles;
-        await this._create(this.contract)
-          .then((res) => {
-            if (res) {
-              this.isCreatedSuccessfully = true;
-            }
-          })
-          .catch((ex) => {
-            if (ex.debugMessage) {
-              this.isError = true;
-              this.errMsg = ex.debugMessage;
-            }
-          });
-        console.log(this.contract);
+
+        this.isContractConfVisible = true;
       }
       this.isLoading = false;
     },
+
+    async createContract(contract) {
+      this.isLoading = true;
+      this.isContractConfVisible = false;
+      await this._create(contract)
+        .then((res) => {
+          if (res) {
+            this.isCreatedSuccessfully = true;
+          }
+        })
+        .catch((ex) => {
+          if (ex.debugMessage) {
+            this.isError = true;
+            this.errMsg = ex.debugMessage;
+          }
+        });
+      this.isLoading = false;
+    },
+
+    // Change tab
     changeTab(step) {
       let isValid = this.$refs.contract.checkBasicInformation();
       // let isValid = false;
@@ -290,26 +340,37 @@ export default {
         if (this.isContractVisible) {
           this.contract = this.$refs.contract.getData();
         }
-        // Set max date for duration
-        let currentDate = new Date();
-        let durationFrom = new Date(this.contract.durationFrom);
-        if (
-          currentDate.getFullYear() === durationFrom.getFullYear() &&
-          currentDate.getMonth() === durationFrom.getMonth() &&
-          currentDate.getDate() === durationFrom.getDate()
-        ) {
-          this.$refs.firstTrip.minDateFrom = moment(currentDate).format(
-            "YYYY-MM-DDTkk:mm"
-          );
-        } else {
-          this.$refs.firstTrip.minDateFrom = moment(durationFrom).format(
-            "YYYY-MM-DDTkk:mm"
-          );
-        }
 
-        this.$refs.firstTrip.maxDateFrom = moment(
-          new Date(this.contract.durationTo)
-        ).format("YYYY-MM-DDTkk:mm");
+        if (step === "isTripVisible") {
+          // Set max date for duration
+          let currentDate = new Date();
+          let durationFrom = new Date(this.contract.durationFrom);
+
+          if (
+            currentDate.getFullYear() === durationFrom.getFullYear() &&
+            currentDate.getMonth() === durationFrom.getMonth() &&
+            currentDate.getDate() === durationFrom.getDate()
+          ) {
+            this.$refs.firstTrip.minDateFrom = moment(currentDate).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          } else {
+            this.$refs.firstTrip.minDateFrom = moment(durationFrom).format(
+              "YYYY-MM-DD HH:mm:ss"
+            );
+          }
+
+          this.$refs.firstTrip.maxDateFrom = moment(
+            new Date(this.contract.durationTo)
+          ).format("YYYY-MM-DDTkk:mm");
+          this.$refs.firstTrip.defaultDate = this.$refs.firstTrip.formatMinDate(
+            this.$refs.firstTrip.minDateFrom
+          );
+
+          if (this.isVehicleVisible && this.contract.roundTrip) {
+            this.isFromVehicleTab = true;
+          }
+        }
 
         this.isContractVisible = step === "isContractVisible" ? true : false;
         this.isTripVisible = step === "isTripVisible" ? true : false;
@@ -318,30 +379,33 @@ export default {
           this.contract.trips = [];
           // Get first trip
           let firstTrip = this.$refs.firstTrip.getData();
+          // let firstTrip = {};
           isValid = firstTrip !== null && firstTrip !== undefined;
           // If is round-trip
+          let returnTrip = null;
           if (this.contract.roundTrip) {
-            let returnTrip = this.$refs.returnTrip.getData();
+            returnTrip = this.$refs.returnTrip.getData();
             isValid = returnTrip !== null && returnTrip !== undefined;
-            if (isValid) {
-              this.contract.trips.push(returnTrip);
-            }
           }
           // isValid = false;
           if (isValid) {
             this.contract.trips.push(firstTrip);
-
+            if (this.contract.roundTrip) {
+              this.contract.trips.push(returnTrip);
+            }
             // Set min and max date for first trip vehicle picker
             this.$refs.firstVehiclePicker.startDate = this.contract.trips[0].departureTime;
             this.$refs.firstVehiclePicker.endDate = this.contract.trips[0].destinationTime;
-            this.$refs.firstVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+            this.$refs.firstVehiclePicker.vehicleCount = this.contract.vehicleCount;
+            this.$refs.firstVehiclePicker.passengerCount = this.contract.passengerCount;
             // -----------------------------------
 
             if (this.contract.roundTrip) {
               // Set min and max date for return trip vehicle picker
               this.$refs.returnVehiclePicker.startDate = this.contract.trips[1].departureTime;
               this.$refs.returnVehiclePicker.endDate = this.contract.trips[1].destinationTime;
-              this.$refs.returnVehiclePicker.oldTotalPassengers = this.contract.estimatedPassengerCount;
+              this.$refs.returnVehiclePicker.vehicleCount = this.contract.vehicleCount;
+              this.$refs.returnVehiclePicker.passengerCount = this.contract.passengerCount;
               // -----------------------------------
             }
 
@@ -356,6 +420,10 @@ export default {
     },
     // first trip change
     handleFirstTripDateChange() {
+      if (!this.isTripVisible || this.isFromVehicleTab) {
+        this.isFromVehicleTab = false;
+        return;
+      }
       if (this.contract.roundTrip) {
         let firstTripDestinationTime = this.$refs.firstTrip.trip
           .destinationTime;
@@ -365,6 +433,10 @@ export default {
         this.$refs.returnTrip.maxDateFrom = moment(
           new Date(this.contract.durationTo)
         ).format("YYYY-MM-DDTkk:mm");
+
+        this.$refs.returnTrip.defaultDate = this.$refs.returnTrip.formatMinDate(
+          this.$refs.returnTrip.minDateFrom
+        );
       }
       this.handleTripTimeChange(1);
     },
@@ -382,8 +454,8 @@ export default {
       } else {
         if (this.contract && this.contract.trips && this.contract.trips[1]) {
           if (
-            this.contract.trips[0].destinationTime !==
-            this.$refs.returnVehiclePicker.trip.destinationTime
+            this.contract.trips[1].destinationTime !==
+            this.$refs.returnTrip.trip.destinationTime
           ) {
             this.$refs.returnVehiclePicker.vehiclesList = [];
           }

@@ -44,7 +44,9 @@ export default {
     let vehicleList = [];
     try {
       const res = await Repository.get(
-        `${resource}?model=${model}&pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&viewOption=${viewOption}&ownerId=${ownerId}`
+        `${resource}?pageNum=${pageNum}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&useStatus=${viewOption}` +
+          (ownerId === "" ? "" : "&ownerId=" + ownerId) +
+          (model === "" ? "" : "&model=" + model)
       );
       if (res.data) {
         vehicleList = res.data.vehicleList;
@@ -70,7 +72,9 @@ export default {
     let count = 0;
     try {
       const res = await Repository.get(
-        `${resource}/count?model=${model}&vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&viewOption=${viewOption}&ownerId=${ownerId}`
+        `${resource}/count?vehicleId=${vehicleId}&vehicleMaxDis=${vehicleMaxDis}&vehicleMinDis=${vehicleMinDis}&vehicleStatus=${vehicleStatus}&vehicleTypeId=${vehicleType}&seatsMax=${vehicleMaxSeat}&seatsMin=${vehicleMinSeat}&useStatus=${viewOption}` +
+          (ownerId === "" ? "" : "&ownerId=" + ownerId) +
+          (model === "" ? "" : "&model=" + model)
       );
       if (res.data) {
         count = res.data;
@@ -155,6 +159,22 @@ export default {
   delete(vehicleId) {
     return new Promise((resolve, reject) => {
       Repository.delete(`${resource}?vehicleId=${vehicleId}`)
+        .then((res) => {
+          resolve(res);
+        })
+        .catch((err) => {
+          reject(err.response.data);
+        });
+    });
+  },
+  // Update vehicle status
+  updateVehicleStatus(vehicleId, status) {
+    return new Promise((resolve, reject) => {
+      console.log(
+        "🚀 ~ file: Vehicle.js ~ line 181 ~ _updateVehicleStatus ~ status",
+        status
+      );
+      Repository.patch(`${resource}/${vehicleId}/status`, status)
         .then((res) => {
           resolve(res);
         })

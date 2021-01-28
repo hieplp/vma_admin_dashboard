@@ -75,7 +75,7 @@
                   :maxlength="this.idMaxRange"
                   @keypress="isNumber($event)"
                   style="text-transform:uppercase"
-                  v-model="document.userDocumentId"
+                  v-model="document.userDocumentNumber"
                   :readonly="!isInsert"
                 />
                 <div class="ui corner label">
@@ -207,6 +207,7 @@ export default {
   data() {
     return {
       document: {
+        userDocumentNumber: "",
         userDocumentId: "",
         userDocumentType: "",
         registeredLocation: "",
@@ -303,7 +304,7 @@ export default {
     },
     // Check valid
     check() {
-      let documentID = this.document.userDocumentId;
+      let documentID = this.document.userDocumentNumber;
 
       this.documentIdErr = true;
       for (const idLength in this.idMaxLength) {
@@ -339,7 +340,7 @@ export default {
     // Clear input
     clear() {
       this.document = {
-        userDocumentId: "",
+        userDocumentNumber: "",
         userDocumentType: "",
         registeredLocation: "",
         registeredDate: "",

@@ -26,6 +26,10 @@ export default {
             resolve(res);
           })
           .catch((err) => {
+            console.log(
+              "🚀 ~ file: User.js ~ line 29 ~ returnnewPromise ~ err",
+              err
+            );
             reject(err.response.data);
           });
       });
@@ -139,10 +143,6 @@ export default {
             resolve(res);
           })
           .catch((err) => {
-            console.log(
-              "🚀 ~ file: User.js ~ line 144 ~ returnnewPromise ~ err",
-              err
-            );
             reject(err.response.data);
           });
       });

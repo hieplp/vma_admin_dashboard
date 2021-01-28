@@ -134,9 +134,7 @@ export default {
     // Get contract vehicle list
     _getContractVehicle(context, contractId) {
       return new Promise((resolve, reject) => {
-        Repository.get(
-          `${CONTRACT_URL}/vehicles?contractDetailId=${contractId}`
-        )
+        Repository.get(`${CONTRACT_URL}/vehicles?contractTripId=${contractId}`)
           .then((res) => {
             resolve(res.data.contractVehicleList);
           })
@@ -183,13 +181,48 @@ export default {
       });
     },
     // get recommendation vehicles
-    _getVehicleRecommendations(
+    _getAvailableVehiclesAuto(
       context,
-      { startDate, endDate, seatsMin, seatsMax, vehicleTypeId, viewOption }
+      {
+        startDate,
+        endDate,
+        bufferPre,
+        bufferPost,
+        passengerCount,
+        vehicleCount,
+        ignoreSleeperBus,
+      }
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/available-vehicles?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+          `${CONTRACT_URL}/vehicles/available-vehicles/auto?endDate=${endDate}&startDate=${startDate}&bufferPre=${bufferPre}&bufferPost=${bufferPost}&passengerCount=${passengerCount}&vehicleCount=${vehicleCount}&ignoreSleeperBus=${ignoreSleeperBus}`
+        )
+          .then((res) => {
+            resolve(res.data);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // get recommendation vehicles
+    _getVehicleRecommendations(
+      context,
+      {
+        startDate,
+        endDate,
+        seatsMin,
+        seatsMax,
+        vehicleTypeId,
+        viewOption,
+        bufferPre,
+        bufferPost,
+        pageNum,
+      }
+    ) {
+      return new Promise((resolve, reject) => {
+        Repository.get(
+          `${CONTRACT_URL}/vehicles/available-vehicles?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}&pageNum=${pageNum}`
         )
           .then((res) => {
             resolve(res.data.vehicleList);
@@ -202,11 +235,20 @@ export default {
     // get recommendation vehicles count
     _getVehicleRecommendationsCount(
       context,
-      { startDate, endDate, seatsMin, seatsMax, vehicleTypeId, viewOption }
+      {
+        startDate,
+        endDate,
+        seatsMin,
+        seatsMax,
+        vehicleTypeId,
+        viewOption,
+        bufferPre,
+        bufferPost,
+      }
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/available-vehicles/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}`
+          `${CONTRACT_URL}/vehicles/available-vehicles/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}`
         )
           .then((res) => {
             resolve(res.data);

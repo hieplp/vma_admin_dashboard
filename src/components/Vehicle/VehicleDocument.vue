@@ -58,7 +58,7 @@
                     :maxlength="this.idMaxRange"
                     @keypress="isNumber($event)"
                     style="text-transform:uppercase"
-                    v-model="document.vehicleDocumentId"
+                    v-model="document.vehicleDocumentNumber"
                   />
                   <div class="ui corner label">
                     <i class="asterisk icon"></i>
@@ -136,7 +136,7 @@
                       :maxlength="this.idMaxRange"
                       @keypress="isNumber($event)"
                       style="text-transform:uppercase"
-                      v-model="document.vehicleDocumentId"
+                      v-model="document.vehicleDocumentNumber"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -182,7 +182,7 @@
                       :placeholder="otherInformationTitle"
                       :maxlength="this.otherInfoMaxLength"
                       style="text-transform:uppercase"
-                      v-model="document.vehicleDocumentId"
+                      v-model="document.vehicleDocumentNumber"
                     />
                     <div class="ui corner label">
                       <i class="asterisk icon"></i>
@@ -328,7 +328,7 @@ export default {
   data() {
     return {
       document: {
-        vehicleDocumentId: "",
+        vehicleDocumentNumber: "",
         vehicleDocumentType: "",
         registeredLocation: "",
         registeredDate: "",
@@ -396,7 +396,7 @@ export default {
     // Check valid
     check() {
       if (this.type === 1) {
-        let documentID = this.document.vehicleDocumentId;
+        let documentID = this.document.vehicleDocumentNumber;
         this.documentIdErr = true;
         for (const idLength in this.idMaxLength) {
           if (documentID.length === this.idMaxLength[idLength]) {
@@ -406,8 +406,9 @@ export default {
         }
       } else if (this.type === 2) {
         this.documentIdErr =
-          this.document.vehicleDocumentId.length < this.otherInfoMinLength ||
-          this.document.vehicleDocumentId.length > this.otherInfoMaxLength;
+          this.document.vehicleDocumentNumber.length <
+            this.otherInfoMinLength ||
+          this.document.vehicleDocumentNumber.length > this.otherInfoMaxLength;
       } else if (this.isOtherInfoVisible && this.type !== 2) {
         this.otherInfoErr =
           this.document.otherInformation.length < this.otherInfoMinLength ||
@@ -436,7 +437,7 @@ export default {
     },
     // Get data
     getData() {
-      this.document.vehicleDocumentId = this.document.vehicleDocumentId.toUpperCase();
+      this.document.vehicleDocumentNumber = this.document.vehicleDocumentNumber.toUpperCase();
       if (!this.isExpiryDateVisible) {
         this.document.expiryDate = this.getExpiryDate(
           this.document.registeredDate,

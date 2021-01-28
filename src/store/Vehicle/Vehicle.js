@@ -176,6 +176,20 @@ export default {
           });
       });
     },
+    // Update vehicle status
+    _updateVehicleStatus(context, { vehicleId, status }) {
+      return new Promise((resolve, reject) => {
+        Repository.patch(
+          `${VEHICLE_URL}/${vehicleId}/status?vehicleStatus=${status}`
+        )
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
     // Delete contracts
     _deleteContract(context, vehicleValueId) {
       return new Promise((resolve, reject) => {
@@ -241,6 +255,48 @@ export default {
           .then((res) => {
             context.commit("setTotalVehicles", res.data);
             resolve();
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+
+    // --------------- VEHICLE SEAT ----------------------------
+    // Get vehicle seats
+    _getVehicleSeats() {
+      return new Promise((resolve, reject) => {
+        Repository.get(`${VEHICLE_URL}/misc/seats`)
+          .then((res) => {
+            resolve(res.data.seats);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Create vehicle seats
+    _createVehicleSeat(context, vehicleSeat) {
+      console.log(
+        "🚀 ~ file: Vehicle.js ~ line 266 ~ _createVehicleSeat ~ vehicleSeat",
+        vehicleSeat
+      );
+      return new Promise((resolve, reject) => {
+        Repository.post(`${VEHICLE_URL}/misc/seats`, vehicleSeat)
+          .then((res) => {
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err.response.data);
+          });
+      });
+    },
+    // Update vehicle seats
+    _updateVehicleSeat(context, vehicleSeat) {
+      return new Promise((resolve, reject) => {
+        Repository.patch(`${VEHICLE_URL}/misc/seats`, vehicleSeat)
+          .then((res) => {
+            resolve(res);
           })
           .catch((err) => {
             reject(err.response.data);

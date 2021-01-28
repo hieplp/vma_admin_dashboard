@@ -236,6 +236,10 @@ export default {
     async initContract() {
       await this._getContractDetail(this.$route.params.contractId).then(
         (res) => {
+          console.log(
+            "🚀 ~ file: ContractDetail.vue ~ line 239 ~ initContract ~ res",
+            res
+          );
           this.contract = res;
         }
       );

@@ -100,7 +100,7 @@
                   <th>SEAT</th>
                   <th>TYPE</th>
                   <th>STATUS</th>
-                  <th>TOTAL DISTANCE</th>
+                  <!-- <th>TOTAL DISTANCE</th> -->
                   <th class="text-center">ACTION</th>
                 </tr>
               </thead>
@@ -112,8 +112,8 @@
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
                   <td>{{ vehicle.vehicleId }}</td>
                   <td>{{ vehicle.model }}</td>
-                  <td>{{ vehicle.seats }}</td>
-                  <td>{{ vehicle.vehicleTypeName }}</td>
+                  <td>{{ vehicle.seatsModel.seats }}</td>
+                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
                   <td>
                     <label
@@ -122,6 +122,7 @@
                         'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
                         'badge-danger':
                           vehicle.vehicleStatus === 'MAINTENANCE' ||
+                          vehicle.vehicleStatus === 'REPAIRING' ||
                           vehicle.vehicleStatus === 'NEED_REPAIR',
                         'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
                         'badge-success':
@@ -135,7 +136,7 @@
                       >{{ vehicle.vehicleStatus.replaceAll("_", " ") }}</label
                     >
                   </td>
-                  <td>{{ vehicle.vehicleDistance }}</td>
+                  <!-- <td>{{ vehicle.vehicleDistance }}</td> -->
                   <td class="row justify-content-center btn-action">
                     <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
@@ -379,11 +380,11 @@ export default {
       searchVehicleID: "",
       searchModel: "",
       searchStatusID: "",
-      searchType: "",
-      vehicleMaxDis: "",
-      vehicleMinDis: "",
-      vehicleMaxSeat: "",
-      vehicleMinSeat: "",
+      searchType: "0",
+      vehicleMaxDis: "0",
+      vehicleMinDis: "0",
+      vehicleMaxSeat: "0",
+      vehicleMinSeat: "0",
       ownerId: "",
 
       isLoading: true,
@@ -437,11 +438,11 @@ export default {
       this.searchModel = "";
       this.searchPhoneNumber = "";
       this.searchStatusID = "";
-      this.vehicleMinSeat = "";
-      this.vehicleMaxSeat = "";
+      this.vehicleMinSeat = "0";
+      this.vehicleMaxSeat = "0";
       this.searchType = "";
-      this.vehicleMinDis = "";
-      this.vehicleMaxDis = "";
+      this.vehicleMinDis = "0";
+      this.vehicleMaxDis = "0";
     },
     // Search vehicle
     async searchVehicles() {

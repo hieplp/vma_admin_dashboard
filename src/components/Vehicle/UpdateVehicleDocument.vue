@@ -76,7 +76,7 @@
                     :maxlength="this.idMaxRange"
                     @keypress="isNumber($event)"
                     style="text-transform:uppercase"
-                    v-model="document.vehicleDocumentId"
+                    v-model="document.vehicleDocumentNumber"
                     :readonly="!isInsert"
                   />
                   <div class="ui corner label">
@@ -157,7 +157,7 @@
                       :maxlength="this.idMaxRange"
                       @keypress="isNumber($event)"
                       style="text-transform:uppercase"
-                      v-model="document.vehicleDocumentId"
+                      v-model="document.vehicleDocumentNumber"
                       :readonly="!isInsert"
                     />
                     <div class="ui corner label">
@@ -206,7 +206,7 @@
                       :maxlength="this.otherInfoMaxLength"
                       @keypress="isNumber($event)"
                       style="text-transform:uppercase"
-                      v-model="document.vehicleDocumentId"
+                      v-model="document.vehicleDocumentNumber"
                       :readonly="!isInsert"
                     />
                     <div class="ui corner label">
@@ -405,6 +405,7 @@ export default {
     return {
       document: {
         vehicleDocumentId: "",
+        vehicleDocumentNumber: "",
         vehicleDocumentType: "",
         registeredLocation: "",
         registeredDate: "",
@@ -508,7 +509,7 @@ export default {
     // Check valid
     check() {
       if (this.type === 1) {
-        let documentID = this.document.vehicleDocumentId;
+        let documentID = this.document.vehicleDocumentNumber;
         this.documentIdErr = true;
         for (const idLength in this.idMaxLength) {
           if (documentID.length === this.idMaxLength[idLength]) {
@@ -518,8 +519,9 @@ export default {
         }
       } else if (this.type === 2) {
         this.documentIdErr =
-          this.document.vehicleDocumentId.length < this.otherInfoMinLength ||
-          this.document.vehicleDocumentId.length > this.otherInfoMaxLength;
+          this.document.vehicleDocumentNumber.length <
+            this.otherInfoMinLength ||
+          this.document.vehicleDocumentNumber.length > this.otherInfoMaxLength;
       } else if (this.isOtherInfoVisible && this.type !== 2) {
         this.otherInfoErr =
           this.document.otherInformation.length < this.otherInfoMinLength ||
@@ -554,7 +556,7 @@ export default {
     // Clear input
     clear() {
       this.document = {
-        vehicleDocumentId: "",
+        vehicleDocumentNumber: "",
         vehicleDocumentType: "",
         registeredLocation: "",
         registeredDate: "",

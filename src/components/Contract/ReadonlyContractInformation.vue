@@ -47,25 +47,25 @@
                 </div>
               </div>
               <div class="two fields">
-                <!-- Estimated Passenger Count -->
+                <!-- Passenger Count -->
                 <div class="field">
-                  <label>Estimated Passenger Count</label>
+                  <label>Passenger Count</label>
                   <div class="ui corner labeled input">
                     <input
                       type="text"
-                      v-model="contract.estimatedPassengerCount"
+                      v-model="contract.passengerCount"
                       placeholder="Estimated Passenger Count"
                       readonly
                     />
                   </div>
                 </div>
-                <!-- Estimated Vehicle Count -->
+                <!-- Vehicle Count -->
                 <div class="field">
-                  <label>Estimated Vehicle Count</label>
+                  <label>Vehicle Count</label>
                   <div class="ui corner labeled input">
                     <input
                       type="text"
-                      v-model="contract.estimatedVehicleCount"
+                      v-model="contract.vehicleCount"
                       placeholder="Estimated Vehicle Count"
                       readonly
                     />
@@ -168,8 +168,8 @@ export default {
         signedDate: "",
         signedLocation: "",
         totalPrice: "",
-        estimatedPassengerCount: "",
-        estimatedVehicleCount: "",
+        passengerCount: "",
+        vehicleCount: "",
         roundTrip: false,
         trips: [],
       },
@@ -183,8 +183,8 @@ export default {
       otherInformationErr: false,
       signedDateErr: false,
       totalPriceErr: false,
-      estimatedPassengerCountErr: false,
-      estimatedVehicleCountErr: false,
+      passengerCountErr: false,
+      vehicleCountErr: false,
 
       isLoading: false,
       isCreatedSuccessfully: false,
@@ -236,10 +236,8 @@ export default {
       this.durationToErr = this.contract.durationTo.length === 0;
       this.signedDateErr = this.contract.signedDate.length === 0;
       this.totalPriceErr = this.contract.totalPrice.length === 0;
-      this.estimatedPassengerCountErr =
-        this.contract.estimatedPassengerCount.length === 0;
-      this.estimatedVehicleCountErr =
-        this.contract.estimatedVehicleCount.length === 0;
+      this.passengerCountErr = this.contract.passengerCount.length === 0;
+      this.vehicleCountErr = this.contract.vehicleCount.length === 0;
       let signedLocationErr = this.$refs.signedLocation.checkValid();
       this.ownerErr = this.owner.userId.length === 0;
       return (
@@ -248,8 +246,8 @@ export default {
         this.signedDateErr ||
         this.totalPriceErr ||
         signedLocationErr ||
-        this.estimatedPassengerCountErr ||
-        this.estimatedVehicleCountErr ||
+        this.passengerCountErr ||
+        this.vehicleCountErr ||
         this.ownerErr
       );
     },
@@ -279,8 +277,8 @@ export default {
           signedDate: "",
           signedLocation: "",
           totalPrice: "",
-          estimatedPassengerCount: 0,
-          estimatedVehicleCount: 0,
+          passengerCount: 0,
+          vehicleCount: 0,
         };
       }
     },

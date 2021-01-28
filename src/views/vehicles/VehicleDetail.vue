@@ -143,6 +143,45 @@
             </label>
           </div>
 
+          <div class="row justify-content-center mt-4">
+            <p
+              class="badge"
+              v-if="vehicle.vehicleStatus"
+              v-bind:class="{
+                'badge-info': vehicle.vehicleStatus === 'AVAILABLE',
+                'badge-danger':
+                  vehicle.vehicleStatus === 'MAINTENANCE' ||
+                  vehicle.vehicleStatus === 'REPAIRING' ||
+                  vehicle.vehicleStatus === 'RETURNING' ||
+                  vehicle.vehicleStatus === 'NEED_REPAIR',
+                'badge-primary': vehicle.vehicleStatus === 'ON_ROUTE',
+                'badge-success':
+                  vehicle.vehicleStatus === 'AVAILABLE_NO_DRIVER',
+                'badge-warning': vehicle.vehicleStatus === 'PENDING_APPROVAL',
+                'badge-dark':
+                  vehicle.vehicleStatus === 'DELETED' ||
+                  vehicle.vehicleStatus === 'REJECTED',
+              }"
+            >
+              {{ vehicle.vehicleStatus }}
+            </p>
+            <div class="badge ml-1 dropdown">
+              <i
+                class="ui icon edit outline dropdown-toggle"
+                type="button"
+                data-toggle="dropdown"
+              />
+              <ul class="dropdown-menu">
+                <div v-for="status in statusList" :key="status">
+                  <button class="mt-1" @click="updateStatus(status)">
+                    {{ status }}
+                  </button>
+                  <li class="divider"></li>
+                </div>
+              </ul>
+            </div>
+          </div>
+
           <div class="two fields mt-5">
             <!-- Chassis Number -->
             <div class="field">
@@ -288,7 +327,7 @@
               <div class="ui corner labeled input">
                 <input
                   type="text"
-                  v-model="vehicle.seats"
+                  v-model="vehicle.seatsModel.seats"
                   placeholder="Year Of Manufacture"
                   readonly
                 />
@@ -527,6 +566,7 @@ export default {
         vehicleTypeName: "",
         yearOfManufacture: "",
       },
+      statusList: [],
       documents: [],
       // Assigned driver
       assignedDriver: {
@@ -567,12 +607,17 @@ export default {
   async mounted() {
     this.isLoading = true;
     await this.initVehicle();
+    this.initStatusList();
     await this.initDocuments();
     this.isLoading = false;
   },
   methods: {
     // Map state
-    ...mapActions("Vehicle", ["_getDetailVehicle", "_deleteContract"]),
+    ...mapActions("Vehicle", [
+      "_getDetailVehicle",
+      "_deleteContract",
+      "_updateVehicleStatus",
+    ]),
     // Init vehicle information
     async initVehicle() {
       await this._getDetailVehicle(this.$route.params.vehicleId).then((res) => {
@@ -591,6 +636,29 @@ export default {
         }
       );
     },
+    // --- Contract ---
+    // Init data for Vehicle Status Dropdown
+    initStatusList() {
+      this.statusList = require("../../assets/json/vehicle/status.json");
+    },
+    // Update status
+    async updateStatus(status) {
+      this.isLoading = true;
+      await this._updateVehicleStatus({
+        vehicleId: this.vehicle.vehicleId,
+        status: status,
+      })
+        .then((res) => {
+          if (res) {
+            this.vehicle.vehicleStatus = status;
+          }
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      this.isLoading = false;
+    },
+    // ---------------
     changeTab(step) {
       document.getElementById("app").scrollIntoView();
       this.isVehiclenfoVisible = step === "isVehiclenfoVisible" ? true : false;

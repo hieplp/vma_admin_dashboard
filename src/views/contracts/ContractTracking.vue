@@ -111,10 +111,7 @@ export default {
     let doc = await tracking.get();
     if (doc) {
       let coordinateList = doc.kf.docChanges;
-      console.log(
-        "🚀 ~ file: ContractTracking.vue ~ line 70 ~ mounted ~ coordinateList",
-        doc.kf.docChanges
-      );
+
       if (coordinateList.length > 0) {
         coordinateList.forEach((coordinate) => {
           let coord = coordinate.doc.sn.proto.mapValue.fields;

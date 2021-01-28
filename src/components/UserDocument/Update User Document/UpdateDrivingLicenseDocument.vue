@@ -75,7 +75,7 @@
                   @keypress="isNumber($event)"
                   maxlength="12"
                   :readonly="!isUpdBtnVisibile && !isInsert"
-                  v-model="document.userDocumentId"
+                  v-model="document.userDocumentNumber"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -232,6 +232,7 @@ export default {
   data() {
     return {
       document: {
+        userDocumentNumber: "",
         userDocumentId: "",
         userDocumentType: "",
         registeredLocation: "",
@@ -326,7 +327,7 @@ export default {
     },
     // Check valid
     check() {
-      let documentID = this.document.userDocumentId;
+      let documentID = this.document.userDocumentNumber;
       this.documentIdErr = documentID.length !== 9 && documentID.length !== 12;
 
       this.registeredLocationErr =
@@ -356,7 +357,7 @@ export default {
     // Clear input
     clear() {
       this.document = {
-        userDocumentId: "",
+        userDocumentNumber: "",
         userDocumentType: "",
         registeredLocation: "",
         registeredDate: "",

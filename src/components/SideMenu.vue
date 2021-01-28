@@ -128,6 +128,11 @@
                 Vehicles List
               </router-link>
             </li>
+            <li class="nav-item">
+              <router-link to="/vehicle-seats" class="nav-link">
+                Vehicle Seats
+              </router-link>
+            </li>
           </ul>
         </div>
       </li>
@@ -142,31 +147,6 @@
           <span class="menu-title">Maintenances</span>
           <i class="mdi mdi-wrench menu-icon"></i>
         </router-link>
-        <!-- <a
-          class="nav-link"
-          data-toggle="collapse"
-          href="#maintenance"
-          aria-expanded="false"
-          aria-controls="maintenance"
-        >
-          <span class="menu-title">Maintenance</span>
-          <i class="menu-arrow"></i>
-          <i class="mdi mdi-wrench menu-icon"></i>
-        </a> -->
-        <!-- <div class="collapse" id="maintenance">
-          <ul class="nav flex-column sub-menu">
-            <li class="nav-item">
-              <router-link to="/vehicles/overview" class="nav-link">
-                Overview
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/maintenances" class="nav-link">
-                Maintenances List
-              </router-link>
-            </li>
-          </ul>
-        </div> -->
       </li>
       <!-- Contracts -->
       <li
@@ -193,11 +173,6 @@
                 Contracts
               </router-link>
             </li>
-            <!-- <li class="nav-item">
-              <router-link to="/contract-canlendar" class="nav-link">
-                Canlendar
-              </router-link>
-            </li> -->
           </ul>
         </div>
       </li>
@@ -286,14 +261,33 @@
                 Revenue Reports
               </router-link>
             </li>
-            <!-- <li class="nav-item">
-              <router-link to="/reports/contracts" class="nav-link ">
-                Contract Reports
-              </router-link>
-            </li> -->
           </ul>
         </div>
       </li>
+      <!-- Config -->
+      <li
+        class="nav-item"
+        :class="{
+          active: this.$route.name.includes('Config') ? true : false,
+        }"
+      >
+        <router-link to="/config/contract" class="nav-link ">
+          <span class="menu-title">Configuration</span>
+          <i class="mdi mdi-settings menu-icon"></i>
+        </router-link>
+      </li>
+      <!-- Vehicle Tracking -->
+      <!-- <li
+        class="nav-item"
+        :class="{
+          active: this.$route.name.includes('Config') ? true : false,
+        }"
+      >
+        <router-link to="/tracking/vehicle" class="nav-link ">
+          <span class="menu-title">Tracking</span>
+          <i class="mdi mdi-settings menu-icon"></i>
+        </router-link>
+      </li> -->
     </ul>
   </nav>
 </template>

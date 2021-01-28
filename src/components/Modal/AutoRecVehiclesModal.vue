@@ -2,78 +2,82 @@
   <div class="con-modal">
     <div class="ui form">
       <div class="three fields mt-4">
-        <!-- Total Seats (Min) -->
         <div class="field">
-          <label>Total Seats (Min)</label>
+          <label>Vehicle Count</label>
           <div class="ui corner labeled input">
-            <input
-              v-model="searchVehicleId"
-              type="number"
-              max="10"
-              placeholder="Total Seats (Min)"
-              @blur="initVehiclesList"
-            />
-          </div>
-        </div>
-        <!-- Total Seats (Max) -->
-        <div class="field">
-          <label>Total Seats (Max)</label>
-          <div class="ui corner labeled input">
-            <input
-              v-model="maxSeat"
-              type="number"
-              max="10"
-              placeholder="Total Seats (Max)"
-              @blur="initVehiclesList"
-            />
+            <input v-model="vehicleCount" readonly />
           </div>
         </div>
 
-        <!--Type -->
         <div class="field">
-          <label>Type</label>
+          <label>Passenger Count</label>
+          <div class="ui corner labeled input">
+            <input v-model="passengerCount" readonly />
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div class="field">
+          <label>Ignore Sleeper Bus</label>
           <div class="ui corner labeled input">
             <select
               class="form-control form-control-sm"
               name="status"
-              v-model="vehicleType"
+              v-model="ignoreSleeperBus"
               @change="initVehiclesList"
             >
-              <option :value="''">
-                Select vehicle type
+              <option :value="true">
+                True
               </option>
-              <option
-                v-for="vehicleType in this.vehicleTypes"
-                :key="vehicleType.vehicleTypeId"
-                :value="vehicleType.vehicleTypeId"
-                >{{ vehicleType.vehicleTypeName }}</option
-              >
+              <option :value="false">
+                False
+              </option>
             </select>
           </div>
         </div>
         <!-- Status -->
         <div class="field">
-          <label>Status</label>
+          <label>Combinations</label>
           <div class="ui corner labeled input">
             <select
               class="form-control form-control-sm"
               name="status"
-              v-model="viewOption"
-              @change="initVehiclesList"
+              v-model="selectCombination"
+              @change="handleCombinationsChange"
             >
-              <option :value="0">
-                Get avaible vehicles based on value
-              </option>
-              <option :value="1">
-                Get all available vehicles
+              <option
+                v-for="(combination, index) in combinations"
+                :key="index"
+                :value="combination"
+              >
+                {{ combination }}
               </option>
             </select>
           </div>
         </div>
       </div>
     </div>
-
-    <table class="table tableBodyScroll" v-if="!isLoading">
+    <vue-tabs
+      class="mb-4"
+      active-tab-color="#047edf"
+      active-text-color="white"
+      v-model="tabValue"
+      @tab-change="handleTabChange"
+    >
+      <v-tab
+        v-for="(combination, index) in selectCombination"
+        :key="index"
+        :title="'#' + Number(index + 1) + ' - ' + combination + ' seat(s)'"
+      >
+      </v-tab>
+    </vue-tabs>
+    <div v-if="isVehicleErr">
+      Please select {{ this.vehicleCount }} vehicle(s).
+    </div>
+    <table
+      class="table tableBodyScroll"
+      v-if="!isLoading && selectCombination && isVehicleLoading"
+    >
       <thead>
         <tr class="">
           <th>NO.</th>
@@ -100,12 +104,13 @@
           <td class="row justify-content-center btn-action">
             <button
               class="btn btn-outline-info btn-rounded btn-icon mr-1"
-              :class="
-                selectedVehicle.vehicleId !== vehicle.vehicleId
-                  ? 'btn-outline-info'
-                  : 'btn-gradient-info'
-              "
               @click="select(vehicle)"
+              :class="
+                selectedVehicles[tabIndex] &&
+                selectedVehicles[tabIndex].vehicleId === vehicle.vehicleId
+                  ? 'btn-gradient-info'
+                  : 'btn-outline-info'
+              "
             >
               <i class="mdi mdi-account-check"></i>
             </button>
@@ -159,12 +164,13 @@ export default {
   props: {
     cancelFunction: Function,
     doneFunction: Function,
-    vehicleId: String,
     propStatus: String,
     selectedVehicleList: Array,
     startDate: String,
     endDate: String,
-    propMaxSeat: String,
+    vehicleCount: String,
+    passengerCount: String,
+    config: Object,
   },
   data() {
     return {
@@ -176,13 +182,19 @@ export default {
       page: 0,
       currentPage: 0,
       vehicleTypes: [],
-      selectedVehicle: "",
-      // startDate: "",
-      // endDate: "",
+      selectedVehicles: [],
+      tabValue: "", // current tab
       vehicles: [],
       totalVehicles: 0,
       maxSeat: 0,
       viewOption: 0,
+      combinations: [],
+      selectCombination: null,
+      ignoreSleeperBus: true,
+      tabIndex: 0,
+      seat: 0,
+      isVehicleLoading: false,
+      isVehicleErr: false,
     };
   },
   computed: {
@@ -194,15 +206,17 @@ export default {
       this.searchStatusID = this.propStatus;
     }
     this.maxSeat = this.propMaxSeat <= 0 ? "" : this.propMaxSeat;
-    await this.initVehiclesList();
-    console.log(this.vehicles);
-    this.initTypes();
     // this.initStatusList();
-    if (this.vehicleId) {
-      this.selectedVehicle = this.vehicleId;
-      this.searchVehicleId = this.vehicleId;
+    if (this.selectedVehicleList) {
+      this.selectedVehicles = this.selectedVehicleList;
+      console.log(
+        "🚀 ~ file: AutoRecVehiclesModal.vue ~ line 213 ~ mounted ~ this.selectedVehicles",
+        this.selectedVehicles
+      );
     }
+    await this.initCombination();
   },
+
   methods: {
     // Map actions
     ...mapActions("Vehicle", [
@@ -224,57 +238,115 @@ export default {
       this.isLoading = false;
     },
     // Init data for vehicle list
-    async initVehiclesList() {
+    async initCombination() {
       this.isLoading = true;
-      this.vehicles = await this._getAvailableVehiclesAuto({
+      await this._getAvailableVehiclesAuto({
         startDate: this.startDate,
         endDate: this.endDate,
-        seatsMin: "",
-        seatsMax: this.maxSeat,
-        vehicleTypeId: this.vehicleType,
-        viewOption: this.viewOption,
+        bufferPre: this.config.contractPreBreakTime,
+        bufferPost: this.config.contractPostBreakTime,
+        passengerCount: this.passengerCount,
+        vehicleCount: this.vehicleCount,
+        ignoreSleeperBus: this.ignoreSleeperBus,
+      }).then((res) => {
+        this.combinations = res.combinations;
+        this.selectCombination = this.combinations[
+          Object.keys(this.combinations)[0]
+        ];
       });
-      // this.totalVehicles = await this._getVehicleRecommendationsCount({
-      //   startDate: this.startDate,
-      //   endDate: this.endDate,
-      //   seatsMin: "",
-      //   seatsMax: this.maxSeat,
-      //   vehicleTypeId: this.vehicleType,
-      //   viewOption: this.viewOption,
-      // });
-
-      this.selectedVehicleList.forEach((vehicle) => {
-        for (let index = 0; index < this.vehicles.length; index++) {
-          if (vehicle.vehicleId === this.vehicles[index].vehicleId) {
-            this.$delete(this.vehicles, index);
-            this.totalVehicles--;
-          }
-        }
-      });
+      await this.handleCombinationsChange();
       this.isLoading = false;
     },
-    // Init types
-    async initTypes() {
-      await this._getVehicleType().then((res) => {
-        this.vehicleTypes = res;
-      });
+    // Handle combinations dropdown change
+    async handleCombinationsChange() {
+      if (this.selectCombination) {
+        this.seat = this.selectCombination[0];
+        await this.initVehiclesList();
+      }
     },
-    // Init data for Vehicle Status Dropdown
-    async initStatusList() {
-      this.statusList = require("../../assets/json/vehicle/status.json");
+    // Init data for vehicle list
+    async initVehiclesList() {
+      this.isVehicleLoading = false;
+      await this._getVehicleRecommendations({
+        startDate: this.startDate,
+        endDate: this.endDate,
+        seatsMin: this.seat,
+        seatsMax: this.seat,
+        vehicleTypeId: "",
+        viewOption: 0,
+        bufferPre: this.config.contractPreBreakTime,
+        bufferPost: this.config.contractPostBreakTime,
+        pageNum: this.currentPage,
+      }).then(async (res) => {
+        this.vehicles = res;
+      });
+
+      this.totalVehicles = await this._getVehicleRecommendationsCount({
+        startDate: this.startDate,
+        endDate: this.endDate,
+        seatsMin: this.seat,
+        seatsMax: this.seat,
+        vehicleTypeId: "",
+        viewOption: 0,
+        bufferPre: this.config.contractPreBreakTime,
+        bufferPost: this.config.contractPostBreakTime,
+      });
+
+      // Remove selected vehicles
+      this.selectedVehicles.forEach((vehicle) => {
+        let index = this.isVehicleSelected(
+          vehicle.vehicleId,
+          this.selectedVehicles[this.tabIndex]
+            ? this.selectedVehicles[this.tabIndex].vehicleId
+            : ""
+        );
+
+        if (index > -1) {
+          this.$delete(this.vehicles, index);
+        }
+      });
+      this.isVehicleLoading = true;
+    },
+
+    async handleTabChange(tabIndex) {
+      this.tabIndex = tabIndex;
+      this.seat = this.selectCombination[tabIndex];
+      await this.initVehiclesList();
     },
     // Select vehicle
     select(vehicle) {
-      if (this.selectedVehicle.vehicleId === vehicle.vehicleId) {
-        this.selectedVehicle = { vehicleId: "" };
+      if (
+        this.selectedVehicles.length === 0 ||
+        !this.selectedVehicles[this.tabIndex]
+      ) {
+        this.selectedVehicles.push(vehicle);
       } else {
-        this.selectedVehicle = vehicle;
+        this.$delete(this.selectedVehicles, this.tabIndex);
       }
     },
-    // Return select vehicle
-    getSelectedVehicle() {
-      return this.selectedVehicle;
+    isVehicleSelected(vehicleId, notVehicleId) {
+      let index = -1;
+      for (let i = 0; i < this.vehicles.length; i++) {
+        if (
+          vehicleId === this.vehicles[i].vehicleId &&
+          notVehicleId !== this.vehicles[i].vehicleId
+        ) {
+          index = i;
+        }
+      }
+      return index;
     },
+    getSelectedVehicles() {
+      if (
+        this.selectedVehicles &&
+        this.selectedVehicles.length == this.vehicleCount
+      ) {
+        return this.selectedVehicles;
+      } else {
+        this.isVehicleErr = true;
+      }
+    },
+
     isNumber(evt) {
       isNumber(evt);
     },

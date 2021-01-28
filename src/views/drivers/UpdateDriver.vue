@@ -531,6 +531,7 @@ export default {
           }
         })
         .catch((ex) => {
+          console.log(ex);
           if (
             ex.debugMessage.includes(
               "Cannot insert duplicate key in object 'dbo.user_document'"

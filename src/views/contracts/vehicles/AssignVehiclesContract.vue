@@ -121,12 +121,12 @@
                   <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
                   <td class="row justify-content-center btn-action">
-                    <button
+                    <!-- <button
                       class="btn btn-gradient-info btn-rounded btn-icon mr-1"
                       @click="viewDetail(vehicle.vehicleId)"
                     >
                       <i class="mdi mdi-train"></i>
-                    </button>
+                    </button> -->
                     <button
                       class="btn btn-gradient-success btn-rounded btn-icon mr-1"
                       @click="
@@ -277,6 +277,7 @@ import "vue-loading-overlay/dist/vue-loading.css";
 import { RepositoryFactory } from "../../../repositories/RepositoryFactory";
 import Confirmation from "../../../components/Modal/Confirmation";
 import MessageModal from "../../../components/Modal/MessageModal";
+import * as firebase from "firebase";
 const VehicleRepository = RepositoryFactory.get("vehicles");
 import moment from "moment";
 export default {
@@ -310,10 +311,12 @@ export default {
       endDate: "",
       ownerId: "",
 
+      config: null,
+
       isLoading: true,
       totalVehicles: 0,
       page: 0,
-      currentPage: 1,
+      currentPage: 0,
       isDeleteConVisible: false,
       isError: false,
       isSuccess: false,
@@ -337,7 +340,7 @@ export default {
     this.endDate = moment(new Date())
       .add(6, "h")
       .format("YYYY-MM-DDTkk:mm");
-
+    await this.initConfig();
     await this.initVehiclesList();
     await this.initTypes();
   },
@@ -349,6 +352,15 @@ export default {
       "_getVehicleRecommendationsCount",
       "_getContractVehicle",
     ]),
+    // Init config
+    async initConfig() {
+      const db = firebase.firestore();
+      const config = db.collection("Config").doc("Contract");
+      let seft = this;
+      await config.get().then((doc) => {
+        seft.config = doc.data();
+      });
+    },
     isNumber(evt) {
       isNumber(evt);
     },
@@ -394,7 +406,7 @@ export default {
     async searchVehicles() {
       this.isLoading = true;
       this.page = 0;
-      this.currentPage = 1;
+      this.currentPage = 0;
       await this.initVehiclesList();
     },
     // Init data for vehicle list
@@ -407,6 +419,9 @@ export default {
         seatsMin: this.vehicleMinSeat,
         seatsMax: this.vehicleMaxSeat,
         vehicleTypeId: this.searchType,
+        bufferPre: this.config.contractPreBreakTime,
+        bufferPost: this.config.contractPostBreakTime,
+        pageNum: this.currentPage,
         viewOption: 0,
       });
       this.totalVehicles = await this._getVehicleRecommendationsCount({
@@ -415,6 +430,8 @@ export default {
         seatsMin: this.vehicleMinSeat,
         seatsMax: this.vehicleMaxSeat,
         vehicleTypeId: this.searchType,
+        bufferPre: this.config.contractPreBreakTime,
+        bufferPost: this.config.contractPostBreakTime,
         viewOption: 0,
       });
       this.selectedVehicleList.forEach((vehicle) => {
@@ -459,12 +476,16 @@ export default {
       this.isLoading = true;
       this.handleDialog("isDeleteConVisible", "");
       let contract = {
-        contractDetailId: this.contractDetailId,
+        contractTripId: this.contractDetailId,
         vehicleId: this.deleteVehicleId,
       };
       await this._assignVehicleForContract(contract)
         .then((res) => {
           if (res) {
+            console.log(
+              "🚀 ~ file: AssignVehiclesContract.vue ~ line 485 ~ .then ~ res",
+              res
+            );
             this.isSuccess = true;
           }
         })
@@ -475,23 +496,7 @@ export default {
         });
       this.isLoading = false;
     },
-    // Delete vehicle
-    async deleteVehicle() {
-      this.handleDialog("isDeleteConVisible", "");
-      this.isLoading = true;
-      await VehicleRepository.delete(this.deleteVehicleId)
-        .then((res) => {
-          if (res) {
-            this.isSuccess = true;
-          }
-        })
-        .catch((err) => {
-          this.isError = !this.isError;
-          this.errMsg = err.debugMessage;
-          console.log(err);
-        });
-      this.isLoading = false;
-    },
+
     // Close delete vehicle confimation dialog
     handleDialog(dialogName, userId) {
       if (userId.length !== 0) {

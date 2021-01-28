@@ -58,7 +58,7 @@
           <i class="mdi mdi-account-plus btn-icon-prepend"></i>
           Create
         </button>
-        <ul class="dropdown-menu ">
+        <ul class="dropdown-menu">
           <button
             @click="
               () => {

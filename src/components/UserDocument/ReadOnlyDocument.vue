@@ -23,7 +23,11 @@
           <div class="field">
             <label>ID</label>
             <div class="ui corner labeled input">
-              <input v-model="document.userDocumentId" type="text" readonly />
+              <input
+                v-model="document.userDocumentNumber"
+                type="text"
+                readonly
+              />
             </div>
           </div>
           <div class="field">

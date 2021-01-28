@@ -30,6 +30,7 @@
       <div class="card">
         <div class="card-body">
           <h4 class="ui dividing header">{{ this.title }}</h4>
+
           <table class="table" v-if="vehiclesList.length > 0 && isRender">
             <thead>
               <tr class="">
@@ -37,7 +38,7 @@
                 <th>ID</th>
                 <th>SEAT</th>
                 <th>TYPE</th>
-                <th class="text-center">ACTION</th>
+                <!-- <th class="text-center">ACTION</th> -->
               </tr>
             </thead>
             <tbody>
@@ -48,14 +49,14 @@
                 <td>{{ vehicle.vehicleId }}</td>
                 <td>{{ vehicle.seats }}</td>
                 <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
-                <td class="row justify-content-center btn-action">
+                <!-- <td class="row justify-content-center btn-action">
                   <button
                     class="btn btn-gradient-danger btn-rounded btn-icon mr-1"
                     @click="removeVehicle(index)"
                   >
                     <i class="mdi mdi-delete-forever"></i>
                   </button>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>
@@ -71,7 +72,7 @@
           </div>
           <div class="row justify-content-center">
             <div class="ui pointing red basic label" v-if="isErr">
-              Departure and destination locations are required!
+              Trip is requires {{ this.vehicleCount }} vehicle(s).
             </div>
           </div>
         </div>
@@ -86,11 +87,13 @@
         <RecVehiclesModal
           ref="vehicleModal"
           v-if="isVehicleModalVisible"
+          :config="config"
           :cancelFunction="handleVehicleModal"
-          :doneFunction="getVehicle"
+          :doneFunction="getSelectedVehicles"
           :startDate="startDate"
           :endDate="endDate"
-          :propMaxSeat="totalPassengers + ''"
+          :vehicleCount="vehicleCount + ''"
+          :passengerCount="passengerCount + ''"
           :selectedVehicleList="vehiclesList"
         />
       </div>
@@ -102,7 +105,7 @@
 import { mapActions } from "vuex";
 // import Loading from "vue-loading-overlay";
 import "vue-loading-overlay/dist/vue-loading.css";
-import RecVehiclesModal from "../../components/Modal/RecVehiclesModal";
+import RecVehiclesModal from "../../components/Modal/AutoRecVehiclesModal";
 import Confirmation from "../../components/Modal/Confirmation";
 
 export default {
@@ -116,6 +119,7 @@ export default {
     vehicles: Array,
     contractDetailId: Number,
     propsTotalPassengers: String,
+    config: Object,
   },
   components: {
     // Loading,
@@ -138,11 +142,13 @@ export default {
       vehicleTypes: [],
       searchTotalDistance: ["", ""],
 
+      oldVehicles: [],
+
       //
       startDate: "",
       endDate: "",
-      totalPassengers: 0,
-      oldTotalPassengers: 0,
+      vehicleCount: 0,
+      passengerCount: 0,
       isRender: false,
     };
   },
@@ -150,15 +156,12 @@ export default {
     // this.isLoading = false;
     if (this.contractDetailId) {
       await this.initVehiclesList();
-      if (this.propsTotalPassengers) {
-        this.oldTotalPassengers = this.propsTotalPassengers;
-      }
     }
     this.isRender = true;
     // this.isLoading = false;
   },
   methods: {
-    // Map state
+    // Map action
     ...mapActions("Contract", ["_getContractVehicle", "_getContractVehicle"]),
 
     // Handle vehicle modal
@@ -185,12 +188,19 @@ export default {
     async initVehiclesList() {
       this.isLoading = true;
       this.vehiclesList = await this._getContractVehicle(this.contractDetailId);
+      // this.oldVehicles = Object.assign([], this.vehicles);
       this.isLoading = false;
     },
     // Get vehicle
-    getVehicle() {
-      this.vehiclesList.push(this.$refs.vehicleModal.getSelectedVehicle());
-      this.handleVehicleModal();
+    getSelectedVehicles() {
+      let vehiclesList = this.$refs.vehicleModal.getSelectedVehicles();
+
+      if (vehiclesList) {
+        this.vehiclesList = vehiclesList;
+
+        this.isVehicleModalVisible = false;
+        // this.handleVehicleModal();
+      }
     },
     // Remove vehicle
     removeVehicle(index) {
@@ -198,15 +208,10 @@ export default {
     },
     // return data to parent
     getData() {
-      this.isErr = this.vehiclesList.length === 0;
+      this.isErr = this.vehiclesList.length != this.vehicleCount;
       if (!this.isErr) {
-        let vehicles = [];
-        this.vehiclesList.forEach((vehicle) => {
-          vehicles.push(vehicle.vehicleId);
-        });
-        return vehicles;
+        return this.vehiclesList;
       }
-      return null;
     },
   },
 };

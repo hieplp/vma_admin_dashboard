@@ -57,7 +57,7 @@
                   :maxlength="this.idMaxRange"
                   @keypress="isNumber($event)"
                   style="text-transform:uppercase"
-                  v-model="document.userDocumentId"
+                  v-model="document.userDocumentNumber"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -140,13 +140,14 @@ export default {
   data() {
     return {
       document: {
-        userDocumentId: "",
+        userDocumentNumber: "",
         userDocumentType: "",
         registeredLocation: "",
         registeredDate: "",
         expiryDate: "",
         otherInformation: "",
         userDocumentImages: [],
+        userDocumentId: 0,
       },
       // Error
       documentIdErr: false,
@@ -203,7 +204,7 @@ export default {
     },
     // Check valid
     check() {
-      let documentID = this.document.userDocumentId;
+      let documentID = this.document.userDocumentNumber;
 
       this.documentIdErr = true;
       for (const idLength in this.idMaxLength) {
@@ -229,7 +230,7 @@ export default {
     },
     // Get data
     getData() {
-      this.document.userDocumentId = this.document.userDocumentId.toUpperCase();
+      this.document.userDocumentNumber = this.document.userDocumentNumber.toUpperCase();
       this.document.expiryDate = this.getExpiryDate(
         this.document.registeredDate,
         this.expiryMaxDate

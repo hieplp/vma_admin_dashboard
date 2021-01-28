@@ -182,7 +182,6 @@
             <!-- Year Of Manufacture -->
             <div class="field">
               <label>Year Of Manufacture</label>
-
               <div class=" corner labeled input">
                 <DatePicker
                   v-model="vehicle.yearOfManufacture"
@@ -190,13 +189,7 @@
                   format="yyyy"
                   minimum-view="year"
                 ></DatePicker>
-                <!-- <input
-                  type="text"
-                  v-model="vehicle.yearOfManufacture"
-                  placeholder="Year Of Manufacture (YYYY)"
-                  maxlength="4"
-                  @keypress="isNumber($event)"
-                /> -->
+
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
                 </div>
@@ -212,13 +205,22 @@
             <div class="field ">
               <label>Total Seats</label>
               <div class="ui corner labeled input">
-                <input
+                <!-- <input
                   type="text"
                   v-model="vehicle.seats"
                   placeholder="Total Seat"
                   maxlength="4"
                   @keypress="isNumber($event)"
-                />
+                /> -->
+                <multiselect
+                  v-model="seatsId"
+                  track-by="seatsId"
+                  :custom-label="customLabelForVehicleSeat"
+                  label="seatsId"
+                  :options="vehicleSeats"
+                  placeholder="Select seats"
+                >
+                </multiselect>
 
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -402,6 +404,7 @@
 </template>
 
 <script>
+import { mapActions } from "vuex";
 import { isNumber } from "../../assets/js/input.js";
 import Multiselect from "vue-multiselect";
 import moment from "moment";
@@ -426,14 +429,14 @@ export default {
       vehicle: {
         brandId: "",
         chassisNumber: "",
-        distanceDriven: "",
+        distanceDriven: 0,
         engineNumber: "",
         imageLink: "",
         model: "",
         origin: "",
         ownerId: null,
         roleId: "0",
-        seats: "",
+        seatsId: "",
         vehicleDocuments: [],
         vehicleId: "",
         vehicleTypeId: "",
@@ -446,7 +449,6 @@ export default {
           vehicleId: "",
         },
       },
-
       isContractVisible: true,
 
       // Basic Information Error
@@ -490,7 +492,9 @@ export default {
       },
       // Vehicle Owner
       isOwnerModalVisible: false,
-
+      // Seat type:
+      vehicleSeats: [],
+      seatsId: null,
       // let max date
       maxDate: "",
 
@@ -509,6 +513,7 @@ export default {
     this.originOtions = require("../../assets/json/contry.json");
     await this.initBrands();
     await this.initTypes();
+    await this.initVehicleSeats();
     this.maxDate = moment(new Date()).format("YYYY-MM-DD");
     this.vehicle.yearOfManufacture = moment(new Date()).format("YYYY");
     //If there is a vehicle data
@@ -517,12 +522,21 @@ export default {
     }
   },
   methods: {
+    // Map actions
+    ...mapActions("Vehicle", ["_getVehicleSeats"]),
     // Init
     // Init data when is update
     initData() {
       this.isContractVisible = false;
       this.vehicle = this.copyProperties(this.propVehicle, this.vehicle);
-
+      this.vehicle.engineNumber = this.vehicle.engineNumber
+        .toUpperCase()
+        .trim();
+      this.seatsId = this.findItemFromJson(
+        this.vehicleSeats,
+        this.propVehicle.seatsModel.seatsId,
+        "seatsId"
+      );
       // Init brand
       this.brand = this.propVehicle.brand;
       // Init origin
@@ -549,6 +563,15 @@ export default {
         this.vehicleTypes = res;
       });
     },
+    // ------ Vehicle Seat ----------
+    // Init data for vehicleSeat list
+    async initVehicleSeats() {
+      this.vehicleSeats = await this._getVehicleSeats();
+    },
+    customLabelForVehicleSeat({ seats, seatsGroupName }) {
+      return `[${seatsGroupName}] - ${seats} seats`;
+    },
+    /// -------------------
     // Vehicle Owner
     handleVehicleOwnerModal() {
       this.isOwnerModalVisible = !this.isOwnerModalVisible;
@@ -595,7 +618,7 @@ export default {
       this.isBrandErr = this.brand === null;
       this.isOriginErr = this.origin === null;
       // this.isYearOfManufactureErr = this.vehicle.yearOfManufacture.length !== 4;
-      this.isSeatErr = this.vehicle.seats.length === 0;
+      this.isSeatErr = this.seatsId === null;
       this.isVehicleTypeErr = this.vehicle.vehicleTypeId.length === 0;
       this.isDistanceDrivenErr = this.vehicle.distanceDriven.length === 0;
 
@@ -655,6 +678,7 @@ export default {
       vehicle.engineNumber = vehicle.engineNumber.toUpperCase().trim();
       vehicle.brandId = this.brand.brandId;
       vehicle.origin = this.origin.name;
+      vehicle.seatsId = this.seatsId.seatsId;
       // vehicle.vehicleTypeId = this.vehicleType.vehicleTypeId;
       if (this.owner.userId.length > 0) {
         vehicle.ownerId = this.owner.userId;

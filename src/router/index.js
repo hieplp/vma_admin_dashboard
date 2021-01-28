@@ -39,6 +39,8 @@ import CreateVehicle from "../views/vehicles/CreateVehicle.vue";
 import VehicleDetail from "../views/vehicles/VehicleDetail.vue";
 import UpdateVehicle from "../views/vehicles/UpdateVehicle.vue";
 import VehicleOverview from "../views/vehicles/VehicleOverview.vue";
+import VehicleSeats from "../views/vehicles/VehicleSeats.vue";
+
 // Vehicle contracts
 import CreateVehicleContract from "../views/contracts/vehicles/CreateVehicleContract.vue";
 
@@ -63,15 +65,23 @@ import ChangeVehicleRequest from "../views/requests/vehicle/ChangeVehicleRequest
 // Document user requests
 import UserDocumentRequests from "../views/requests/UserDocumentRequests.vue";
 import UseDocumentRequestDetail from "../views/requests/UseDocumentRequestDetail.vue";
+
 // Report
 import VehiclesReport from "../views/reports/VehiclesReport";
 import ScheduleReport from "../views/reports/ScheduleReport";
 import ContractReport from "../views/reports/ContractReport";
 import IncomesReport from "../views/reports/IncomesReport";
+
 // Feedback
 import Feedbacks from "../views/feedback/Feedbacks.vue";
+
 // DriverIncomes
 import DriverIncomes from "../views/drivers/DriverIncomes";
+
+// Config
+import ContractConfig from "../views/configuration/ContractConfig";
+// Vehicle Tracking
+import VehicleTracking from "../views/VehicleTracking";
 
 import Login from "../views/Login.vue";
 
@@ -262,6 +272,11 @@ const routes = [
     name: "CreateVehicleContract",
     component: CreateVehicleContract,
   },
+  {
+    path: "/vehicle-seats",
+    name: "VehicleSeats",
+    component: VehicleSeats,
+  },
   // Maintenances
   {
     path: "/maintenances",
@@ -367,6 +382,18 @@ const routes = [
     path: "/drivers/:driverId/incomes",
     name: "DriverIncomes",
     component: DriverIncomes,
+  },
+  // Config
+  {
+    path: "/config/contract",
+    name: "ContractConfig",
+    component: ContractConfig,
+  },
+  // Vehicle Tracking
+  {
+    path: "/tracking/vehicle",
+    name: "VehicleTracking",
+    component: VehicleTracking,
   },
 ];
 

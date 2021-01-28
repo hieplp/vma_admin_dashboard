@@ -55,7 +55,7 @@
                   placeholder="Driving License ID"
                   @keypress="isNumber($event)"
                   maxlength="12"
-                  v-model="document.userDocumentId"
+                  v-model="document.userDocumentNumber"
                 />
                 <div class="ui corner label">
                   <i class="asterisk icon"></i>
@@ -167,7 +167,8 @@ export default {
   data() {
     return {
       document: {
-        userDocumentId: "",
+        userDocumentNumber: "",
+        userDocumentId: 0,
         userDocumentType: "",
         registeredLocation: "",
         registeredDate: "",
@@ -230,7 +231,7 @@ export default {
     },
     // Check valid
     check() {
-      let documentID = this.document.userDocumentId;
+      let documentID = this.document.userDocumentNumber;
       this.documentIdErr = documentID.length !== 9 && documentID.length !== 12;
 
       this.registeredLocationErr =
@@ -250,7 +251,7 @@ export default {
     },
     // Get data
     getData() {
-      this.document.userDocumentId = this.document.userDocumentId.toUpperCase();
+      this.document.userDocumentNumber = this.document.userDocumentNumber.toUpperCase();
       this.document.expiryDate = this.getExpiryDate(
         this.document.registeredDate,
         this.selectedDrivingLicenseClass.expiryDate

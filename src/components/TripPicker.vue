@@ -1,7 +1,7 @@
 <template>
   <div class="row">
     <!-- DEPARTURE/DESTINATION TIME -->
-    <div class="col-lg-12 grid-margin stretch-card">
+    <div class="col-lg-12 grid-margin stretch-card" v-if="defaultDate">
       <div class="card">
         <div class="card-body">
           <div class="ui form">
@@ -39,22 +39,6 @@
                     :disabled-time="notBeforeTime"
                     placeholder="Select date"
                   ></date-picker>
-                  <!-- <input
-                    type="datetime-local"
-                    :min="minDateFrom"
-                    :max="maxDateFrom"
-                    @change="
-                      () => {
-                        this.trip.destinationTime = '';
-                      }
-                    "
-                    :readonly="isDetail"
-                    v-model="trip.departureTime"
-                    placeholder="Departure Time"
-                  /> -->
-                  <!-- <div class="ui corner label" v-if="!isDetail">
-                    <i class="asterisk icon"></i>
-                  </div> -->
                 </div>
                 <div
                   class="ui pointing red basic label"
@@ -64,41 +48,58 @@
                 </div>
               </div>
               <!-- Destination Time-->
-              <div class="field ">
+              <div class="field">
                 <label>Destination Time</label>
                 <div class="">
                   <div class="w-100 mx-datepicker">
                     <div class="mx-input-wrapper">
                       <input
                         type="text"
+                        v-model="trip.destinationTime"
+                        class="mx-input"
+                        readonly
+                        v-if="isDetail"
+                      />
+                      <input
+                        type="text"
                         v-model="destinationTime"
                         class="mx-input"
                         readonly
+                        v-else
                       />
                     </div>
                   </div>
-
-                  <!-- <input
-                    type="datetime-local"
-                    v-model="destinationTime"
-                    :min="trip.departureTime"
-                    readonly
-                    placeholder=" Destination Time"
-                  /> -->
                 </div>
+                <div
+                  class="ui pointing red basic label"
+                  v-if="!isDetail && isOverMaxEnd()"
+                >
+                  Destination time is over alloted time!
+                </div>
+              </div>
+            </div>
+            <div class="two fields" v-if="!isDetail && isOverMaxEnd()">
+              <div class="field">
+                <label>
+                  Over alloted time option
+                </label>
+                <select v-model="isOverTime">
+                  <option :value="true">Follow the alloted time</option>
+                  <option :value="false">Don't follow the alloted time</option>
+                </select>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-lg-12" v-if="isMapRender">
+    <div class="col-lg-12">
       <gmap-map
         class="mb-3"
         :center="center"
-        :zoom="15"
+        ref="ggMap"
+        :zoom="10"
         style="width:100%;  height: 400px;"
-        v-if="isMapRender"
       >
         <DirectionsRenderer
           travelMode="DRIVING"
@@ -127,7 +128,7 @@
               <div
                 class="location-container row"
                 v-for="(location, index) in firstLocations"
-                :key="index"
+                :key="index + 'location'"
               >
                 <span class="col-1 location-icon">
                   <i
@@ -139,7 +140,6 @@
                         index !== 0 && index !== firstLocations.length - 1,
                     }"
                   ></i>
-                  <!-- <i class="icon ellipsis vertical"></i> -->
                 </span>
                 <div
                   class="col-12 address ml-3"
@@ -147,11 +147,6 @@
                 >
                   <span class="pac-target-input">{{ location.location }}</span>
                 </div>
-                <!-- <i
-                  class="update-icon icon pencil alternate"
-                  @click="handleLocationClick(index, 3)"
-                  v-if="isUpdate"
-                ></i> -->
                 <i
                   class="delete-icon icon x"
                   @click="handleLocationClick(index, 2)"
@@ -222,6 +217,7 @@ export default {
     isUpdate: Boolean,
     isDetail: Boolean,
     isCreate: Boolean,
+    config: Object,
   },
   components: {
     draggable,
@@ -235,15 +231,9 @@ export default {
     if (this.propTrip) {
       this.initData(this.propTrip);
     }
-    this.isMapRender = true;
-
-    let minDateFrom = new Date(this.minDateFrom);
-    this.defaultDate = new Date().setHours(
-      minDateFrom.getHours(),
-      minDateFrom.getMinutes(),
-      0,
-      0
-    );
+    await this.$gmapApiPromiseLazy().then(async () => {
+      this.isMapRender = true;
+    });
   },
 
   computed: {
@@ -269,17 +259,52 @@ export default {
     },
     // destination time
     destinationTime() {
+      if (this.isDetail) {
+        return;
+      }
       let totalTime = 0;
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.totalDistance = 0;
       this.routes.forEach((route) => {
         totalTime += route.duration.value;
+        this.trip.totalDistance += route.distance.value;
       });
+      totalTime = this.calculateDestinationTime(totalTime);
+
       let destinationTime = moment(this.trip.departureTime, "YYYY-MM-DDTkk:mm")
         .add(totalTime, "seconds")
-        .format("YYYY-MM-DD HH:mm:ss");
+        .format("YYYY-MM-DD HH:mm:ssz");
       if (destinationTime === "Invalid date") {
         return "Depart time";
       }
+      // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+      this.trip.totalTime = totalTime;
       this.setTripDestination(destinationTime);
+      // Handle over time
+      let isOvertime = this.isOverMaxEnd();
+      if (isOvertime && this.isOverTime) {
+        let maxDate = new Date(
+          new Date().setHours(
+            this.config.maxContractEndHour,
+            this.config.maxContractEndMinute,
+            0
+          )
+        );
+        let startDate = new Date(
+          new Date().setHours(
+            this.config.minContractStartHour,
+            this.config.minContractStartMinute,
+            0
+          )
+        );
+        let timeFromEndToStart = (maxDate - startDate) / 1000;
+        destinationTime = moment(this.trip.destinationTime, "YYYY-MM-DDTkk:mm")
+          .add(timeFromEndToStart, "seconds")
+          .format("YYYY-MM-DD HH:mm:ssz");
+        this.setTripDestination(destinationTime);
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        this.trip.totalTime = totalTime + timeFromEndToStart;
+      }
       this.endDateChange();
       return destinationTime;
     },
@@ -315,7 +340,12 @@ export default {
         // destinationTime: "",
         locations: [],
         assignedVehicles: [],
+        totalDistance: 0,
+        totalTime: 0,
       },
+
+      // Over time
+      isOverTime: true,
 
       isLoading: false,
 
@@ -337,6 +367,70 @@ export default {
     };
   },
   methods: {
+    // Format min date
+    formatMinDate(date) {
+      let minDateFrom = new Date(this.minDateFrom);
+
+      // Set min start time
+      let minHour = minDateFrom.getHours();
+      let minMinute = Number(this.config.minContractStartMinute);
+      if (
+        minHour < this.config.minContractStartHour ||
+        minDateFrom.getDate() !== new Date(date).getDate()
+      ) {
+        minHour = Number(this.config.minContractStartHour);
+      }
+      // Calculate minimum minute
+      minMinute =
+        (minMinute > minDateFrom.getMinutes() &&
+          !(minHour < this.config.minContractStartHour)) ||
+        minDateFrom.getDate() !== new Date(date).getDate()
+          ? minMinute
+          : minDateFrom.getMinutes();
+
+      if (date) {
+        return new Date(date).setHours(minHour, minMinute, 0, 0);
+      } else {
+        return new Date().setHours(minHour, minMinute, 0, 0);
+      }
+    },
+    // Format max date
+    formatMaxDate(date) {
+      let maxHour = Number(this.config.maxContractEndHour);
+      let maxMinute = Number(this.config.maxContractEndMinute);
+      return new Date(date).setHours(maxHour, maxMinute, 0, 0);
+    },
+    // End of min and max date for date picker
+    isOverMaxEnd() {
+      let maxDate = new Date(
+        new Date(this.trip.departureTime).setHours(
+          this.config.maxContractEndHour,
+          this.config.maxContractEndMinute,
+          0
+        )
+      );
+      let endDate = new Date(this.trip.destinationTime);
+      return endDate - maxDate > 0;
+    },
+    // ---- Calculate destination time
+    calculateDestinationTime(totalTime) {
+      if (!this.config) {
+        return;
+      }
+
+      let maxDrivingTime =
+        this.config.maxDrivingHour * 60 * 60 +
+        this.config.maxDrivingMinute * 60;
+
+      let notRoundBreakTimes = totalTime / maxDrivingTime;
+      let breakTimes =
+        notRoundBreakTimes < 1 ? 0 : Math.round(totalTime / maxDrivingTime);
+
+      let drivingBreakTime =
+        this.config.driverBreakHour * 60 * 60 + this.config.driverBreakMinute;
+      return totalTime + breakTimes * Number(drivingBreakTime);
+    },
+    //End of calculate destination time
     // Set trip destination
     setTripDestination(destinationTime) {
       this.trip.destinationTime = moment(destinationTime).format(
@@ -345,23 +439,17 @@ export default {
     },
     // Min and max date
     disableDepartureTime(date) {
-      // console.log(new Date(this.minDateFrom));
       const today = new Date(this.minDateFrom);
       today.setHours(0, 0, 0, 0);
       return date < today || date > new Date(this.maxDateFrom);
     },
     notBeforeTime(date) {
-      let minDateFrom = new Date(this.minDateFrom);
+      let maxTime = moment(this.formatMaxDate(date))
+        // .add(1 * 60 * 60, "seconds")
+        .format("YYYY-MM-DD HH:mm:ss");
+
       return (
-        date <
-        new Date(
-          new Date().setHours(
-            minDateFrom.getHours(),
-            minDateFrom.getMinutes(),
-            0,
-            0
-          )
-        )
+        date < new Date(this.formatMinDate(date)) || date > new Date(maxTime)
       );
     },
     // Google map
@@ -416,7 +504,6 @@ export default {
       if (!isValid) {
         let locations = Object.assign([], this.firstLocations);
         let trip = Object.assign({}, this.trip);
-
         // Format date
         trip.departureTime = moment(trip.departureTime).format(
           "YYYY-MM-DD HH:mm:ssz"
@@ -446,9 +533,9 @@ export default {
       } else {
         this.trip.departureTime = new Date(trip.departureTime);
       }
-      // this.destinationTime = moment(trip.destinationTime).format(
-      //   "YYYY-MM-DDTkk:mm"
-      // );
+      this.trip.destinationTime = moment(trip.destinationTime).format(
+        "YYYY-MM-DD HH:mm:ss"
+      );
     },
     // Vehicle picker
     dateChange() {

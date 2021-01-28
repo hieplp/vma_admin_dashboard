@@ -79,11 +79,11 @@
               <div class="two fields">
                 <!-- Estimated Passenger Count -->
                 <div class="field">
-                  <label>Estimated Passenger Count</label>
+                  <label>Passenger Count</label>
                   <div class="ui corner labeled input">
                     <input
                       type="text"
-                      v-model="contract.estimatedPassengerCount"
+                      v-model="contract.passengerCount"
                       placeholder="Estimated Passenger Count"
                       @keypress="isNumber($event)"
                     />
@@ -93,18 +93,18 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="estimatedPassengerCountErr"
+                    v-if="passengerCountErr"
                   >
-                    Estimated Passenger Count is required!
+                    Passenger Count is required!
                   </div>
                 </div>
-                <!-- Estimated Vehicle Count -->
+                <!-- Vehicle Count -->
                 <div class="field">
-                  <label>Estimated Vehicle Count</label>
+                  <label>Vehicle Count</label>
                   <div class="ui corner labeled input">
                     <input
                       type="text"
-                      v-model="contract.estimatedVehicleCount"
+                      v-model="contract.vehicleCount"
                       placeholder="Estimated Vehicle Count"
                       @keypress="isNumber($event)"
                     />
@@ -114,9 +114,9 @@
                   </div>
                   <div
                     class="ui pointing red basic label"
-                    v-if="estimatedVehicleCountErr"
+                    v-if="vehicleCountErr"
                   >
-                    Estimated Vehicle Count is required!
+                    Vehicle Count is required!
                   </div>
                 </div>
                 <!-- Trip type -->
@@ -130,26 +130,6 @@
                     <div class="ui corner left label">
                       <i class="asterisk icon"></i>
                     </div>
-                  </div>
-                </div>
-              </div>
-              <div class="two fields">
-                <!-- Total Price @keypress="isNumber($event)"-->
-                <div class="field">
-                  <label>Total Price</label>
-                  <div class="ui corner labeled input">
-                    <input
-                      type="text"
-                      v-model="contract.totalPrice"
-                      placeholder="Total Price"
-                      @input="moneyInput"
-                    />
-                    <div class="ui corner label">
-                      <i class="asterisk icon"></i>
-                    </div>
-                  </div>
-                  <div class="ui pointing red basic label" v-if="totalPriceErr">
-                    Total price is required!
                   </div>
                 </div>
                 <!-- Owner-->
@@ -175,6 +155,7 @@
                   </div>
                 </div>
               </div>
+
               <!-- Description-->
               <div class="field">
                 <label>Description</label>
@@ -228,10 +209,11 @@ export default {
         signedDate: "",
         signedLocation: "",
         totalPrice: "",
-        estimatedPassengerCount: "",
-        estimatedVehicleCount: "",
+        passengerCount: "",
+        vehicleCount: "",
         roundTrip: false,
         trips: [],
+        contractOwner: "",
       },
 
       // Basic Information Error
@@ -243,8 +225,8 @@ export default {
       otherInformationErr: false,
       signedDateErr: false,
       totalPriceErr: false,
-      estimatedPassengerCountErr: false,
-      estimatedVehicleCountErr: false,
+      passengerCountErr: false,
+      vehicleCountErr: false,
 
       isLoading: false,
       isCreatedSuccessfully: false,
@@ -308,11 +290,9 @@ export default {
       this.durationFromErr = this.contract.durationFrom.length === 0;
       this.durationToErr = this.contract.durationTo.length === 0;
       this.signedDateErr = this.contract.signedDate.length === 0;
-      this.totalPriceErr = this.contract.totalPrice.length === 0;
-      this.estimatedPassengerCountErr =
-        this.contract.estimatedPassengerCount.length === 0;
-      this.estimatedVehicleCountErr =
-        this.contract.estimatedVehicleCount.length === 0;
+      // this.totalPriceErr = this.contract.totalPrice.length === 0;
+      this.passengerCountErr = this.contract.passengerCount.length === 0;
+      this.vehicleCountErr = this.contract.vehicleCount.length === 0;
       let signedLocationErr = this.$refs.signedLocation.checkValid();
       this.ownerErr = this.owner.userId.length === 0;
       return (
@@ -321,22 +301,14 @@ export default {
         this.signedDateErr ||
         this.totalPriceErr ||
         signedLocationErr ||
-        this.estimatedPassengerCountErr ||
-        this.estimatedVehicleCountErr ||
+        this.passengerCountErr ||
+        this.vehicleCountErr ||
         this.ownerErr
       );
     },
     durationToChange() {
       this.contract.durationTo = "";
       this.isChange = true;
-      // if (
-      //   this.$parent.contract &&
-      //   this.$parent.contract.trips[0] &&
-      //   this.$parent.contract.trips[0].departureTime
-      // ) {
-      //   this.$parent
-      //   this.$parent.$refs.firstVehiclePicker.trip.departureTime = "";
-      // }
     },
     // Get contract data
     getData() {
@@ -364,8 +336,8 @@ export default {
           signedDate: "",
           signedLocation: "",
           totalPrice: "",
-          estimatedPassengerCount: 0,
-          estimatedVehicleCount: 0,
+          passengerCount: 0,
+          vehicleCount: 0,
         };
       }
     },

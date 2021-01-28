@@ -26,7 +26,7 @@
             <label>ID</label>
             <div class="ui corner labeled input">
               <input
-                v-model="document.vehicleDocumentId"
+                v-model="document.vehicleDocumentNumber"
                 type="text"
                 readonly
               />

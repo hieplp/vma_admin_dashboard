@@ -164,7 +164,9 @@ export default {
     // Init data for vehicle list
     async initVehiclesList() {
       this.isLoading = true;
+
       this.vehiclesList = await this._getContractVehicle(this.contractDetailId);
+
       this.isLoading = false;
     },
 
