@@ -55,6 +55,21 @@
             </select>
           </div>
         </div>
+        <!-- Status -->
+        <div class="field">
+          <label>Display All</label>
+          <div class="ui corner labeled input">
+            <select
+              class="form-control form-control-sm"
+              name="status"
+              v-model="displayAll"
+              @change="initVehiclesList"
+            >
+              <option :value="0">False</option>
+              <option :value="1">True</option>
+            </select>
+          </div>
+        </div>
       </div>
     </div>
     <vue-tabs
@@ -193,6 +208,7 @@ export default {
       ignoreSleeperBus: true,
       tabIndex: 0,
       seat: 0,
+      displayAll: 0,
       isVehicleLoading: false,
       isVehicleErr: false,
     };
@@ -209,10 +225,6 @@ export default {
     // this.initStatusList();
     if (this.selectedVehicleList) {
       this.selectedVehicles = this.selectedVehicleList;
-      console.log(
-        "🚀 ~ file: AutoRecVehiclesModal.vue ~ line 213 ~ mounted ~ this.selectedVehicles",
-        this.selectedVehicles
-      );
     }
     await this.initCombination();
   },
@@ -277,6 +289,7 @@ export default {
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
         pageNum: this.currentPage,
+        displayAll: this.displayAll,
       }).then(async (res) => {
         this.vehicles = res;
       });
@@ -290,6 +303,7 @@ export default {
         viewOption: 0,
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
+        displayAll: this.displayAll,
       });
 
       // Remove selected vehicles

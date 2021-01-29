@@ -452,6 +452,7 @@ export default {
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
         pageNum: this.currentPage,
+        displayAll: 1,
       }).then(async (res) => {
         this.vehicles = res;
       });
@@ -471,6 +472,7 @@ export default {
         viewOption: 0,
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
+        displayAll: 1,
       });
     },
     //Init vehicle is far

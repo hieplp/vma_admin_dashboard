@@ -218,11 +218,12 @@ export default {
         bufferPre,
         bufferPost,
         pageNum,
+        displayAll,
       }
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/available-vehicles?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}&pageNum=${pageNum}`
+          `${CONTRACT_URL}/vehicles/available-vehicles?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}&pageNum=${pageNum}&displayAll=${displayAll}`
         )
           .then((res) => {
             resolve(res.data.vehicleList);
@@ -244,11 +245,12 @@ export default {
         viewOption,
         bufferPre,
         bufferPost,
+        displayAll,
       }
     ) {
       return new Promise((resolve, reject) => {
         Repository.get(
-          `${CONTRACT_URL}/vehicles/available-vehicles/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}`
+          `${CONTRACT_URL}/vehicles/available-vehicles/count?endDate=${endDate}&seatsMax=${seatsMax}&seatsMin=${seatsMin}&startDate=${startDate}&vehicleTypeId=${vehicleTypeId}&viewOption=${viewOption}&bufferPost=${bufferPost}&bufferPre=${bufferPre}&displayAll=${displayAll}`
         )
           .then((res) => {
             resolve(res.data);
