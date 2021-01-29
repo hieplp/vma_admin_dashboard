@@ -1,7 +1,10 @@
 <template>
   <div class="row">
     <!-- DEPARTURE/DESTINATION TIME -->
-    <div class="col-lg-12 grid-margin stretch-card" v-if="defaultDate">
+    <div
+      class="col-lg-12 grid-margin stretch-card"
+      v-if="defaultDate || isDetail"
+    >
       <div class="card">
         <div class="card-body">
           <div class="ui form">
