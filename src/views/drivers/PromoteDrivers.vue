@@ -82,7 +82,7 @@
                   <!-- <th>ID</th> -->
                   <th>NAME</th>
                   <th>PHONE NUMBER</th>
-                  <th>VEHICLE ID</th>
+                  <!-- <th>VEHICLE ID</th> -->
                   <th>STATUS</th>
                   <th class="text-center">ACTION</th>
                 </tr>
@@ -93,12 +93,12 @@
                   <!-- <td>{{ user.userId }}</td> -->
                   <td>{{ user.fullName }}</td>
                   <td>{{ user.phoneNumber }}</td>
-                  <td>
+                  <!-- <td>
                     <p v-if="user.vehicleId">
                       {{ user.vehicleId }}
                     </p>
                     <p v-else>N/A</p>
-                  </td>
+                  </td> -->
                   <td>
                     <label
                       class="badge"

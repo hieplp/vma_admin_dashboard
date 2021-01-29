@@ -107,8 +107,8 @@
                   <td class="text-secondary">{{ page * 15 + index + 1 }}</td>
                   <td>{{ vehicle.vehicleId }}</td>
                   <td>{{ vehicle.model }}</td>
-                  <td>{{ vehicle.seats }}</td>
-                  <td>{{ vehicle.vehicleTypeName }}</td>
+                  <td>{{ vehicle.seatsModel.seats }}</td>
+                  <td>{{ vehicle.vehicleType.vehicleTypeName }}</td>
 
                   <td>
                     <label
