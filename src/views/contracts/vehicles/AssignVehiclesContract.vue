@@ -422,6 +422,7 @@ export default {
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
         pageNum: this.currentPage,
+        displayAll: 1,
         viewOption: 0,
       });
       this.totalVehicles = await this._getVehicleRecommendationsCount({
@@ -432,6 +433,7 @@ export default {
         vehicleTypeId: this.searchType,
         bufferPre: this.config.contractPreBreakTime,
         bufferPost: this.config.contractPostBreakTime,
+        displayAll: 1,
         viewOption: 0,
       });
       this.selectedVehicleList.forEach((vehicle) => {
