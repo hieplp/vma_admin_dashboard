@@ -17,7 +17,7 @@
     "babel-helper-vue-jsx-merge-props": "^2.0.3",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.5",
-    "firebase": "^7.23.0",
+    "firebase": "^10.0.0",
     "jquery": "^3.5.1",
     "moment": "^2.29.4",
     "popper.js": "^1.16.1",
